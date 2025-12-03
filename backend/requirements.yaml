@@ -1,0 +1,31 @@
+rules: 
+  [
+    "Defines stable, predictable income; variable income averaging; income trending analysis; income continuity; use of nontaxable income and tax returns requirements.",
+    "Specifies documentation acceptable for wage earners: current paystubs (dated within 30 days), 1-2yrs W-2s, VOE forms, employer or third party verification.",
+    "How to calculate base pay, bonuses, and overtime with averaging and trending; historical receipt analysis.",
+    "Calculation and assessment of commission income using 2 years history and averaging; consideration of declining trends.",
+    "Guidelines on combining income from second jobs or seasonal employment.",
+    "Use of IRS Form 4506-C transcripts to verify filed tax returns in lieu of paper copies.",
+    "Acceptable when paystubs or tax returns are unavailable or insufficient.",
+    "Income from rental properties must be analyzed using 2 years tax returns (Schedule E), lease agreements, and bank statements.",
+    "Lists and explains acceptable income types: alimony, child support, disability, VA benefits, boarder income, royalties, dividends, notes receivable, etc.",
+    "Defines method and requirements using Fannie Mae's automated income calculator to document and compute qualifying income.",
+    "Guidance and documentation for analyzing income of self-employed borrowers, including use of tax returns, profit/loss statements, business documents.",
+    "Detailed analysis for income or loss reported on individual schedules: Schedule C, D, E, F, and K-1 forms.",
+    "Specifies documentation and calculation requirements for automated underwriting via Desktop Underwriter (DU) system.",
+    "Paystubs (within 30 days), W-2 (1-2 years), VOE must be collected for wage earners.",
+    "Tax Returns, paystubs, VOE are required for general income validation.",
+    "Business & personal tax returns 2 years, IRS transcripts, profit/loss statements required for self-employed borrowers.",
+    "Lease agreements, tax returns Schedule E, and bank statements are required for rental income analysis.",
+    "Court orders, bank statements, and payment history are required for alimony/child support validation.",
+    "Benefit award letters and bank statements are required for disability/VA/other benefit income validation."
+  ]
+
+required_fields:
+  IC_calculation:
+    - Monthly income
+    - Bonus
+    - Comission
+    - Over time
+    - other income
+    - Qualifying income
