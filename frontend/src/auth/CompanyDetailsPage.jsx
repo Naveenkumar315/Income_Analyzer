@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Form } from "antd";
 import { UploadOutlined, DeleteOutlined, FileTextOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import "antd/dist/reset.css";
 import "../styles/formValidation.css"; // Import reusable form validation styles
 
@@ -13,6 +14,7 @@ import { debounce } from "../utils/debounce";
 const CompanyDetailsPage = ({ onClose, onSubmit }) => {
     const [activeTab, setActiveTab] = useState("company"); // "company" | "individual"
     const [form] = Form.useForm();
+    const navigate = useNavigate();
     const [fileList, setFileList] = useState([]);
     const [isLoadingZip, setIsLoadingZip] = useState(false);
 
@@ -438,14 +440,15 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
 
                 {/* Fixed footer bar */}
                 <div className="border-t border-[#E5E7EB] px-8 py-4 flex justify-end gap-3 bg-white rounded-b-xl">
-                    {/* <button
+                    <button
                         type="button"
-                        onClick={onClose}
+                        onClick={() => navigate("/")}
                         className="px-8 py-2.5 rounded-lg border border-[#D1D5DB] bg-white text-[#3D4551] text-sm font-creato font-medium hover:bg-gray-50 transition-colors"
                     >
                         Cancel
-                    </button> */}
+                    </button>
                     <button
+                        style={{ color: 'white' }}
                         type="submit"
                         onClick={() => form.submit()}
                         className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors"

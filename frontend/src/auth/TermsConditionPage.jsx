@@ -59,19 +59,22 @@ const TermsConditionPage = ({ onAccesptTerms }) => {
                     </div>
                 </div>
 
-                {/* content */}
                 <div className="mt-6 space-y-6">
                     <div className="flex items-center gap-2 text-sm font-creato leading-4">
                         <Checkbox checked={accepted} onChange={handleCheckboxChange} />
-                        <span className="text-base-custom">
+                        <label
+                            onClick={() => setAccepted(!accepted)}
+                            className="text-base-custom cursor-pointer"
+                        >
                             I accept the{" "}
                             <button
                                 type="button"
                                 className="text-Colors-Text-Primary-primary underline-offset-2 hover:underline"
+                                onClick={(e) => e.stopPropagation()}
                             >
                                 Terms and Conditions
                             </button>
-                        </span>
+                        </label>
                     </div>
 
                     <CustomButton
