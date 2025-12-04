@@ -21,12 +21,15 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
         []
     );
 
+
     const handleFinish = useCallback(
         (values) => {
             console.log("Company / Individual details:", { tab: activeTab, values });
             if (onSubmit) onSubmit({ tab: activeTab, values });
+            // Close the modal after successful submission
+            if (onClose) onClose();
         },
-        [activeTab, onSubmit]
+        [activeTab, onSubmit, onClose]
     );
 
     // Handle tab switching - clear form when switching tabs
