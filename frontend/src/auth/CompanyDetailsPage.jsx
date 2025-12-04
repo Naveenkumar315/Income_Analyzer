@@ -1,38 +1,136 @@
 // src/pages/CompanyDetailsPage.jsx
-import React, { useState, useMemo, useCallback } from "react";
-import { Form, Upload } from "antd";
-import { CloseOutlined, InboxOutlined } from "@ant-design/icons";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { Form } from "antd";
+import { UploadOutlined, DeleteOutlined, FileTextOutlined } from "@ant-design/icons";
 import "antd/dist/reset.css";
+import "../styles/formValidation.css"; // Import reusable form validation styles
 
 import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
-
-const { Dragger } = Upload;
+import { statesList } from "../constants/states";
+import { debounce } from "../utils/debounce";
 
 const CompanyDetailsPage = ({ onClose, onSubmit }) => {
     const [activeTab, setActiveTab] = useState("company"); // "company" | "individual"
     const [form] = Form.useForm();
+    const [fileList, setFileList] = useState([]);
+    const [isLoadingZip, setIsLoadingZip] = useState(false);
 
     const bgStyle = useMemo(
         () => ({ backgroundImage: `url('/auth_page_bg.png')` }),
         []
     );
 
+
     const handleFinish = useCallback(
         (values) => {
             console.log("Company / Individual details:", { tab: activeTab, values });
             if (onSubmit) onSubmit({ tab: activeTab, values });
+            // Close the modal after successful submission
+            if (onClose) onClose();
         },
-        [activeTab, onSubmit]
+        [activeTab, onSubmit, onClose]
     );
 
-    const uploadProps = {
-        name: "file",
-        multiple: false,
-        beforeUpload: () => false, // prevent auto upload; we just keep file in list
-        showUploadList: {
-            showRemoveIcon: true,
-        },
+    // Handle tab switching - clear form when switching tabs
+    const handleTabChange = (newTab) => {
+        if (newTab !== activeTab) {
+            // Clear all form fields
+            form.resetFields();
+            // Clear uploaded files
+            setFileList([]);
+            // Switch tab
+            setActiveTab(newTab);
+        }
+    };
+
+    // Format file size
+    const formatFileSize = (bytes) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i)) + sizes[i];
+    };
+
+    // Fetch city and state from zip code
+    const fetchLocationByZip = async (zipCode) => {
+        // Validate US zip code format (5 digits)
+        if (!/^\d{5}$/.test(zipCode)) {
+            return;
+        }
+
+        setIsLoadingZip(true);
+        try {
+            const response = await fetch(`https://api.zippopotam.us/us/${zipCode}`);
+
+            if (!response.ok) {
+                throw new Error('Invalid zip code');
+            }
+
+            const data = await response.json();
+
+            if (data.places && data.places.length > 0) {
+                const place = data.places[0];
+                const cityName = place['place name'];
+                const stateAbbr = place['state abbreviation'];
+
+                // Update form fields
+                form.setFieldsValue({
+                    city: cityName,
+                    state: stateAbbr
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching location data:', error);
+            // Optionally show error message to user
+        } finally {
+            setIsLoadingZip(false);
+        }
+    };
+
+    // Create debounced version of the fetch function
+    const debouncedFetchLocation = useRef(
+        debounce((zipCode) => fetchLocationByZip(zipCode), 500)
+    ).current;
+
+    // Handle zip code change
+    const handleZipCodeChange = (e) => {
+        const zipCode = e.target.value;
+        if (zipCode && zipCode.length === 5) {
+            debouncedFetchLocation(zipCode);
+        }
+    };
+
+    // Handle phone number input - format as US phone number (XXX) XXX-XXXX
+    const handlePhoneNumberChange = (e) => {
+        const input = e.target.value;
+
+        // Remove all non-numeric characters
+        const cleaned = input.replace(/\D/g, "");
+
+        // Limit to 10 digits
+        const limited = cleaned.substring(0, 10);
+
+        // Format as (XXX) XXX-XXXX
+        let formatted = "";
+        if (limited.length > 0) {
+            if (limited.length <= 3) {
+                formatted = `(${limited}`;
+            } else if (limited.length <= 6) {
+                formatted = `(${limited.slice(0, 3)}) ${limited.slice(3)}`;
+            } else {
+                formatted = `(${limited.slice(0, 3)}) ${limited.slice(3, 6)}-${limited.slice(6)}`;
+            }
+        }
+
+        // Update the form field value
+        const fieldName = e.target.id?.replace(/.*_/, ''); // Extract field name from Ant Design ID
+        if (fieldName) {
+            form.setFieldsValue({
+                [fieldName]: formatted
+            });
+        }
     };
 
     return (
@@ -50,39 +148,39 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
             {/* main modal card */}
             <div className="relative z-10 w-[720px] max-h-[80vh] rounded-xl bg-white shadow-md flex flex-col">
                 {/* header */}
-                <div className="flex items-center justify-between border-b border-slate-200 px-8 py-4">
-                    <div className="text-base font-creato text-base-custom">
+                <div className="flex items-center justify-between border-b border-slate-200 px-8 py-5">
+                    <div className="text-lg font-creato font-normal text-[#3D4551]">
                         Getting Started
                     </div>
-                    <button
+                    {/* <button
                         type="button"
-                        onClick={onClose}
-                        className="text-base-lightest-custom hover:text-base-custom"
+                        // onClick={onClose}
+                        className="text-[#9CA4AB] hover:text-[#3D4551] transition-colors"
                     >
-                        <CloseOutlined />
-                    </button>
+                        <CloseOutlined style={{ fontSize: '18px' }} />
+                    </button> */}
                 </div>
 
                 {/* body (scrollable) */}
-                <div className="flex-1 overflow-y-auto px-8 py-5">
+                <div className="flex-1 overflow-y-auto px-8 py-6">
                     {/* tabs */}
-                    <div className="mb-6 inline-flex rounded-lg border border-slate-200 overflow-hidden">
+                    <div className="mb-8 inline-flex rounded-lg border border-[#E5E7EB] overflow-hidden">
                         <button
                             type="button"
-                            onClick={() => setActiveTab("company")}
-                            className={`h-9 w-32 px-4 text-sm font-creato ${activeTab === "company"
-                                ? "bg-Colors-Surface-Action-action text-Colors-Text-Static-white"
-                                : "bg-white text-base-custom"
-                                } border-r border-slate-200`}
+                            onClick={() => handleTabChange("company")}
+                            className={`h-10 px-6 text-sm font-creato transition-all ${activeTab === "company"
+                                ? "bg-[#22B4E6] text-white"
+                                : "bg-white text-[#3D4551] hover:bg-gray-50"
+                                }`}
                         >
                             Company
                         </button>
                         <button
                             type="button"
-                            onClick={() => setActiveTab("individual")}
-                            className={`h-9 w-32 px-4 text-sm font-creato ${activeTab === "individual"
-                                ? "bg-Colors-Surface-Action-action text-Colors-Text-Static-white"
-                                : "bg-white text-base-custom"
+                            onClick={() => handleTabChange("individual")}
+                            className={`h-10 px-6 text-sm font-creato transition-all border-l border-[#E5E7EB] ${activeTab === "individual"
+                                ? "bg-[#22B4E6] text-white"
+                                : "bg-white text-[#3D4551] hover:bg-gray-50"
                                 }`}
                         >
                             Individual
@@ -94,20 +192,23 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
                         layout="vertical"
                         onFinish={handleFinish}
                         requiredMark={false}
+                        initialValues={{
+                            companySize: "1-10"
+                        }}
                     >
                         {activeTab === "company" ? (
                             <>
                                 {/* Company Information */}
-                                <div className="mb-2 text-sky-500 text-[16px] font-creato font-medium">
+                                <div className="mb-4 text-[#22B4E6] text-base font-creato font-normal">
                                     Company Information
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
                                     <FormField
                                         type="text"
                                         label="Company Name"
                                         name="companyName"
                                         placeholder="Enter Company Name"
-                                        rules={[{ required: true, message: "Please enter company name" }]}
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="dropdown"
@@ -120,167 +221,237 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
                                             { label: "51–200", value: "51-200" },
                                             { label: "200+", value: "200+" },
                                         ]}
-                                        rules={[
-                                            { required: true, message: "Please select company size" },
-                                        ]}
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Company Phone Number"
                                         name="companyPhone"
                                         placeholder="Enter Company Phone Number"
+                                        onChange={handlePhoneNumberChange}
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Company Email"
                                         name="companyEmail"
                                         placeholder="Enter Company Email"
-                                        rules={[{ type: "email", message: "Please enter valid email" }]}
+                                        rules={[
+                                            { required: true },
+                                            { type: "email", message: "Invalid email format" }
+                                        ]}
                                     />
                                 </div>
 
                                 {/* Company Address */}
-                                <div className="mt-5 mb-2 text-sky-500 text-[16px] font-creato font-medium">
+                                <div className="mb-4 text-[#22B4E6] text-base font-creato font-normal">
                                     Company Address
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
                                     <FormField
                                         type="text"
                                         label="Street Address"
                                         name="streetAddress"
                                         placeholder="Enter Street Address"
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Zip Code"
                                         name="zipCode"
                                         placeholder="Enter Zip Code"
+                                        onChange={handleZipCodeChange}
+                                        maxLength={5}
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="City"
                                         name="city"
                                         placeholder="Enter City"
+                                        disabled={isLoadingZip}
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="dropdown"
                                         label="State"
                                         name="state"
                                         placeholder="Select State"
-                                        options={[
-                                            { label: "Tamil Nadu", value: "TN" },
-                                            { label: "Karnataka", value: "KA" },
-                                            { label: "Kerala", value: "KL" },
-                                            { label: "Telangana", value: "TS" },
-                                        ]}
+                                        options={statesList}
+                                        disabled={isLoadingZip}
+                                        rules={[{ required: true }]}
                                     />
                                 </div>
 
                                 {/* Primary Contact */}
-                                <div className="mt-5 mb-2 text-sky-500 text-[16px] font-creato font-medium">
+                                <div className="mb-4 text-[#22B4E6] text-base font-creato font-normal">
                                     Primary Contact
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
                                     <FormField
                                         type="text"
                                         label="First Name"
                                         name="primaryFirstName"
                                         placeholder="Enter First Name"
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Last Name"
                                         name="primaryLastName"
                                         placeholder="Enter Last Name"
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Phone Number"
                                         name="primaryPhone"
                                         placeholder="Enter Phone Number"
+                                        onChange={handlePhoneNumberChange}
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Email"
                                         name="primaryEmail"
                                         placeholder="Enter Email"
-                                        rules={[{ type: "email", message: "Please enter valid email" }]}
+                                        rules={[
+                                            { required: true },
+                                            { type: "email", message: "Invalid email format" }
+                                        ]}
                                     />
                                 </div>
 
                                 {/* Company Logo */}
-                                <div className="mt-5 mb-2 text-sky-500 text-[16px] font-creato font-medium">
+                                <div className="mb-4 text-[#22B4E6] text-base font-creato font-normal">
                                     Company Logo{" "}
-                                    <span className="text-base-lightest-custom text-xs">
+                                    <span className="text-[#9CA4AB] text-sm font-normal">
                                         (Optional)
                                     </span>
                                 </div>
-                                <Dragger
-                                    {...uploadProps}
-                                    className="border-dashed border border-base-custom bg-neutral-subtle rounded-lg py-6"
+
+                                {/* Upload Area */}
+                                <div
+                                    className="relative border-2 border-dashed border-[#E5E7EB] rounded-lg bg-[#F9FAFB] hover:border-[#22B4E6] transition-colors cursor-pointer"
+                                    onClick={() => document.getElementById('logo-upload-input').click()}
                                 >
-                                    <p className="ant-upload-drag-icon">
-                                        <InboxOutlined />
-                                    </p>
-                                    <p className="text-sm font-creato text-base-custom">
-                                        Upload a file or drag and drop
-                                    </p>
-                                    <p className="text-xs font-creato text-base-lightest-custom">
-                                        PNG, JPEG up to 2MB
-                                    </p>
-                                </Dragger>
+                                    <input
+                                        id="logo-upload-input"
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/jpg"
+                                        onChange={(e) => {
+                                            if (e.target.files && e.target.files[0]) {
+                                                setFileList([e.target.files[0]]);
+                                            }
+                                        }}
+                                        style={{ display: 'none' }}
+                                    />
+                                    <div className="py-12 text-center">
+                                        <div className="mb-3">
+                                            <UploadOutlined style={{ fontSize: '40px', color: '#22B4E6' }} />
+                                        </div>
+                                        <p className="text-sm font-creato mb-1">
+                                            <span className="text-[#22B4E6] font-medium">Upload a file</span>
+                                            <span className="text-[#6B7280]"> or drag and drop</span>
+                                        </p>
+                                        <p className="text-xs font-creato text-[#9CA4AB]">
+                                            png, jpeg, up to 2MB
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Uploaded file list */}
+                                {fileList.length > 0 && (
+                                    <div className="mt-4">
+                                        {fileList.map((file, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between p-4 bg-white border border-[#E5E7EB] rounded-lg"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <FileTextOutlined style={{ fontSize: '24px', color: '#22B4E6' }} />
+                                                    <div>
+                                                        <div className="text-sm font-creato font-medium text-[#3D4551]">
+                                                            {file.name}
+                                                        </div>
+                                                        <div className="text-xs font-creato text-[#9CA4AB]">
+                                                            {formatFileSize(file.size)}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFileList([])}
+                                                    className="text-[#EF4444] hover:text-[#DC2626] transition-colors"
+                                                >
+                                                    <DeleteOutlined style={{ fontSize: '18px' }} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <>
                                 {/* Individual – Basic Information */}
-                                <div className="mb-2 text-sky-500 text-[16px] font-creato font-medium">
+                                <div className="mb-4 text-[#22B4E6] text-base font-creato font-normal">
                                     Basic Information
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                     <FormField
                                         type="text"
                                         label="First Name"
                                         name="firstName"
                                         placeholder="Enter First Name"
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Last Name"
                                         name="lastName"
                                         placeholder="Enter Last Name"
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Phone Number"
                                         name="phone"
                                         placeholder="Enter Phone Number"
+                                        onChange={handlePhoneNumberChange}
+                                        rules={[{ required: true }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Email"
                                         name="email"
                                         placeholder="Enter Email"
-                                        rules={[{ type: "email", message: "Please enter valid email" }]}
+                                        rules={[
+                                            { required: true },
+                                            { type: "email", message: "Invalid email format" }
+                                        ]}
                                     />
                                 </div>
                             </>
                         )}
-                        <p className="border-t border-slate-200 "></p>
-                        {/* footer bar */}
-                        <div className="mt-6 -mx-8 w-[300px] px-8 py-4 flex justify-end gap-3">
-                            <CustomButton
-                                variant="outline"
-                                type="button"
-                                className="w-28"
-                                onClick={onClose}
-                            >
-                                Cancel
-                            </CustomButton>
-                            <CustomButton variant="primary" type="submit" className="w-28">
-                                Submit
-                            </CustomButton>
-                        </div>
                     </Form>
+                </div>
+
+                {/* Fixed footer bar */}
+                <div className="border-t border-[#E5E7EB] px-8 py-4 flex justify-end gap-3 bg-white rounded-b-xl">
+                    {/* <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-8 py-2.5 rounded-lg border border-[#D1D5DB] bg-white text-[#3D4551] text-sm font-creato font-medium hover:bg-gray-50 transition-colors"
+                    >
+                        Cancel
+                    </button> */}
+                    <button
+                        type="submit"
+                        onClick={() => form.submit()}
+                        className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors"
+                    >
+                        Submit
+                    </button>
                 </div>
             </div>
 
@@ -295,3 +466,4 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
 };
 
 export default CompanyDetailsPage;
+

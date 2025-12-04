@@ -6,7 +6,7 @@ import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
 
-const EmailVerificationPage = ({ onVerify }) => {
+const EmailVerificationPage = ({ email, onVerify }) => {
     const [loading, setLoading] = useState(false);
     const [isFormValid, setIsFormValid] = useState(false);
     const [form] = Form.useForm();
@@ -61,7 +61,7 @@ const EmailVerificationPage = ({ onVerify }) => {
                         <span className="text-gray-800 text-xl font-extrabold font-creato uppercase leading-7">
                             Income
                         </span>
-                        <span className="text-sky-500 text-xl font-extrabold font-creato uppercase leading-7 ml-1">
+                        <span className="text-sky-500 text-xl font-extrabold font-creato uppercase leading-7 ">
                             Analyzer
                         </span>
                     </div>
@@ -74,7 +74,7 @@ const EmailVerificationPage = ({ onVerify }) => {
                     </div>
 
                     <div className="text-base-lightest-custom mt-2 text-sm font-creato leading-4">
-                        Verification code sent to test.mail@ca.com
+                        Verification code sent to {email || "your email"}
                     </div>
                 </div>
 

@@ -24,6 +24,7 @@ function SignupPage() {
     const [form] = Form.useForm();
     const navigate = useNavigate();
     const [step, setStep] = useState(SIGNUP_STEPS.EMAIL);
+    const [userEmail, setUserEmail] = useState(""); // Store user's email
 
     const bgStyle = useMemo(
         () => ({ backgroundImage: `url('/auth_page_bg.png')` }),
@@ -34,6 +35,8 @@ function SignupPage() {
         (values) => {
             setLoading(true);
             console.log("Sign Up:", values);
+            // Store the email for use in verification page
+            setUserEmail(values.email);
             // TODO: call API here
             setLoading(false);
             setStep(SIGNUP_STEPS.VERIFICATION_CODE);
@@ -170,7 +173,7 @@ function SignupPage() {
             )}
 
             {step === SIGNUP_STEPS.VERIFICATION_CODE && (
-                <EmailVerificationPage onVerify={handleVerify} />
+                <EmailVerificationPage email={userEmail} onVerify={handleVerify} />
             )}
 
             {step === SIGNUP_STEPS.TERMS_CONDITION && (
