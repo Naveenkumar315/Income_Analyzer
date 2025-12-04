@@ -34,7 +34,7 @@ const TermsConditionPage = ({ onAccesptTerms }) => {
             <div className="pointer-events-none absolute -right-32 top-20 h-72 w-72 rounded-full bg-white/15" />
 
             {/* card */}
-            <div className="relative z-10 w-[360px] rounded-xl bg-white px-8 py-8 shadow-2xl">
+            <div className="relative z-10 w-[360px] rounded-xl bg-white px-8 py-8 shadow-md">
                 {/* logo */}
                 <div className="mb-4 flex items-center justify-center gap-2 w-full">
                     <img src="/dna-strand.svg" alt="" className="h-6 w-6" />

@@ -8,17 +8,64 @@
     font-weight: 700;
 }
 
+
+
+/* ===== Custom Fonts ===== */
+
+@font-face {
+    font-family: "Creato Display";
+    src: url("/fonts/CreatoDisplay-Regular.otf") format("opentype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Creato Display";
+    src: url("/fonts/CreatoDisplay-Bold.otf") format("opentype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Creato Display";
+    src: url("/fonts/CreatoDisplay-Black.otf") format("opentype");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Jura */
+@font-face {
+    font-family: "Jura";
+    src: url("/fonts/Jura-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Jura";
+    src: url("/fonts/Jura-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+
+
+
 /* =======================================
    Figma Design Tokens (SAFE)
    Wrapped inside @layer utilities
 ======================================= */
 @layer utilities {
-
     .font-creato {
-        font-family: "Creato_Display", sans-serif;
+        font-family: "Creato Display", sans-serif;
     }
 
-    /* Text Tokens */
+    /* rest is fine */
     .text-base-custom {
         color: #1A1A1A;
     }
@@ -39,12 +86,10 @@
         color: #FFFFFF !important;
     }
 
-
     .text-Colors-Text-Base-base {
         color: #1A1A1A;
     }
 
-    /* Background Tokens */
     .bg-Colors-Surface-Action-action {
         background-color: #24A1DD;
     }
@@ -53,12 +98,10 @@
         background-color: #E0E0E0;
     }
 
-    /* Neutral background */
     .bg-neutral-subtle {
         background-color: #F5F6F8;
     }
 
-    /* Borders */
     .border-base-custom {
         border-color: #D1D5DB;
     }
@@ -67,7 +110,6 @@
         outline-color: #24A1DD;
     }
 
-    /* Icon colors */
     .outline-Colors-Icon-Action-action-disabled {
         outline-color: #9CA3AF;
     }

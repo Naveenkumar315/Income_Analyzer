@@ -48,7 +48,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
             <div className="pointer-events-none absolute -right-32 top-20 h-72 w-72 rounded-full bg-white/15" />
 
             {/* main modal card */}
-            <div className="relative z-10 w-[720px] max-h-[80vh] rounded-xl bg-white shadow-2xl flex flex-col">
+            <div className="relative z-10 w-[720px] max-h-[80vh] rounded-xl bg-white shadow-md flex flex-col">
                 {/* header */}
                 <div className="flex items-center justify-between border-b border-slate-200 px-8 py-4">
                     <div className="text-base font-creato text-base-custom">
