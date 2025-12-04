@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import EmailVerificationPage from "./EmailVerificationPage";
 import TermsConditionPage from "./TermsConditionPage";
 import SignupRequestSubmittedPage from "./SignupRequestSubmittedPage";
+import CompanyDetailsPage from "./CompanyDetailsPage";
 
 export const SIGNUP_STEPS = Object.freeze({
     EMAIL: "email",
@@ -56,8 +57,12 @@ function SignupPage() {
     }, []);
 
     const handleTermsCondition = useCallback(() => {
-        setStep(SIGNUP_STEPS.SIGNUP_REQUEST);
+        setStep(SIGNUP_STEPS.COMPANY_DETAILS);
     }, []);
+
+    const handleSubmit = useCallback(() => {
+        setStep(SIGNUP_STEPS.SIGNUP_REQUEST);
+    }, [])
 
     return (
         <>
@@ -171,6 +176,14 @@ function SignupPage() {
             {step === SIGNUP_STEPS.TERMS_CONDITION && (
                 <TermsConditionPage onAccesptTerms={handleTermsCondition} />
             )}
+
+            {step === SIGNUP_STEPS.COMPANY_DETAILS && (
+                <CompanyDetailsPage
+                    onClose={() => setStep(SIGNUP_STEPS.SIGNUP_REQUEST)}
+                    onSubmit={handleSubmit}
+                />
+            )}
+
 
             {step === SIGNUP_STEPS.SIGNUP_REQUEST && <SignupRequestSubmittedPage />}
         </>
