@@ -1,15 +1,22 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import 'antd/dist/reset.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LoginPage from './auth/LoginPage';
+import SignupPage from './auth/SignupPage';
+import ToastProvider from './utils/ToastProvider';
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        {/* <Route path="/register" element={<RegisterPage />} /> */}
 
-    </>
+      </Routes>
+      <ToastProvider />
+    </BrowserRouter>
   )
 }
 

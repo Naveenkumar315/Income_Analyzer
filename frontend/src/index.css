@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+/* =======================================
+   Custom Global Font
+======================================= */
+.custom-font-jura {
+    font-family: "Jura", sans-serif;
+    font-weight: 700;
+}
+
+/* =======================================
+   Figma Design Tokens (SAFE)
+   Wrapped inside @layer utilities
+======================================= */
+@layer utilities {
+
+    .font-creato {
+        font-family: "Creato_Display", sans-serif;
+    }
+
+    /* Text Tokens */
+    .text-base-custom {
+        color: #1A1A1A;
+    }
+
+    .text-base-lightest-custom {
+        color: #9BA1B0;
+    }
+
+    .text-Colors-Text-Primary-primary {
+        color: #24A1DD !important;
+    }
+
+    .text-Colors-Text-Action-action-disabled {
+        color: #9CA3AF;
+    }
+
+    .text-Colors-Text-Static-white {
+        color: #FFFFFF !important;
+    }
+
+
+    .text-Colors-Text-Base-base {
+        color: #1A1A1A;
+    }
+
+    /* Background Tokens */
+    .bg-Colors-Surface-Action-action {
+        background-color: #24A1DD;
+    }
+
+    .bg-Colors-Surface-Action-action-disabled {
+        background-color: #E0E0E0;
+    }
+
+    /* Neutral background */
+    .bg-neutral-subtle {
+        background-color: #F5F6F8;
+    }
+
+    /* Borders */
+    .border-base-custom {
+        border-color: #D1D5DB;
+    }
+
+    .outline-Colors-Border-Action-action {
+        outline-color: #24A1DD;
+    }
+
+    /* Icon colors */
+    .outline-Colors-Icon-Action-action-disabled {
+        outline-color: #9CA3AF;
+    }
+
+    .outline-Colors-Icon-Static-white {
+        outline-color: #FFFFFF;
+    }
+}
