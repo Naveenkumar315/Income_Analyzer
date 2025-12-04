@@ -80,10 +80,74 @@ function SignupPage() {
                                 <span className="text-gray-800 text-xl font-extrabold font-creato uppercase leading-7">
                                     Income
                                 </span>
-                                <span className="text-sky-500 text-xl font-extrabold font-creato uppercase leading-7 ml-1">
+                                <span className="text-sky-500 text-xl font-extrabold font-creato uppercase leading-7">
                                     Analyzer
                                 </span>
                             </div>
+                        </div>
+
+                        {/* headings */}
+                        <div className="text-center">
+                            <div className="text-Colors-Text-Base-base text-2xl font-bold custom-font-jura leading-8">
+                                Sign Up
+                            </div>
+
+                            <div className="text-base-lightest-custom mt-4 text-sm font-creato leading-4">
+                                Welcome! Let&apos;s set things up
+                            </div>
+                        </div>
+
+                        {/* form */}
+                        <div className="mt-4">
+                            <Form
+                                form={form}
+                                layout="vertical"
+                                onFinish={onFinish}
+                                onFieldsChange={handleFieldsChange}
+                                requiredMark={false}
+                                className="mt-5"
+                            >
+                                {/* EMAIL ADDRESS */}
+                                <FormField
+                                    type="text"
+                                    label="Email Address"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    rules={[
+                                        { required: true, message: "Please enter your email" },
+                                        { type: "email", message: "Please enter a valid email" },
+                                    ]}
+                                />
+
+                                {/* button wrapper so mt-8 works */}
+                                <div className="mt-6">
+                                    <CustomButton
+                                        variant={isFormValid ? "primary" : "disabled"}
+                                        type="submit"
+                                        onClick={handleVerification}
+                                    >
+                                        Send Verification Code
+                                        <img
+                                            src={
+                                                isFormValid
+                                                    ? "/arrow-right-active.png"
+                                                    : "/arrow-right.svg"
+                                            }
+                                            alt=""
+                                            className="w-4 h-4"
+                                        />
+                                    </CustomButton>
+                                </div>
+
+                                {/* Already have account? Sign In */}
+                                <div className="mt-4 flex justify-center items-center text-sm font-creato leading-4">
+                                    <span className="text-base-lightest-custom">
+                                        Already have an account?
+                                    </span>
+                                    <span className="text-sky-500 text-xl font-extrabold font-creato uppercase leading-7 ml-1">
+                                        Analyzer
+                                    </span>
+                                </div>
                         </div>
 
                         {/* headings */}
