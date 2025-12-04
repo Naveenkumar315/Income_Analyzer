@@ -73,7 +73,7 @@ export default function SignupPage() {
                             <span className="text-gray-800 text-xl font-extrabold font-creato uppercase leading-7">
                                 Income
                             </span>
-                            <span className="text-sky-500 text-xl font-extrabold font-creato uppercase leading-7 ml-1">
+                            <span className="text-sky-500 text-xl font-extrabold font-creato uppercase leading-7">
                                 Analyzer
                             </span>
                         </div>
