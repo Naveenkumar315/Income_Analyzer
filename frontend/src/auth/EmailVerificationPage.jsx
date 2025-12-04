@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Form } from "antd";
 import "antd/dist/reset.css";
 
@@ -6,34 +6,44 @@ import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
 
-const EmailVerificationPage = () => {
+const EmailVerificationPage = ({ onVerify }) => {
     const [loading, setLoading] = useState(false);
     const [isFormValid, setIsFormValid] = useState(false);
     const [form] = Form.useForm();
     const navigate = useNavigate();
 
-    const onFinish = (values) => {
-        setLoading(true);
-        console.log("Verify Code:", values);
-        setTimeout(() => setLoading(false), 1000);
-    };
+    const bgStyle = useMemo(
+        () => ({ backgroundImage: `url('/auth_page_bg.png')` }),
+        []
+    );
 
-    const handleFieldsChange = () => {
+    const onFinish = useCallback(
+        (values) => {
+            setLoading(true);
+            console.log("Verify Code:", values);
+            setTimeout(() => {
+                setLoading(false);
+                if (onVerify) onVerify(values.verificationCode);
+            }, 800);
+        },
+        [onVerify]
+    );
+
+    const handleFieldsChange = useCallback(() => {
         const values = form.getFieldsValue();
         const code = values.verificationCode?.trim() || "";
-        // change length check if you want 4/6 digit OTP validation
         const isValidCode = code.length > 0;
         setIsFormValid(isValidCode);
-    };
+    }, [form]);
 
-    const handleBackToSignup = () => {
+    const handleBackToSignup = useCallback(() => {
         navigate("/signup");
-    };
+    }, [navigate]);
 
     return (
         <div
             className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-no-repeat"
-            style={{ backgroundImage: `url('/auth_page_bg.png')` }}
+            style={bgStyle}
         >
             {/* white curve */}
             <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-[130%] rounded-[50%] bg-slate-100" />
@@ -47,7 +57,6 @@ const EmailVerificationPage = () => {
                 {/* logo */}
                 <div className="mb-4 flex items-center justify-center gap-2 w-full">
                     <img src="/dna-strand.svg" alt="" className="h-6 w-6" />
-
                     <div className="flex items-center">
                         <span className="text-gray-800 text-xl font-extrabold font-creato uppercase leading-7">
                             Income
@@ -79,7 +88,6 @@ const EmailVerificationPage = () => {
                         requiredMark={false}
                         className="mt-5"
                     >
-                        {/* VERIFICATION CODE */}
                         <FormField
                             type="text"
                             label="Verification Code"
@@ -90,11 +98,11 @@ const EmailVerificationPage = () => {
                             ]}
                         />
 
-                        {/* Verify button */}
                         <div className="mt-5">
                             <CustomButton
                                 variant={isFormValid ? "primary" : "disabled"}
                                 type="submit"
+                                disabled={!isFormValid || loading}
                             >
                                 Verify
                                 <img
@@ -109,7 +117,6 @@ const EmailVerificationPage = () => {
                             </CustomButton>
                         </div>
 
-                        {/* Resend Code (outline button) */}
                         <div className="mt-4">
                             <CustomButton
                                 variant="outline"
@@ -120,7 +127,6 @@ const EmailVerificationPage = () => {
                             </CustomButton>
                         </div>
 
-                        {/* Back to Signup link */}
                         <div className="mt-4 text-center">
                             <button
                                 type="button"
@@ -134,7 +140,6 @@ const EmailVerificationPage = () => {
                 </div>
             </div>
 
-            {/* bottom logo */}
             <img
                 src="/loandna_logo.png"
                 alt="Brand Logo"
@@ -142,6 +147,6 @@ const EmailVerificationPage = () => {
             />
         </div>
     );
-}
+};
 
-export default EmailVerificationPage
+export default React.memo(EmailVerificationPage);

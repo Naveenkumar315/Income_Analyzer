@@ -1,24 +1,30 @@
-import { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Checkbox } from "antd";
 import "antd/dist/reset.css";
 
 import CustomButton from "../components/CustomButton";
-import { useNavigate } from "react-router-dom";
 
-const TermsConditionPage = () => {
+const TermsConditionPage = ({ onAccesptTerms }) => {
     const [accepted, setAccepted] = useState(false);
-    const navigate = useNavigate();
 
-    const handleGetStarted = () => {
+    const bgStyle = useMemo(
+        () => ({ backgroundImage: `url('/auth_page_bg.png')` }),
+        []
+    );
+
+    const handleCheckboxChange = useCallback((e) => {
+        setAccepted(e.target.checked);
+    }, []);
+
+    const handleGetStarted = useCallback(() => {
         if (!accepted) return;
-        // TODO: navigate to next screen (company details / dashboard)
-        navigate("/company-details"); // change this route as needed
-    };
+        if (onAccesptTerms) onAccesptTerms();
+    }, [accepted, onAccesptTerms]);
 
     return (
         <div
             className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-no-repeat"
-            style={{ backgroundImage: `url('/auth_page_bg.png')` }}
+            style={bgStyle}
         >
             {/* white curve */}
             <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-[130%] rounded-[50%] bg-slate-100" />
@@ -32,7 +38,6 @@ const TermsConditionPage = () => {
                 {/* logo */}
                 <div className="mb-4 flex items-center justify-center gap-2 w-full">
                     <img src="/dna-strand.svg" alt="" className="h-6 w-6" />
-
                     <div className="flex items-center">
                         <span className="text-gray-800 text-xl font-extrabold font-creato uppercase leading-7">
                             Income
@@ -56,12 +61,8 @@ const TermsConditionPage = () => {
 
                 {/* content */}
                 <div className="mt-6 space-y-6">
-                    {/* Terms & Conditions checkbox */}
                     <div className="flex items-center gap-2 text-sm font-creato leading-4">
-                        <Checkbox
-                            checked={accepted}
-                            onChange={(e) => setAccepted(e.target.checked)}
-                        />
+                        <Checkbox checked={accepted} onChange={handleCheckboxChange} />
                         <span className="text-base-custom">
                             I accept the{" "}
                             <button
@@ -73,7 +74,6 @@ const TermsConditionPage = () => {
                         </span>
                     </div>
 
-                    {/* Get Started button */}
                     <CustomButton
                         variant={accepted ? "primary" : "disabled"}
                         type="button"
@@ -82,9 +82,7 @@ const TermsConditionPage = () => {
                         Get Started
                         <img
                             src={
-                                accepted
-                                    ? "/arrow-right-active.png"
-                                    : "/arrow-right.svg"
+                                accepted ? "/arrow-right-active.png" : "/arrow-right.svg"
                             }
                             alt=""
                             className="w-4 h-4"
@@ -93,7 +91,6 @@ const TermsConditionPage = () => {
                 </div>
             </div>
 
-            {/* bottom logo */}
             <img
                 src="/loandna_logo.png"
                 alt="Brand Logo"
@@ -101,6 +98,6 @@ const TermsConditionPage = () => {
             />
         </div>
     );
-}
+};
 
-export default TermsConditionPage
+export default React.memo(TermsConditionPage);
