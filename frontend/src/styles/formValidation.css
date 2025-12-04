@@ -1,0 +1,29 @@
+/* Form Validation Styling - Reusable across all forms */
+
+/* Red border for invalid/required fields */
+.ant-form-item-has-error .ant-input,
+.ant-form-item-has-error .ant-input-password,
+.ant-form-item-has-error .ant-select .ant-select-selector {
+    border-color: #EF4444 !important;
+}
+
+/* Error message text color */
+.ant-form-item-explain-error {
+    color: #EF4444;
+    font-size: 12px;
+    margin-top: 4px;
+    font-family: 'Creato', sans-serif;
+}
+
+/* Focus state for error fields */
+.ant-form-item-has-error .ant-input:focus,
+.ant-form-item-has-error .ant-input-password:focus,
+.ant-form-item-has-error .ant-select-focused .ant-select-selector {
+    border-color: #EF4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Hide error messages for required fields (show border only) */
+.ant-form-item-has-error .ant-form-item-explain {
+    min-height: 0;
+}

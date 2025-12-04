@@ -10,6 +10,10 @@ export default function FormField({
     options = [],
     required = false,
     className = "",
+    onChange,
+    maxLength,
+    disabled,
+    ...restProps  // Capture any other props
 }) {
     return (
         <Form.Item
@@ -28,6 +32,10 @@ export default function FormField({
             {type === "password" ? (
                 <Input.Password
                     placeholder={placeholder}
+                    onChange={onChange}
+                    maxLength={maxLength}
+                    disabled={disabled}
+                    {...restProps}
                     className="
             h-10 px-3 py-2
             rounded-lg
@@ -43,6 +51,9 @@ export default function FormField({
                 <Select
                     placeholder={placeholder}
                     options={options}
+                    onChange={onChange}
+                    disabled={disabled}
+                    {...restProps}
                     className="
             h-10 rounded-lg
             bg-neutral-subtle
@@ -54,6 +65,10 @@ export default function FormField({
             ) : (
                 <Input
                     placeholder={placeholder}
+                    onChange={onChange}
+                    maxLength={maxLength}
+                    disabled={disabled}
+                    {...restProps}
                     className="
             h-10 px-3 py-2
             rounded-lg
@@ -69,3 +84,4 @@ export default function FormField({
         </Form.Item>
     );
 }
+
