@@ -435,13 +435,13 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
 
                 {/* Fixed footer bar */}
                 <div className="border-t border-[#E5E7EB] px-8 py-4 flex justify-end gap-3 bg-white rounded-b-xl">
-                    <button
+                    {/* <button
                         type="button"
                         onClick={onClose}
                         className="px-8 py-2.5 rounded-lg border border-[#D1D5DB] bg-white text-[#3D4551] text-sm font-creato font-medium hover:bg-gray-50 transition-colors"
                     >
                         Cancel
-                    </button>
+                    </button> */}
                     <button
                         type="submit"
                         onClick={() => form.submit()}
