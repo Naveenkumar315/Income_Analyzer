@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 from langchain_openai import AzureChatOpenAI
 from langgraph.prebuilt import create_react_agent
-from langchain.output_parsers import PydanticOutputParser
+# from langchain.output_parsers import PydanticOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
+
 from langchain.tools import tool
 
 from pydantic import BaseModel
