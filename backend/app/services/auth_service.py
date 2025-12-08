@@ -86,3 +86,15 @@ async def signup_user(signup_data: SignupRequest):
         "type": signup_data.type,
         "role": "user"
     }
+
+
+async def check_email_exists(email: str):
+    """
+    Check if an email already exists in the users collection.
+    Returns exists status and email.
+    """
+    existing = await db["users"].find_one({"email": email})
+    return {
+        "exists": existing is not None,
+        "email": email
+    }
