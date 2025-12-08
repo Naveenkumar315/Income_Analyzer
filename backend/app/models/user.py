@@ -28,6 +28,7 @@ class Token(BaseModel):
     token_type: str = "bearer"
     username: Optional[str] = None
     email: Optional[EmailStr] = None
+    isApproved: Optional[bool] = None
 
 
 class SendCodeRequest(BaseModel):

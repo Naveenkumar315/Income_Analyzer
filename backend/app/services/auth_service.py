@@ -36,7 +36,13 @@ async def login_user(user: UserLogin):
 
     token = create_access_token(
         {"sub": str(db_user["_id"]), "email": db_user["email"]})
-    return {"access_token": token, "token_type": "bearer", "username": db_user.get("username", ""), "email": db_user["email"]}
+    return {
+        "access_token": token, 
+        "token_type": "bearer", 
+        "username": db_user.get("username", ""), 
+        "email": db_user["email"],
+        "isApproved": db_user.get("isApproved", False)
+    }
 
 
 async def signup_user(signup_data: SignupRequest):
