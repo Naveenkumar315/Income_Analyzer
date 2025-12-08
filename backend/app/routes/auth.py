@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, BackgroundTasks
-from app.models.user import UserCreate, UserLogin, Token, SendCodeRequest, VerifyCodeRequest
-from app.services.auth_service import register_user, login_user
+from app.models.user import UserCreate, UserLogin, Token, SendCodeRequest, VerifyCodeRequest, SignupRequest
+from app.services.auth_service import register_user, login_user, signup_user
 from app.services.send_code import send_verification_code, verify_otp_code
 from app.utils.deps import get_current_user
 
@@ -43,3 +43,12 @@ async def send_code(user: SendCodeRequest, background_tasks: BackgroundTasks):
 async def verify_otp_code_endpoint(user: VerifyCodeRequest):
     result = await verify_otp_code(user)
     return result
+
+
+@router.post('/signup')
+async def signup(signup_data: SignupRequest):
+    """
+    Complete user signup with company or individual details.
+    Creates user with temporary password, role, and type.
+    """
+    return await signup_user(signup_data)

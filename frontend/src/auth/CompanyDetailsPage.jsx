@@ -5,11 +5,13 @@ import { UploadOutlined, DeleteOutlined, FileTextOutlined } from "@ant-design/ic
 import { useNavigate } from "react-router-dom";
 import "antd/dist/reset.css";
 import "../styles/formValidation.css"; // Import reusable form validation styles
+import { toast } from "react-toastify";
 
 import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { statesList } from "../constants/states";
 import { debounce } from "../utils/debounce";
+import authApi from "../api/authApi";
 
 const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
     const [activeTab, setActiveTab] = useState("company"); // "company" | "individual"
@@ -17,6 +19,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
     const navigate = useNavigate();
     const [fileList, setFileList] = useState([]);
     const [isLoadingZip, setIsLoadingZip] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const bgStyle = useMemo(
         () => ({ backgroundImage: `url('/auth_page_bg.png')` }),
@@ -25,13 +28,64 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
 
 
     const handleFinish = useCallback(
-        (values) => {
-            console.log("Company / Individual details:", { tab: activeTab, values });
-            if (onSubmit) onSubmit({ tab: activeTab, values });
-            // Close the modal after successful submission
-            if (onClose) onClose();
+        async (values) => {
+            try {
+                setLoading(true);
+                console.log("Company / Individual details:", { tab: activeTab, values });
+
+                // Prepare signup data based on type
+                const signupData = {
+                    email: userEmail,
+                    type: activeTab, // "company" or "individual"
+                };
+
+                if (activeTab === "company") {
+                    // Structure company data
+                    signupData.companyInfo = {
+                        companyName: values.companyName,
+                        companySize: values.companySize,
+                        companyPhone: values.companyPhone,
+                        companyEmail: values.companyEmail,
+                    };
+                    signupData.companyAddress = {
+                        streetAddress: values.streetAddress,
+                        zipCode: values.zipCode,
+                        city: values.city,
+                        state: values.state,
+                    };
+                    signupData.primaryContact = {
+                        firstName: values.primaryFirstName,
+                        lastName: values.primaryLastName,
+                        phone: values.primaryPhone,
+                        email: values.primaryEmail,
+                    };
+                } else if (activeTab === "individual") {
+                    // Structure individual data
+                    signupData.individualInfo = {
+                        firstName: values.firstName,
+                        lastName: values.lastName,
+                        phone: values.phone,
+                        email: values.email,
+                    };
+                }
+
+                // Call signup API
+                const response = await authApi.signup(signupData);
+                console.log("Signup successful:", response);
+
+                toast.success("Registration successful!");
+
+                // Close the modal and navigate to success page
+                if (onSubmit) onSubmit({ tab: activeTab, values });
+                if (onClose) onClose();
+            } catch (error) {
+                console.error("Signup error:", error);
+                toast.error(error.response?.data?.detail || "Registration failed. Please try again.");
+            } finally {
+                setLoading(false);
+            }
         },
-        [activeTab, onSubmit, onClose]
+        [activeTab, userEmail, onSubmit, onClose]
     );
 
     // Handle tab switching - clear form when switching tabs
@@ -455,9 +509,10 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                         style={{ color: 'white' }}
                         type="submit"
                         onClick={() => form.submit()}
-                        className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors"
+                        disabled={loading}
+                        className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Submit
+                        {loading ? "Submitting..." : "Submit"}
                     </button>
                 </div>
             </div>
