@@ -6,11 +6,10 @@ import os
 
 load_dotenv()
 
-EMAIL_USER = ""
-EMAIL_PASS = ""
-
-SMTP_SERVER = "smtp.office365.com"
-SMTP_PORT = 587
+EMAIL_USER = os.environ.get('EMAIL_USER')
+EMAIL_PASS = os.environ.get('EMAIL_PASS')
+SMTP_SERVER = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
 
 
 def send_email(to_email, subject, html_body):
@@ -36,6 +35,3 @@ def send_email(to_email, subject, html_body):
 
     except Exception as e:
         print("Error sending email:", str(e))
-
-
-send_email('NMurugan@loanDNA.com', 'Hello', 'Hello')

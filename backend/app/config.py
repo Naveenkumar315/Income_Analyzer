@@ -9,7 +9,13 @@ class Settings(BaseSettings):
     jwt_algorithm: str
     jwt_expire_minutes: int
 
+    email_user: str
+    email_pass: str
+    smtp_server: str = "smtp.office365.com"
+    smtp_port: int = 587
+
     class Config:
         env_file = ".env"
+
 
 settings = Settings()

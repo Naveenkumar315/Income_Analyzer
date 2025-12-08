@@ -1,7 +1,6 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, startTransition } from "react";
 import { Form } from "antd";
 import "antd/dist/reset.css";
-
 import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +8,9 @@ import EmailVerificationPage from "./EmailVerificationPage";
 import TermsConditionPage from "./TermsConditionPage";
 import SignupRequestSubmittedPage from "./SignupRequestSubmittedPage";
 import CompanyDetailsPage from "./CompanyDetailsPage";
+import authApi from "../api/authApi";
+import { toast } from "react-toastify";
+
 
 export const SIGNUP_STEPS = Object.freeze({
     EMAIL: "email",
@@ -36,18 +38,19 @@ function SignupPage() {
             setLoading(true);
             console.log("Sign Up:", values);
             // Store the email for use in verification page
-            setUserEmail(values.email);
+            // setUserEmail(values.email);
             // TODO: call API here
             setLoading(false);
-            setStep(SIGNUP_STEPS.VERIFICATION_CODE);
+            // setStep(SIGNUP_STEPS.VERIFICATION_CODE);
         },
         []
     );
 
-    const handleFieldsChange = useCallback(() => {
+    const handleFieldsChange = useCallback(async () => {
         const values = form.getFieldsValue();
         const email = values.email?.trim() || "";
         const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        setUserEmail(email)
         setIsFormValid(isValidEmail);
     }, [form]);
 
@@ -56,8 +59,41 @@ function SignupPage() {
     }, [navigate]);
 
     const handleVerify = useCallback(() => {
-        setStep(SIGNUP_STEPS.TERMS_CONDITION);
+        // setStep(SIGNUP_STEPS.TERMS_CONDITION);
     }, []);
+
+    const handleSendEmail = useCallback(async () => {
+        if (!userEmail) return;
+
+        try {
+            setLoading(true);
+            // Show verification screen immediately (optimistic)
+            startTransition(() => setStep(SIGNUP_STEPS.VERIFICATION_CODE));
+
+            // Fire-and-forget the API call so the UI is instant.
+            // Still handle success/error to show toasts, but don't block UI.
+            authApi.sendVerificationCode(userEmail)
+                .then(res => {
+                    console.log("OTP queued/sent:", res);
+                    toast.success("OTP sent successfully!");
+                    // optionally show success toast if you want
+                })
+                .catch(err => {
+                    console.error("Failed to send verification code:", err);
+                    // show an error toast and optionally move back to signup or let user retry
+                    // e.g. showToast("Failed to send code. Please retry.");
+                })
+                .finally(() => {
+                    // stop any spinner if you used one for the send
+                });
+
+        } catch (err) {
+            console.error("Unexpected error:", err);
+        } finally {
+            // Keep loading off because we already moved on
+            setLoading(false);
+        }
+    }, [userEmail, setStep]);
 
     const handleTermsCondition = useCallback(() => {
         setStep(SIGNUP_STEPS.COMPANY_DETAILS);
@@ -82,7 +118,7 @@ function SignupPage() {
                     <div className="pointer-events-none absolute -right-32 top-20 h-72 w-72 rounded-full bg-white/15" />
 
                     {/* card */}
-                    <div className="relative z-10 w-[360px] rounded-xl bg-white px-8 py-8 shadow-md">
+                    <div className="relative z-10 w-[384px]  rounded-xl bg-white px-8 py-8 shadow-md">
                         {/* logo */}
                         <div className="mb-4 flex items-center justify-center gap-2 w-full">
                             <img src="/dna-strand.svg" alt="" className="h-6 w-6" />
@@ -132,8 +168,9 @@ function SignupPage() {
                                 <div className="mt-6">
                                     <CustomButton
                                         variant={isFormValid ? "primary" : "disabled"}
-                                        type="submit"
+                                        type="button"
                                         disabled={!isFormValid || loading}
+                                        onClick={handleSendEmail}
                                     >
                                         Send Verification Code
                                         <img
@@ -173,7 +210,7 @@ function SignupPage() {
             )}
 
             {step === SIGNUP_STEPS.VERIFICATION_CODE && (
-                <EmailVerificationPage email={userEmail} onVerify={handleVerify} />
+                <EmailVerificationPage email={userEmail} onVerify={handleVerify} setStep={setStep} SIGNUP_STEPS={SIGNUP_STEPS} />
             )}
 
             {step === SIGNUP_STEPS.TERMS_CONDITION && (
