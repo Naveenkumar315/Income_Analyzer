@@ -90,11 +90,11 @@ function SignupPage() {
             setLoading(true);
 
             // TESTING MODE: Skip email verification and go directly to terms & conditions
-            console.log("⚠️ EMAIL VERIFICATION DISABLED FOR TESTING");
-            toast.info("Skipping email verification for testing");
-            startTransition(() => setStep(SIGNUP_STEPS.TERMS_CONDITION));
+            // console.log("⚠️ EMAIL VERIFICATION DISABLED FOR TESTING");
+            // toast.info("Skipping email verification for testing");
+            // startTransition(() => setStep(SIGNUP_STEPS.TERMS_CONDITION));
 
-            /* ORIGINAL CODE - Uncomment to re-enable email verification
+            //ORIGINAL CODE - Uncomment to re-enable email verification
             // Show verification screen immediately (optimistic)
             startTransition(() => setStep(SIGNUP_STEPS.VERIFICATION_CODE));
 
@@ -114,8 +114,6 @@ function SignupPage() {
                 .finally(() => {
                     // stop any spinner if you used one for the send
                 });
-            */
-
         } catch (err) {
             console.error("Unexpected error:", err);
         } finally {

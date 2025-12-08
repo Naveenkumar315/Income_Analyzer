@@ -61,6 +61,7 @@ async def signup_user(signup_data: SignupRequest):
         "password": hashed_password,
         "role": "user",
         "type": signup_data.type,
+        "isApproved": False,
         "created_at": now,
         "updated_at": now,
     }
