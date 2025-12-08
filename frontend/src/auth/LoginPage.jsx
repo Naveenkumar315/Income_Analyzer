@@ -163,8 +163,12 @@ export default function LoginPage() {
                         ]}
                     />
 
-
-
+                    {/* Email validation feedback */}
+                    {!checkingEmail && form.getFieldValue('email') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.getFieldValue('email')) && !emailExists && (
+                        <div className="text-red-500 text-xs mt-[-16px] mb-4">
+                            Email is not registered
+                        </div>
+                    )}
 
                     {/* PASSWORD */}
                     <FormField
