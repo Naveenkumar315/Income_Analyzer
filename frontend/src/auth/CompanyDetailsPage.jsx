@@ -11,7 +11,7 @@ import FormField from "../components/FormField";
 import { statesList } from "../constants/states";
 import { debounce } from "../utils/debounce";
 
-const CompanyDetailsPage = ({ onClose, onSubmit }) => {
+const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
     const [activeTab, setActiveTab] = useState("company"); // "company" | "individual"
     const [form] = Form.useForm();
     const navigate = useNavigate();
@@ -195,7 +195,9 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
                         onFinish={handleFinish}
                         requiredMark={false}
                         initialValues={{
-                            companySize: "1-10"
+                            companySize: "1-10",
+                            primaryEmail: userEmail || "",
+                            email: userEmail || ""
                         }}
                     >
                         {activeTab === "company" ? (
@@ -317,6 +319,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
                                         label="Email"
                                         name="primaryEmail"
                                         placeholder="Enter Email"
+                                        disabled={true}
                                         rules={[
                                             { required: true },
                                             { type: "email", message: "Invalid email format" }
@@ -427,6 +430,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
                                         label="Email"
                                         name="email"
                                         placeholder="Enter Email"
+                                        disabled={true}
                                         rules={[
                                             { required: true },
                                             { type: "email", message: "Invalid email format" }
