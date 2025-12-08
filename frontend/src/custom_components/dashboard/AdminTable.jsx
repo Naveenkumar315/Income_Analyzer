@@ -4,29 +4,114 @@ import {
     SearchOutlined,
 } from "@ant-design/icons";
 
-// Sample rows
-const makeRow = (i) => ({
-    id: i,
-    name: `Company ${i}`,
-    email: `company${i}@example.com`,
-    phone: `(800) 555-${String(1000 + i).slice(1)}`,
-    address: `${i} Main St, Springfield`,
-    submittedOn: `2025-11-${String((i % 28) + 1).padStart(2, "0")}`,
-    approvedOn: i % 3 === 0 ? `2025-11-${String((i % 28) + 1).padStart(2, "0")}` : null,
-    companyType: i % 2 === 0 ? "Broker Company" : "Broker",
-    companySize: i % 10,
-    active: i % 4 === 0,
-    action: i % 5 === 0 ? "Approved" : null
-});
-const SAMPLE = Array.from({ length: 60 }).map((_, i) => makeRow(i + 1));
+const API_BASE_URL = "http://localhost:8080";
 
-export default function AdminTable({ data = SAMPLE }) {
+export default function AdminTable() {
     const gridRef = useRef(null);
     const [searchText, setSearchText] = useState("");
     const [gridApi, setGridApi] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [editingRows, setEditingRows] = useState({}); // Track which rows are in edit mode
+    const [statusValues, setStatusValues] = useState({}); // Track status values for each row
+
+    // Fetch users from API
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${API_BASE_URL}/users/admin-table`);
+            const data = await response.json();
+
+            if (data.users) {
+                setUsers(data.users);
+                // Initialize status values
+                const initialStatuses = {};
+                data.users.forEach(user => {
+                    initialStatuses[user._id] = user.status || "pending";
+                });
+                setStatusValues(initialStatuses);
+            }
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditClick = (userId) => {
+        setEditingRows(prev => ({ ...prev, [userId]: true }));
+    };
+
+    const handleCloseClick = (userId, originalStatus) => {
+        setEditingRows(prev => {
+            const newState = { ...prev };
+            delete newState[userId];
+            return newState;
+        });
+        // Revert to original status
+        setStatusValues(prev => ({ ...prev, [userId]: originalStatus }));
+    };
+
+    const handleUpdateClick = async (userId) => {
+        try {
+            const newStatus = statusValues[userId];
+            const response = await fetch(`${API_BASE_URL}/users/${userId}/status`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (response.ok) {
+                console.log("Status updated successfully");
+                // Exit edit mode
+                setEditingRows(prev => {
+                    const newState = { ...prev };
+                    delete newState[userId];
+                    return newState;
+                });
+                // Refresh data
+                await fetchUsers();
+            } else {
+                console.error("Failed to update status");
+            }
+        } catch (error) {
+            console.error("Error updating status:", error);
+        }
+    };
+
+    const handleDeleteClick = async (userId) => {
+        if (!window.confirm("Are you sure you want to delete this user?")) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                method: "DELETE",
+            });
+
+            if (response.ok) {
+                console.log("User deleted successfully");
+                await fetchUsers();
+            } else {
+                console.error("Failed to delete user");
+            }
+        } catch (error) {
+            console.error("Error deleting user:", error);
+        }
+    };
+
+    const handleStatusChange = (userId, newStatus) => {
+        setStatusValues(prev => ({ ...prev, [userId]: newStatus }));
+    };
 
     useEffect(() => {
         // Load AG Grid CSS
@@ -64,13 +149,6 @@ export default function AdminTable({ data = SAMPLE }) {
     const columnDefs = useMemo(
         () => [
             {
-                field: "name",
-                headerName: "Name",
-                width: 200,
-                filter: true,
-                sortable: true
-            },
-            {
                 field: "email",
                 headerName: "Email",
                 width: 250,
@@ -81,105 +159,178 @@ export default function AdminTable({ data = SAMPLE }) {
                 sortable: true
             },
             {
-                field: "phone",
-                headerName: "Phone",
-                width: 140,
-                filter: true,
-                sortable: true
-            },
-            {
-                field: "address",
-                headerName: "Address",
-                width: 240,
-                filter: true,
-                sortable: true
-            },
-            {
-                field: "submittedOn",
-                headerName: "Submitted On",
-                width: 160,
-                filter: true,
-                sortable: true
-            },
-            {
-                field: "approvedOn",
-                headerName: "Approved / Rejected On",
-                width: 200,
+                field: "type",
+                headerName: "Type",
+                width: 150,
                 filter: true,
                 sortable: true,
                 valueFormatter: (params) => params.value || "-"
             },
             {
-                field: "companyType",
-                headerName: "Company Type",
+                field: "companyInfo.companyName",
+                headerName: "Company Name",
+                width: 200,
+                filter: true,
+                sortable: true,
+                valueGetter: (params) => {
+                    return params.data.companyInfo?.companyName ||
+                        (params.data.individualInfo ?
+                            `${params.data.individualInfo.firstName} ${params.data.individualInfo.lastName}` :
+                            "-");
+                }
+            },
+            {
+                field: "companyInfo.companyPhone",
+                headerName: "Phone",
                 width: 150,
                 filter: true,
-                sortable: true
-            },
-            {
-                field: "companySize",
-                headerName: "Company Size",
-                width: 130,
-                filter: true,
                 sortable: true,
-                cellStyle: { textAlign: "center" }
+                valueGetter: (params) => {
+                    return params.data.companyInfo?.companyPhone ||
+                        params.data.individualInfo?.phone ||
+                        "-";
+                }
             },
             {
-                field: "active",
-                headerName: "Active",
-                width: 110,
-                filter: true,
-                sortable: true,
-                cellStyle: { textAlign: "center" },
-                valueFormatter: (params) => params.value ? "Yes" : "No"
-            },
-            // === UPDATED ACTION COLUMN ===
-            {
-                field: "action",
-                headerName: "Action",
+                field: "created_at",
+                headerName: "Submitted On",
                 width: 180,
+                filter: true,
+                sortable: true,
+                valueFormatter: (params) => {
+                    if (!params.value) return "-";
+                    const date = new Date(params.value);
+                    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+                }
+            },
+            // === STATUS COLUMN WITH DROPDOWN ===
+            {
+                field: "status",
+                headerName: "Status",
+                width: 350,
                 pinned: "right",
                 cellRenderer: (params) => {
-                    if (params.value) {
-                        return `<div style="color: #15803d; font-weight: 600; text-align: center; line-height: 48px;">${params.value}</div>`;
-                    }
+                    const userId = params.data._id;
+                    const currentStatus = statusValues[userId] || params.value || "pending";
+                    const isEditing = editingRows[userId];
+                    const originalStatus = params.value || "pending";
 
                     return `
-                        <div style="display: flex; gap: 12px; justify-content: center; align-items: center; height: 100%;">
-                            <a href="#" class="approve-link" data-id="${params.data.id}"
-                               style="color: #15803d; font-weight: 600; text-decoration: none; cursor: pointer;">
-                                Approve
-                            </a>
+                        <div style="display: flex; gap: 8px; align-items: center; height: 100%; padding: 4px 0;">
+                            <select 
+                                class="status-dropdown" 
+                                data-user-id="${userId}"
+                                ${!isEditing ? 'disabled' : ''}
+                                style="
+                                    padding: 4px 8px;
+                                    border: 1px solid ${!isEditing ? '#e5e7eb' : '#d1d5db'};
+                                    border-radius: 4px;
+                                    background: ${!isEditing ? '#f9fafb' : 'white'};
+                                    cursor: ${!isEditing ? 'not-allowed' : 'pointer'};
+                                    font-size: 14px;
+                                    color: ${!isEditing ? '#9ca3af' : '#374151'};
+                                    flex: 1;
+                                    max-width: 120px;
+                                "
+                            >
+                                <option value="pending" ${currentStatus === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="active" ${currentStatus === 'active' ? 'selected' : ''}>Active</option>
+                                <option value="reject" ${currentStatus === 'reject' ? 'selected' : ''}>Reject</option>
+                            </select>
 
-                            <span style="color: #9ca3af;">|</span>
+                            ${!isEditing ? `
+                                <button 
+                                    class="edit-btn" 
+                                    data-user-id="${userId}"
+                                    style="
+                                        padding: 4px 12px;
+                                        background: #3b82f6;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 13px;
+                                        font-weight: 500;
+                                    "
+                                >
+                                    Edit
+                                </button>
+                            ` : `
+                                <button 
+                                    class="update-btn" 
+                                    data-user-id="${userId}"
+                                    style="
+                                        padding: 4px 12px;
+                                        background: #10b981;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 13px;
+                                        font-weight: 500;
+                                    "
+                                >
+                                    Update
+                                </button>
+                                <button 
+                                    class="close-btn" 
+                                    data-user-id="${userId}"
+                                    data-original-status="${originalStatus}"
+                                    style="
+                                        padding: 4px 12px;
+                                        background: #6b7280;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 13px;
+                                        font-weight: 500;
+                                    "
+                                >
+                                    Close
+                                </button>
+                            `}
 
-                            <a href="#" class="reject-link" data-id="${params.data.id}"
-                               style="color: #b91c1c; font-weight: 600; text-decoration: none; cursor: pointer;">
-                                Reject
-                            </a>
+                            <button 
+                                class="delete-btn" 
+                                data-user-id="${userId}"
+                                style="
+                                    padding: 4px 12px;
+                                    background: #ef4444;
+                                    color: white;
+                                    border: none;
+                                    border-radius: 4px;
+                                    cursor: pointer;
+                                    font-size: 13px;
+                                    font-weight: 500;
+                                "
+                            >
+                                Delete
+                            </button>
                         </div>
                     `;
                 },
                 cellStyle: {
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center"
+                    justifyContent: "flex-start",
+                    padding: "0 8px"
                 }
             }
         ],
-        []
+        [editingRows, statusValues]
     );
 
     const filteredData = useMemo(() => {
-        if (!searchText) return data;
+        if (!searchText) return users;
 
         const search = searchText.toLowerCase();
-        return data.filter(row =>
+        return users.filter(row =>
             Object.values(row).some(val =>
                 String(val).toLowerCase().includes(search)
             )
         );
-    }, [data, searchText]);
+    }, [users, searchText]);
 
     useEffect(() => {
         if (isLoaded && gridRef.current && window.agGrid && !gridApi) {
@@ -209,21 +360,44 @@ export default function AdminTable({ data = SAMPLE }) {
                 onCellClicked: (event) => {
                     const target = event.event.target;
 
-                    // Approve link clicked
-                    if (target.classList && target.classList.contains("approve-link")) {
-                        const id = target.dataset.id;
-                        console.log("Approve", id);
+                    // Edit button clicked
+                    if (target.classList && target.classList.contains("edit-btn")) {
+                        const userId = target.dataset.userId;
+                        handleEditClick(userId);
                         event.event.preventDefault();
-                        // TODO: call API or update state to mark as approved
                         return;
                     }
 
-                    // Reject link clicked
-                    if (target.classList && target.classList.contains("reject-link")) {
-                        const id = target.dataset.id;
-                        console.log("Reject", id);
+                    // Update button clicked
+                    if (target.classList && target.classList.contains("update-btn")) {
+                        const userId = target.dataset.userId;
+                        handleUpdateClick(userId);
                         event.event.preventDefault();
-                        // TODO: call API or update state to mark as rejected
+                        return;
+                    }
+
+                    // Close button clicked
+                    if (target.classList && target.classList.contains("close-btn")) {
+                        const userId = target.dataset.userId;
+                        const originalStatus = target.dataset.originalStatus;
+                        handleCloseClick(userId, originalStatus);
+                        event.event.preventDefault();
+                        return;
+                    }
+
+                    // Delete button clicked
+                    if (target.classList && target.classList.contains("delete-btn")) {
+                        const userId = target.dataset.userId;
+                        handleDeleteClick(userId);
+                        event.event.preventDefault();
+                        return;
+                    }
+
+                    // Status dropdown changed
+                    if (target.classList && target.classList.contains("status-dropdown")) {
+                        const userId = target.dataset.userId;
+                        const newStatus = target.value;
+                        handleStatusChange(userId, newStatus);
                         return;
                     }
                 }
@@ -245,10 +419,19 @@ export default function AdminTable({ data = SAMPLE }) {
         }
     }, [filteredData, gridApi]);
 
-    if (!isLoaded) {
+    // Refresh grid when editing state or status values change
+    useEffect(() => {
+        if (gridApi) {
+            gridApi.refreshCells({ force: true });
+        }
+    }, [editingRows, statusValues, gridApi]);
+
+    if (!isLoaded || loading) {
         return (
             <div style={{ padding: 32, background: "#f8fafc", minHeight: "100vh" }}>
-                <div style={{ textAlign: 'center', padding: 40 }}>Loading AG Grid...</div>
+                <div style={{ textAlign: 'center', padding: 40 }}>
+                    {loading ? "Loading users..." : "Loading AG Grid..."}
+                </div>
             </div>
         );
     }
@@ -256,7 +439,7 @@ export default function AdminTable({ data = SAMPLE }) {
     return (
         <div style={{ padding: 32, background: "#f8fafc", minHeight: "100vh" }}>
             <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0, marginBottom: 24 }}>
-                Heading
+                Admin Table
             </h2>
 
             {/* Search Box */}

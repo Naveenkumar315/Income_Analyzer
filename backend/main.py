@@ -9,7 +9,7 @@ import yaml
 import uvicorn
 from bson import ObjectId
 
-from app.routes import auth, uploaded_data
+from app.routes import auth, uploaded_data, user
 from app.utils.borrower_cleanup_service import clean_borrower_documents_from_dict
 from app.db import db
 from app.services.audit_service import log_action  # <-- audit service
@@ -48,6 +48,7 @@ app = FastAPI(title="Income Analyzer API", version="1.0.0")
 # Routers
 app.include_router(auth.router)
 app.include_router(uploaded_data.router)
+app.include_router(user.router)
 
 # CORS
 origins = ["*"]
