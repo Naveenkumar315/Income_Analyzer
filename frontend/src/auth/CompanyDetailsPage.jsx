@@ -135,6 +135,13 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
         }
     };
 
+    // FormSubmit
+    const handleFormSumbit = () => {
+        debugger
+        console.log(form)
+
+    }
+
     return (
         <div
             className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-no-repeat"
@@ -450,7 +457,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit }) => {
                     <button
                         style={{ color: 'white' }}
                         type="submit"
-                        onClick={() => form.submit()}
+                        onClick={handleFormSumbit}
                         className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors"
                     >
                         Submit

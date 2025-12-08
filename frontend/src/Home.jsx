@@ -1,5 +1,6 @@
 import React from "react";
 import Header from "./components/Header";
+import AdminTable from "./custom_components/dashboard/AdminTable";
 
 const Home = () => {
     return (
@@ -7,7 +8,8 @@ const Home = () => {
             <Header logoSrc="/path/to/your/logo.png" />
             <main className="p-6">
                 {/* rest of page */}
-                <h1 className="text-2xl font-semibold">Hello</h1>
+                <h1 className="text-2xl font-semibold">Dashboard</h1>
+                <AdminTable />
             </main>
         </div>
     );

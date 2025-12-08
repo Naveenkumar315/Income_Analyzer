@@ -118,3 +118,17 @@
         outline-color: #FFFFFF;
     }
 }
+
+/* Reduce MUI Table Header Height */
+/* .MuiTableCell-head {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    line-height: 18px !important;
+}
+
+.MuiTableCell-body {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+} */
