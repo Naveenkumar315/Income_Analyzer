@@ -27,6 +27,8 @@ function SignupPage() {
     const navigate = useNavigate();
     const [step, setStep] = useState(SIGNUP_STEPS.EMAIL);
     const [userEmail, setUserEmail] = useState(""); // Store user's email
+    const [emailExists, setEmailExists] = useState(false); // Track if email already exists
+    const [checkingEmail, setCheckingEmail] = useState(false); // Track email check loading state
 
     const bgStyle = useMemo(
         () => ({ backgroundImage: `url('/auth_page_bg.png')` }),
@@ -50,8 +52,27 @@ function SignupPage() {
         const values = form.getFieldsValue();
         const email = values.email?.trim() || "";
         const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        setUserEmail(email)
-        setIsFormValid(isValidEmail);
+
+        setUserEmail(email);
+
+        if (isValidEmail) {
+            setCheckingEmail(true);
+            try {
+                const response = await authApi.checkEmailExists(email);
+                // Note: axiosClient already unwraps response.data, so we access response.exists directly
+                setEmailExists(response.exists);
+                setIsFormValid(!response.exists);
+            } catch (error) {
+                console.error("Error checking email:", error);
+                setEmailExists(false);
+                setIsFormValid(false);
+            } finally {
+                setCheckingEmail(false);
+            }
+        } else {
+            setEmailExists(false);
+            setIsFormValid(false);
+        }
     }, [form]);
 
     const handleNavigate = useCallback(() => {
@@ -67,6 +88,13 @@ function SignupPage() {
 
         try {
             setLoading(true);
+
+            // TESTING MODE: Skip email verification and go directly to terms & conditions
+            // console.log("⚠️ EMAIL VERIFICATION DISABLED FOR TESTING");
+            // toast.info("Skipping email verification for testing");
+            // startTransition(() => setStep(SIGNUP_STEPS.TERMS_CONDITION));
+
+            //ORIGINAL CODE - Uncomment to re-enable email verification
             // Show verification screen immediately (optimistic)
             startTransition(() => setStep(SIGNUP_STEPS.VERIFICATION_CODE));
 
@@ -86,7 +114,6 @@ function SignupPage() {
                 .finally(() => {
                     // stop any spinner if you used one for the send
                 });
-
         } catch (err) {
             console.error("Unexpected error:", err);
         } finally {
@@ -165,11 +192,23 @@ function SignupPage() {
                                     ]}
                                 />
 
+                                {emailExists && (
+                                    <div className="text-red-500 text-sm mt-1 -mt-4 mb-2">
+                                        This email is already registered.
+                                    </div>
+                                )}
+
+                                {checkingEmail && (
+                                    <div className="text-gray-500 text-sm mt-1 -mt-4 mb-2">
+                                        Checking email availability...
+                                    </div>
+                                )}
+
                                 <div className="mt-6">
                                     <CustomButton
                                         variant={isFormValid ? "primary" : "disabled"}
                                         type="button"
-                                        disabled={!isFormValid || loading}
+                                        disabled={!isFormValid || emailExists || checkingEmail || loading}
                                         onClick={handleSendEmail}
                                     >
                                         Send Verification Code
@@ -221,6 +260,7 @@ function SignupPage() {
                 <CompanyDetailsPage
                     onClose={() => setStep(SIGNUP_STEPS.SIGNUP_REQUEST)}
                     onSubmit={handleSubmit}
+                    userEmail={userEmail}
                 />
             )}
 

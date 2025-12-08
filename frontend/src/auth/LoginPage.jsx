@@ -1,34 +1,104 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Form, Input } from "antd";
 import "antd/dist/reset.css";
 import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
+import authApi from "../api/authApi";
+import { toast } from "react-toastify";
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [isFormValid, setIsFormValid] = useState(false);
     const [form] = Form.useForm();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const [emailExists, setEmailExists] = useState(false);
+    const [checkingEmail, setCheckingEmail] = useState(false);
+    const debounceTimerRef = useRef(null);
 
-    const onFinish = (values) => {
+    const onFinish = useCallback(async (values) => {
+        debugger
         setLoading(true);
-        console.log("Login:", values);
-        setTimeout(() => setLoading(false), 1000);
-    };
+        try {
+            // Call login API
+            const response = await authApi.login({
+                email: values.email,
+                password: values.password
+            });
 
-    const handleFieldsChange = () => {
+            // Check if user is approved
+            if (response.isApproved === false) {
+                toast.error("Admin has not approved your account yet. Please wait for approval.");
+                setLoading(false);
+                return;
+            }
+
+            // If approved, redirect to home
+            toast.success("Login successful!");
+            navigate("/home");
+        } catch (error) {
+            console.error("Login error:", error);
+            const errorMessage = error.response?.data?.detail || "Invalid email or password";
+            toast.error(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    }, [navigate]);
+
+    const handleFieldsChange = useCallback(() => {
         const values = form.getFieldsValue();
-        const valid =
-            values.username?.trim()?.length > 0 &&
-            values.password?.trim()?.length > 0;
+        const email = values.email?.trim() || "";
+        const password = values.password?.trim() || "";
+        const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-        setIsFormValid(valid);
-    };
+        // Clear existing debounce timer
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
 
-    const handleNavigate = () => {
-        navigate('/signup')
-    }
+        // If email is valid, debounce the API call
+        if (isValidEmail) {
+            setCheckingEmail(true);
+            debounceTimerRef.current = setTimeout(async () => {
+                try {
+                    const response = await authApi.checkEmailExists(email);
+                    setEmailExists(response.exists);
+                    // Form is valid only if email exists and password is entered
+                    setIsFormValid(response.exists && password.length > 0);
+                } catch (error) {
+                    console.error("Error checking email:", error);
+                    setEmailExists(false);
+                    setIsFormValid(false);
+                } finally {
+                    setCheckingEmail(false);
+                }
+            }, 500); // 500ms debounce delay
+        } else {
+            setIsFormValid(false);
+            setEmailExists(false);
+            setCheckingEmail(false);
+        }
+
+        // Immediate validation for password changes when email is already validated
+        if (isValidEmail && emailExists && password.length > 0) {
+            setIsFormValid(true);
+        } else if (isValidEmail && emailExists && password.length === 0) {
+            setIsFormValid(false);
+        }
+    }, [form, emailExists]);
+
+    // Cleanup debounce timer on unmount
+    useEffect(() => {
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, []);
+
+    const handleNavigate = useCallback(() => {
+        navigate('/signup');
+    }, [navigate]);
 
     return (
         <div
@@ -81,15 +151,24 @@ export default function LoginPage() {
                     requiredMark={false}
                     className="mt-5"
                 >
-                    {/* USERNAME */}
+                    {/* EMAIL */}
                     <FormField
                         type="text"
-                        label="Username"
-                        name="username"
-                        placeholder="Enter Username"
-                        rules={[{ required: true, message: "Please enter username" }]}
+                        label="Email Address"
+                        name="email"
+                        placeholder="Enter your email"
+                        rules={[
+                            { required: true, message: "Please enter your email" },
+                            { type: "email", message: "Please enter a valid email" },
+                        ]}
                     />
 
+                    {/* Email validation feedback */}
+                    {!checkingEmail && form.getFieldValue('email') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.getFieldValue('email')) && !emailExists && (
+                        <div className="text-red-500 text-xs mt-[-16px] mb-4">
+                            Email is not registered
+                        </div>
+                    )}
 
                     {/* PASSWORD */}
                     <FormField
@@ -112,8 +191,9 @@ export default function LoginPage() {
                         variant={isFormValid ? "primary" : "disabled"}
                         type="submit"
                         className="mt-0"
+                        disabled={!isFormValid || loading || checkingEmail}
                     >
-                        Login
+                        {loading ? "Logging in..." : "Login"}
                         <img
                             src={
                                 isFormValid
@@ -128,7 +208,7 @@ export default function LoginPage() {
                     {/* Sign Up */}
                     <div className="mt-4 flex justify-center items-center text-sm font-creato leading-4">
                         <span className="text-base-lightest-custom">
-                            Don’t have an account?
+                            Don't have an account?
                         </span>
                         <span className="ml-1 text-Colors-Text-Primary-primary font-medium cursor-pointer" onClick={handleNavigate}>
                             Sign Up

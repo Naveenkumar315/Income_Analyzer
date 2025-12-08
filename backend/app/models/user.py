@@ -28,6 +28,7 @@ class Token(BaseModel):
     token_type: str = "bearer"
     username: Optional[str] = None
     email: Optional[EmailStr] = None
+    isApproved: Optional[bool] = None
 
 
 class SendCodeRequest(BaseModel):
@@ -37,3 +38,45 @@ class SendCodeRequest(BaseModel):
 class VerifyCodeRequest(BaseModel):
     email: EmailStr
     code: str
+
+
+class CheckEmailRequest(BaseModel):
+    email: EmailStr
+
+
+# Signup Models
+class CompanyInfo(BaseModel):
+    companyName: str
+    companySize: str
+    companyPhone: str
+    companyEmail: EmailStr
+
+
+class CompanyAddress(BaseModel):
+    streetAddress: str
+    zipCode: str
+    city: str
+    state: str
+
+
+class PrimaryContact(BaseModel):
+    firstName: str
+    lastName: str
+    phone: str
+    email: EmailStr
+
+
+class IndividualInfo(BaseModel):
+    firstName: str
+    lastName: str
+    phone: str
+    email: EmailStr
+
+
+class SignupRequest(BaseModel):
+    email: EmailStr
+    type: str  # "company" or "individual"
+    companyInfo: Optional[CompanyInfo] = None
+    companyAddress: Optional[CompanyAddress] = None
+    primaryContact: Optional[PrimaryContact] = None
+    individualInfo: Optional[IndividualInfo] = None
