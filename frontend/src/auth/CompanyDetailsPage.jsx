@@ -515,10 +515,10 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                     <button
                         style={{ color: 'white' }}
                         type="submit"
-                        onClick={handleFormSumbit}
+                        // onClick={handleFormSumbit}
                         className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors"
                         disabled={loading}
-                    // onClick={() => form.submit()}
+                        onClick={() => form.submit()}
                     // className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? "Submitting..." : "Submit"}

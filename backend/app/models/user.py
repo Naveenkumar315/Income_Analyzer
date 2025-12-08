@@ -29,6 +29,7 @@ class Token(BaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     isApproved: Optional[bool] = None
+    role: Optional[str] = None
 
 
 class SendCodeRequest(BaseModel):

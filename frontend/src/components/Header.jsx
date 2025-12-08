@@ -37,7 +37,7 @@ const HelpButton = () => {
     );
 };
 
-const ProfileOverlay = ({ onLogout, onAdmin }) => {
+const ProfileOverlay = ({ onLogout, onAdmin, userRole }) => {
     return (
         <div className="min-w-[170px] bg-white rounded-md shadow-lg p-2">
             {/* top: Logout */}
@@ -49,17 +49,22 @@ const ProfileOverlay = ({ onLogout, onAdmin }) => {
                 Logout
             </button>
 
-            {/* divider */}
-            <div className="my-1 border-t border-gray-100" />
+            {/* Show Admin Page only for admin users */}
+            {userRole === "admin" && (
+                <>
+                    {/* divider */}
+                    <div className="my-1 border-t border-gray-100" />
 
-            {/* bottom: Admin Page */}
-            <button
-                type="button"
-                onClick={onAdmin}
-                className="w-full text-left px-3 py-2 font-creato rounded-md hover:bg-gray-50 text-sm text-gray-700"
-            >
-                Admin Page
-            </button>
+                    {/* bottom: Admin Page */}
+                    <button
+                        type="button"
+                        onClick={onAdmin}
+                        className="w-full text-left px-3 py-2 font-creato rounded-md hover:bg-gray-50 text-sm text-gray-700"
+                    >
+                        Admin Page
+                    </button>
+                </>
+            )}
         </div>
     );
 };
@@ -68,7 +73,14 @@ const ProfileOverlay = ({ onLogout, onAdmin }) => {
 export default function Header() {
 
     const [selectedKey, setSelectedKey] = useState("dashboard");
-    const navigate = useNavigate()
+    const [userRole, setUserRole] = useState("");
+    const navigate = useNavigate();
+
+    // Get user role from localStorage on component mount
+    React.useEffect(() => {
+        const role = localStorage.getItem("userRole") || "user";
+        setUserRole(role);
+    }, [])
 
     const handleLogout = () => {
         // Add your logout logic here.
@@ -77,6 +89,8 @@ export default function Header() {
         try {
             // clear local state
             localStorage.removeItem("authToken");
+            localStorage.removeItem("userRole");
+            localStorage.removeItem("userEmail");
         } catch (e) { }
         // redirect to login page
         navigate("/");
@@ -94,7 +108,11 @@ export default function Header() {
 
     // custom overlay element for Dropdown
     const overlay = (
-        <ProfileOverlay onLogout={() => { dropdownClose(); handleLogout(); }} onAdmin={() => { dropdownClose(); handleAdmin(); }} />
+        <ProfileOverlay
+            onLogout={() => { dropdownClose(); handleLogout(); }}
+            onAdmin={() => { dropdownClose(); handleAdmin(); }}
+            userRole={userRole}
+        />
     );
 
     // control dropdown programmatically so we can close it after click

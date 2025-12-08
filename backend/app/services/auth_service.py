@@ -41,7 +41,8 @@ async def login_user(user: UserLogin):
         "token_type": "bearer", 
         "username": db_user.get("username", ""), 
         "email": db_user["email"],
-        "isApproved": db_user.get("isApproved", False)
+        "isApproved": db_user.get("isApproved", False),
+        "role": db_user.get("role", "user")
     }
 
 

@@ -33,6 +33,11 @@ export default function LoginPage() {
                 return;
             }
 
+            // Store user data in localStorage
+            localStorage.setItem("authToken", response.access_token);
+            localStorage.setItem("userRole", response.role || "user");
+            localStorage.setItem("userEmail", response.email);
+
             // If approved, redirect to home
             toast.success("Login successful!");
             navigate("/home");
