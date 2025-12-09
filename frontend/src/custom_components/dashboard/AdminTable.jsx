@@ -5,6 +5,7 @@ import {
 } from "@ant-design/icons";
 import authApi from "../../api/authApi";
 import { toast } from "react-toastify";
+import FilterIcon from "../../assets/icons/Filter.svg";
 
 export default function AdminTable() {
     const gridRef = useRef(null);
@@ -529,39 +530,40 @@ export default function AdminTable() {
     }
 
     return (
-        <div style={{ padding: 32, background: "#f8fafc", minHeight: "100vh" }}>
+        <div style={{ padding: "0px 24px", background: "#f8fafc", minHeight: "100dvh" }}>
             {/* Header */}
             <div style={{
                 display: "flex",
-                justifyContent: "space-between",
+                // justifyContent: "space-between",
+                gap: "24px",
                 alignItems: "center",
                 marginBottom: 24
             }}>
-                <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>
+                <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0 }} className="custom-font-jura">
                     User Management
                 </h2>
                 <span style={{
-                    background: "#e0e7ff",
-                    color: "#3730a3",
-                    padding: "6px 16px",
-                    borderRadius: "20px",
-                    fontSize: "14px",
-                    fontWeight: 600
+                    display: "flex",
+                    padding: "4px",
+                    width: '60px',
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 8,
+                    alignSelf: "stretch",
+                    borderRadius: "999px",
+                    background: "#E0E0E0"
                 }}>
                     {filteredData.length}
                 </span>
-            </div>
-
-            {/* Search and Filter */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                     <div
                         style={{
                             position: "relative",
                             width: 360,
-                            borderRadius: 8,
+                            borderRadius: "8px",
+                            border: "1px solid #E0E0E0",
                             background: "#fff",
-                            boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px 0 rgba(0, 0, 0, 0.06);",
                         }}
                     >
                         <SearchOutlined
@@ -570,13 +572,14 @@ export default function AdminTable() {
                                 top: "50%",
                                 left: 14,
                                 transform: "translateY(-50%)",
-                                color: "#9CA3AF",
+                                color: "#4D4D4D",
                             }}
                         />
                         <input
                             placeholder="Search loan, borrower etc."
                             value={searchText}
                             onChange={(e) => setSearchText(e.target.value)}
+                            className="custom-font-jura"
                             style={{
                                 width: "100%",
                                 border: "none",
@@ -589,36 +592,45 @@ export default function AdminTable() {
                     </div>
 
                     {/* Filter Button */}
-                    <button style={{
-                        background: "white",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: 8,
-                        padding: "10px 16px",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        fontSize: 15,
-                        color: "#374151"
-                    }}>
-                        <span>☰</span>
+                    <button
+                        className="custom-font-jura"
+                        style={{
+                            background: "white",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: 8,
+                            padding: "10px 16px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            fontSize: 15,
+                            color: "#303030"
+                        }}>
+                        <img src={FilterIcon} alt="Filter" />
                         Filter
                     </button>
                 </div>
 
                 {/* All Filter Chip */}
                 <div style={{
-                    background: "white",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 20,
+                    background: "#E0E0E0",
+                    justifyContent: 'center',
+                    borderRadius: "999px",
                     padding: "6px 12px",
                     display: "flex",
                     alignItems: "center",
                     gap: "8px",
-                    fontSize: 14
                 }}>
-                    <span>All</span>
-                    <button style={{
+                    <span
+                        className="custom-font-jura"
+                        style={{
+                            color: "#303030",
+                            textAlign: 'center',
+                            fontSize: "normal",
+                            fontWeight: 400,
+                            lineHeight: '18px'
+                        }}>All</span>
+                    <button className="custom-font-jura" style={{
                         background: "transparent",
                         border: "none",
                         cursor: "pointer",
@@ -679,7 +691,7 @@ export default function AdminTable() {
                 <div
                     ref={gridRef}
                     className="ag-theme-alpine"
-                    style={{ height: 550, width: '100%' }}
+                    style={{ height: 450, width: '100%' }}
                 />
 
                 {/* Custom Pagination */}
@@ -891,6 +903,6 @@ export default function AdminTable() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
