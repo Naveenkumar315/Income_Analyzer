@@ -17,6 +17,13 @@ const authApi = {
     // Add more:
     login: (data) => axiosClient.post("/auth/login", data),
     signup: (data) => axiosClient.post("/auth/signup", data),
+
+    // Admin APIs
+    getAllUsers: () => axiosClient.get("/admin/users"),
+    updateUserStatus: (userId, status) =>
+        axiosClient.put(`/admin/users/${userId}/status`, { status }),
+    deleteUser: (userId) =>
+        axiosClient.delete(`/admin/users/${userId}`),
 };
 
 export default authApi;

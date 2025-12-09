@@ -6,6 +6,7 @@ import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
 import authApi from "../api/authApi";
 import { toast } from "react-toastify";
+import { setTokens } from "../utils/authService";
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
@@ -26,14 +27,32 @@ export default function LoginPage() {
                 password: values.password
             });
 
-            // Check if user is approved
-            if (response.isApproved === false) {
-                toast.error("Admin has not approved your account yet. Please wait for approval.");
+            // Check user status - only 'active' users can login
+            if (response.status === "pending") {
+                toast.error("Your account is pending approval. Please wait for admin approval.");
                 setLoading(false);
                 return;
             }
 
-            // If approved, redirect to home
+            if (response.status === "inactive") {
+                toast.error("Your account has been deactivated. Please contact support.");
+                setLoading(false);
+                return;
+            }
+
+            if (response.status !== "active") {
+                toast.error("Unable to login. Please contact support.");
+                setLoading(false);
+                return;
+            }
+
+            // Save tokens to session storage
+            setTokens(response.access_token, response.refresh_token, {
+                email: response.email,
+                role: response.role,
+                user_id: response.user_id
+            });
+
             toast.success("Login successful!");
             navigate("/home");
         } catch (error) {

@@ -10,6 +10,7 @@ import {
 import logo from "../assets/loandna.png";
 import dna_strand from "../assets/dna-strand.svg"
 import { useNavigate } from "react-router-dom";
+import { clearTokens, getUserData } from "../utils/authService";
 
 const menuItems = [
     { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined /> },
@@ -37,7 +38,7 @@ const HelpButton = () => {
     );
 };
 
-const ProfileOverlay = ({ onLogout, onAdmin }) => {
+const ProfileOverlay = ({ onLogout, onAdmin, isAdmin }) => {
     return (
         <div className="min-w-[170px] bg-white rounded-md shadow-lg p-2">
             {/* top: Logout */}
@@ -49,17 +50,22 @@ const ProfileOverlay = ({ onLogout, onAdmin }) => {
                 Logout
             </button>
 
-            {/* divider */}
-            <div className="my-1 border-t border-gray-100" />
+            {/* Only show Admin Page for admin users */}
+            {isAdmin && (
+                <>
+                    {/* divider */}
+                    <div className="my-1 border-t border-gray-100" />
 
-            {/* bottom: Admin Page */}
-            <button
-                type="button"
-                onClick={onAdmin}
-                className="w-full text-left px-3 py-2 font-creato rounded-md hover:bg-gray-50 text-sm text-gray-700"
-            >
-                Admin Page
-            </button>
+                    {/* bottom: Admin Page */}
+                    <button
+                        type="button"
+                        onClick={onAdmin}
+                        className="w-full text-left px-3 py-2 font-creato rounded-md hover:bg-gray-50 text-sm text-gray-700"
+                    >
+                        Admin Page
+                    </button>
+                </>
+            )}
         </div>
     );
 };
@@ -68,16 +74,16 @@ const ProfileOverlay = ({ onLogout, onAdmin }) => {
 export default function Header() {
 
     const [selectedKey, setSelectedKey] = useState("dashboard");
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+
+    // Get user role from session storage
+    const userData = getUserData();
+    const isAdmin = userData.role === "admin";
 
     const handleLogout = () => {
-        // Add your logout logic here.
-        // Example: clear localStorage, call API, then redirect to login.
         console.log("logout clicked");
-        try {
-            // clear local state
-            localStorage.removeItem("authToken");
-        } catch (e) { }
+        // Clear all tokens from session storage
+        clearTokens();
         // redirect to login page
         navigate("/");
     };
@@ -94,7 +100,11 @@ export default function Header() {
 
     // custom overlay element for Dropdown
     const overlay = (
-        <ProfileOverlay onLogout={() => { dropdownClose(); handleLogout(); }} onAdmin={() => { dropdownClose(); handleAdmin(); }} />
+        <ProfileOverlay
+            onLogout={() => { dropdownClose(); handleLogout(); }}
+            onAdmin={() => { dropdownClose(); handleAdmin(); }}
+            isAdmin={isAdmin}
+        />
     );
 
     // control dropdown programmatically so we can close it after click

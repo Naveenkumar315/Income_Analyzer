@@ -9,6 +9,7 @@ import Home from './Home';
 import AdminTable from './custom_components/dashboard/AdminTable';
 import MainLayout from './layouts/MainLayout';
 import ForgotPasswordPage from './auth/ForgotPasswordPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -18,8 +19,12 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path='/forgot-password' element={<ForgotPasswordPage />} />
-        {/* Routes that should show Header are nested under MainLayout */}
-        <Route element={<MainLayout />}>
+        {/* Protected routes with MainLayout */}
+        <Route element={
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        }>
           <Route path="/home" element={<Home />} />
           <Route path="/admin" element={<AdminTable />} />
           {/* add other protected / shared-header routes here */}
@@ -34,3 +39,4 @@ function App() {
 }
 
 export default App;
+
