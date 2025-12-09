@@ -29,6 +29,7 @@ class Token(BaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     status: Optional[str] = None  # "pending", "active", "inactive"
+    user_id: Optional[str] = None
 
 
 class SendCodeRequest(BaseModel):

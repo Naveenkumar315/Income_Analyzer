@@ -3,30 +3,121 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
     SearchOutlined,
 } from "@ant-design/icons";
+import authApi from "../../api/authApi";
+import { toast } from "react-toastify";
 
-// Sample rows
-const makeRow = (i) => ({
-    id: i,
-    name: `Company ${i}`,
-    email: `company${i}@example.com`,
-    phone: `(800) 555-${String(1000 + i).slice(1)}`,
-    address: `${i} Main St, Springfield`,
-    submittedOn: `2025-11-${String((i % 28) + 1).padStart(2, "0")}`,
-    approvedOn: i % 3 === 0 ? `2025-11-${String((i % 28) + 1).padStart(2, "0")}` : null,
-    companyType: i % 2 === 0 ? "Broker Company" : "Broker",
-    companySize: i % 10,
-    active: i % 4 === 0,
-    action: i % 5 === 0 ? "Approved" : null
-});
-const SAMPLE = Array.from({ length: 60 }).map((_, i) => makeRow(i + 1));
-
-export default function AdminTable({ data = SAMPLE }) {
+export default function AdminTable() {
     const gridRef = useRef(null);
     const [searchText, setSearchText] = useState("");
     const [gridApi, setGridApi] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Fetch users from backend
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const response = await authApi.getAllUsers();
+            const transformedData = transformUserData(response.users);
+            setUsers(transformedData);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+            toast.error("Failed to load users");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Transform user data to table format
+    const transformUserData = (users) => {
+        return users.map((user) => {
+            let name, email, phone, address, companyType, companySize;
+
+            if (user.type === "individual") {
+                // Individual user
+                const info = user.individualInfo || {};
+                name = `${info.firstName || ""} ${info.lastName || ""}`.trim();
+                email = info.email || user.email;
+                phone = info.phone || "";
+                address = "-";
+                companyType = "Broker";
+                companySize = "1";
+            } else if (user.type === "company") {
+                // Company user
+                const companyInfo = user.companyInfo || {};
+                const companyAddress = user.companyAddress || {};
+                const primaryContact = user.primaryContact || {};
+
+                name = companyInfo.companyName || "";
+                email = companyInfo.companyEmail || user.email;
+                phone = companyInfo.companyPhone || "";
+
+                // Build address string
+                const addressParts = [
+                    companyAddress.streetAddress,
+                    companyAddress.city,
+                    companyAddress.state,
+                    companyAddress.zipCode
+                ].filter(Boolean);
+                address = addressParts.length > 0 ? addressParts.join(", ") : "-";
+
+                companyType = "Broker Company";
+                companySize = companyInfo.companySize || "-";
+            } else {
+                // Fallback for unknown type
+                name = user.username || "-";
+                email = user.email;
+                phone = "-";
+                address = "-";
+                companyType = "-";
+                companySize = "-";
+            }
+
+            return {
+                id: user._id,
+                name,
+                email,
+                phone,
+                address,
+                submittedOn: user.created_at ? new Date(user.created_at).toLocaleDateString() : "-",
+                approvedOn: user.approvedOn ? new Date(user.approvedOn).toLocaleDateString() : null,
+                companyType,
+                companySize,
+                active: user.status === "active",
+                action: user.status === "active" ? "Approved" : (user.status === "inactive" ? "Rejected" : null),
+                status: user.status
+            };
+        });
+    };
+
+    // Handle approve action
+    const handleApprove = async (userId) => {
+        try {
+            await authApi.updateUserStatus(userId, "active");
+            toast.success("User approved successfully");
+            // Refresh users list
+            await fetchUsers();
+        } catch (error) {
+            console.error("Error approving user:", error);
+            toast.error("Failed to approve user");
+        }
+    };
+
+    // Handle reject action
+    const handleReject = async (userId) => {
+        try {
+            await authApi.updateUserStatus(userId, "inactive");
+            toast.success("User rejected successfully");
+            // Refresh users list
+            await fetchUsers();
+        } catch (error) {
+            console.error("Error rejecting user:", error);
+            toast.error("Failed to reject user");
+        }
+    };
 
     useEffect(() => {
         // Load AG Grid CSS
@@ -59,6 +150,9 @@ export default function AdminTable({ data = SAMPLE }) {
         } else {
             setIsLoaded(true);
         }
+
+        // Fetch users on mount
+        fetchUsers();
     }, []);
 
     const columnDefs = useMemo(
@@ -141,7 +235,7 @@ export default function AdminTable({ data = SAMPLE }) {
                 pinned: "right",
                 cellRenderer: (params) => {
                     if (params.value) {
-                        return `<div style="color: #15803d; font-weight: 600; text-align: center; line-height: 48px;">${params.value}</div>`;
+                        return `<div style="color: ${params.value === 'Approved' ? '#15803d' : '#b91c1c'}; font-weight: 600; text-align: center; line-height: 48px;">${params.value}</div>`;
                     }
 
                     return `
@@ -171,15 +265,15 @@ export default function AdminTable({ data = SAMPLE }) {
     );
 
     const filteredData = useMemo(() => {
-        if (!searchText) return data;
+        if (!searchText) return users;
 
         const search = searchText.toLowerCase();
-        return data.filter(row =>
+        return users.filter(row =>
             Object.values(row).some(val =>
                 String(val).toLowerCase().includes(search)
             )
         );
-    }, [data, searchText]);
+    }, [users, searchText]);
 
     useEffect(() => {
         if (isLoaded && gridRef.current && window.agGrid && !gridApi) {
@@ -214,7 +308,7 @@ export default function AdminTable({ data = SAMPLE }) {
                         const id = target.dataset.id;
                         console.log("Approve", id);
                         event.event.preventDefault();
-                        // TODO: call API or update state to mark as approved
+                        handleApprove(id);
                         return;
                     }
 
@@ -223,7 +317,7 @@ export default function AdminTable({ data = SAMPLE }) {
                         const id = target.dataset.id;
                         console.log("Reject", id);
                         event.event.preventDefault();
-                        // TODO: call API or update state to mark as rejected
+                        handleReject(id);
                         return;
                     }
                 }
@@ -245,10 +339,10 @@ export default function AdminTable({ data = SAMPLE }) {
         }
     }, [filteredData, gridApi]);
 
-    if (!isLoaded) {
+    if (!isLoaded || loading) {
         return (
             <div style={{ padding: 32, background: "#f8fafc", minHeight: "100vh" }}>
-                <div style={{ textAlign: 'center', padding: 40 }}>Loading AG Grid...</div>
+                <div style={{ textAlign: 'center', padding: 40 }}>Loading...</div>
             </div>
         );
     }
@@ -256,7 +350,7 @@ export default function AdminTable({ data = SAMPLE }) {
     return (
         <div style={{ padding: 32, background: "#f8fafc", minHeight: "100vh" }}>
             <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0, marginBottom: 24 }}>
-                Heading
+                Admin Table
             </h2>
 
             {/* Search Box */}

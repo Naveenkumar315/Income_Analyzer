@@ -41,7 +41,8 @@ async def login_user(user: UserLogin):
         "token_type": "bearer", 
         "username": db_user.get("username", ""), 
         "email": db_user["email"],
-        "status": db_user.get("status", "pending")
+        "status": db_user.get("status", "pending"),
+        "user_id": str(db_user["_id"])
     }
 
 
