@@ -6,6 +6,9 @@ import {
 import authApi from "../../api/authApi";
 import { toast } from "react-toastify";
 import FilterIcon from "../../assets/icons/Filter.svg";
+import circleCheck from "../../assets/icons/circle-check.svg";
+import circleClose from "../../assets/icons/circle-close.svg";
+import deleteIcon from "../../assets/icons/delete.svg";
 
 export default function AdminTable() {
     const gridRef = useRef(null);
@@ -300,15 +303,15 @@ export default function AdminTable() {
             {
                 field: "actions",
                 headerName: "Actions",
-                width: 200,
+                width: 250,
                 pinned: "right",
                 cellRenderer: (params) => {
                     const isPending = params.data.status === "pending";
 
                     if (isPending) {
-                        // Show Approve and Reject buttons for pending users
+                        // Show Approve, Reject, and Delete User buttons for pending users
                         return `
-                            <div style="display: flex; gap: 8px; justify-content: center; align-items: center; height: 100%;">
+                            <div style="display: flex; flex-direction: column; gap: 6px; justify-content: center; align-items: flex-start; height: 100%; padding: 8px 0;">
                                 <button 
                                     class="approve-btn" 
                                     data-id="${params.data.id}"
@@ -316,22 +319,24 @@ export default function AdminTable() {
                                         background: #16a34a;
                                         color: white;
                                         border: none;
-                                        border-radius: 50%;
-                                        width: 32px;
-                                        height: 32px;
+                                        border-radius: 6px;
+                                        padding: 6px 12px;
                                         cursor: pointer;
                                         display: flex;
                                         align-items: center;
-                                        justify-content: center;
-                                        font-size: 16px;
+                                        gap: 8px;
+                                        font-size: 13px;
+                                        font-weight: 500;
                                         transition: all 0.2s;
+                                        width: 100%;
                                     "
                                     onmouseover="this.style.background='#15803d'"
                                     onmouseout="this.style.background='#16a34a'"
-                                    title="Approve"
-                                >
-                                    ✓
+                                    title="Approve">
+                                    <img src="${circleCheck}" alt="Approve" style="width: 16px; height: 16px;" />
+                                    <span>Approve</span>
                                 </button>
+                                
                                 <button 
                                     class="reject-btn" 
                                     data-id="${params.data.id}"
@@ -339,22 +344,24 @@ export default function AdminTable() {
                                         background: #dc2626;
                                         color: white;
                                         border: none;
-                                        border-radius: 50%;
-                                        width: 32px;
-                                        height: 32px;
+                                        border-radius: 6px;
+                                        padding: 6px 12px;
                                         cursor: pointer;
                                         display: flex;
                                         align-items: center;
-                                        justify-content: center;
-                                        font-size: 16px;
+                                        gap: 8px;
+                                        font-size: 13px;
+                                        font-weight: 500;
                                         transition: all 0.2s;
+                                        width: 100%;
                                     "
                                     onmouseover="this.style.background='#b91c1c'"
                                     onmouseout="this.style.background='#dc2626'"
-                                    title="Reject"
-                                >
-                                    ✗
+                                    title="Reject">
+                                    <img src="${circleClose}" alt="Reject" style="width: 16px; height: 16px;" />
+                                    <span>Reject</span>
                                 </button>
+
                                 <button 
                                     class="delete-btn" 
                                     data-id="${params.data.id}"
@@ -367,15 +374,17 @@ export default function AdminTable() {
                                         cursor: pointer;
                                         display: flex;
                                         align-items: center;
-                                        gap: 6px;
+                                        gap: 8px;
                                         font-size: 13px;
+                                        font-weight: 500;
                                         transition: all 0.2s;
+                                        width: 100%;
                                     "
                                     onmouseover="this.style.background='#b91c1c'"
                                     onmouseout="this.style.background='#dc2626'"
-                                    title="Delete User"
-                                >
-                                    🗑️ Delete User
+                                    title="Delete User">
+                                    <img src="${deleteIcon}" alt="Delete" style="width: 16px; height: 16px;" />
+                                    <span>Delete User</span>
                                 </button>
                             </div>
                         `;
@@ -395,15 +404,16 @@ export default function AdminTable() {
                                         cursor: pointer;
                                         display: flex;
                                         align-items: center;
-                                        gap: 6px;
+                                        gap: 8px;
                                         font-size: 13px;
+                                        font-weight: 500;
                                         transition: all 0.2s;
                                     "
                                     onmouseover="this.style.background='#b91c1c'"
                                     onmouseout="this.style.background='#dc2626'"
-                                    title="Delete User"
-                                >
-                                    🗑️ Delete User
+                                    title="Delete User">
+                                    <img src="${deleteIcon}" alt="Delete" style="width: 16px; height: 16px;" />
+                                    <span>Delete User</span>
                                 </button>
                             </div>
                         `;
@@ -609,7 +619,14 @@ export default function AdminTable() {
                         <img src={FilterIcon} alt="Filter" />
                         Filter
                     </button>
+                    {/* Vertical Separator */}
+                    <div style={{
+                        width: "1px",
+                        height: "24px",
+                        background: "#D0D0D0"
+                    }} />
                 </div>
+
 
                 {/* All Filter Chip */}
                 <div style={{
