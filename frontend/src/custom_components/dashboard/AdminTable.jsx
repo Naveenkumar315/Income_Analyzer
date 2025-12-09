@@ -147,14 +147,14 @@ export default function AdminTable({ data = SAMPLE }) {
                     return `
                         <div style="display: flex; gap: 12px; justify-content: center; align-items: center; height: 100%;">
                             <a href="#" class="approve-link" data-id="${params.data.id}"
-                               style="color: #15803d; font-weight: 600; text-decoration: none; cursor: pointer;">
+                                style="color: #15803d; font-weight: 600; text-decoration: none; cursor: pointer;">
                                 Approve
                             </a>
 
                             <span style="color: #9ca3af;">|</span>
 
                             <a href="#" class="reject-link" data-id="${params.data.id}"
-                               style="color: #b91c1c; font-weight: 600; text-decoration: none; cursor: pointer;">
+                                style="color: #b91c1c; font-weight: 600; text-decoration: none; cursor: pointer;">
                                 Reject
                             </a>
                         </div>

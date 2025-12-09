@@ -8,6 +8,7 @@ import ToastProvider from './utils/ToastProvider';
 import Home from './Home';
 import AdminTable from './custom_components/dashboard/AdminTable';
 import MainLayout from './layouts/MainLayout';
+import ForgotPasswordPage from './auth/ForgotPasswordPage';
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
         {/* Public routes (no header) */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-
+        <Route path='/forgot-password' element={<ForgotPasswordPage />} />
         {/* Routes that should show Header are nested under MainLayout */}
         <Route element={<MainLayout />}>
           <Route path="/home" element={<Home />} />

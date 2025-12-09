@@ -80,3 +80,9 @@ class SignupRequest(BaseModel):
     companyAddress: Optional[CompanyAddress] = None
     primaryContact: Optional[PrimaryContact] = None
     individualInfo: Optional[IndividualInfo] = None
+
+
+class UpdatePasswordRequest(BaseModel):
+    email: EmailStr
+    password: str
+    verificationCode: str

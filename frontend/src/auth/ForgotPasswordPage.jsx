@@ -1,0 +1,423 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Form } from "antd";
+import "antd/dist/reset.css";
+import CustomButton from "../components/CustomButton";
+import FormField from "../components/FormField";
+import { useNavigate } from "react-router-dom";
+import authApi from "../api/authApi";
+import { toast } from "react-toastify";
+import { LockOutlined } from "@ant-design/icons";
+
+export default function ForgotPasswordPage() {
+    const [form] = Form.useForm();
+    const navigate = useNavigate();
+    const debounceTimerRef = useRef(null);
+
+    // UI state
+    const [loading, setLoading] = useState(false);
+    const [step, setStep] = useState("email"); // "email" | "verify"
+    const [email, setEmail] = useState("");
+    const [checkingEmail, setCheckingEmail] = useState(false);
+    const [emailExists, setEmailExists] = useState(false);
+
+    // global error array for verify step (unused for toast; shows inline)
+    const [fieldErrors, setFieldErrors] = useState([]);
+
+    // password rule checks
+    const [pwdChecks, setPwdChecks] = useState({
+        length: false,
+        lowercase: false,
+        uppercase: false,
+        number: false,
+        special: false,
+    });
+
+    // derived values for button enablement
+    const allRulesSatisfied = Object.values(pwdChecks).every(Boolean);
+
+    useEffect(() => {
+        return () => {
+            if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        };
+    }, []);
+
+    // Optional: debounced email existence check
+    const handleEmailChangeAndCheck = useCallback((value) => {
+        const v = (value || "").trim();
+        setEmail(v);
+
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        if (!isValidEmail) {
+            setEmailExists(false);
+            setCheckingEmail(false);
+            return;
+        }
+
+        setCheckingEmail(true);
+        debounceTimerRef.current = setTimeout(async () => {
+            try {
+                const res = await authApi.checkEmailExists?.(v);
+                setEmailExists(Boolean(res?.exists));
+            } catch (err) {
+                setEmailExists(false);
+            } finally {
+                setCheckingEmail(false);
+            }
+        }, 450);
+    }, []);
+
+    // send verification code (step 1)
+    const handleSendCode = useCallback(
+        async (values) => {
+            debugger
+            const emailValue = (values?.email || email || "").trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+                toast.error("Please enter a valid email.");
+                return;
+            }
+
+            setLoading(true);
+            try {
+                await authApi.sendVerificationCode?.(emailValue);
+                toast.success("Verification code sent to your email.");
+                setStep("verify");
+                setEmail(emailValue);
+                form.setFieldsValue({ verificationCode: "" });
+                setFieldErrors([]); // clear any previous errors
+            } catch (err) {
+                console.error("send code error", err);
+                const message = err?.response?.data?.detail || "Unable to send verification code.";
+                toast.error(message);
+            } finally {
+                setLoading(false);
+            }
+        },
+        [email, form]
+    );
+
+    // helper: check password rules (special chars limited to requested set)
+    const checkPasswordRules = (pwd = "") => {
+        const length = pwd.length >= 12;
+        const lowercase = /[a-z]/.test(pwd);
+        const uppercase = /[A-Z]/.test(pwd);
+        const number = /[0-9]/.test(pwd);
+        // special char set: [!@#$%^&*(),.?":{}|]
+        const special = /[!@#$%^&*(),.?":{}|]/.test(pwd);
+
+        return { length, lowercase, uppercase, number, special };
+    };
+
+    // update password checks on values change
+    const handleFormValuesChange = useCallback((changedValues, allValues) => {
+        // only monitor newPassword
+        const newPwd = allValues?.newPassword || "";
+        setPwdChecks(checkPasswordRules(newPwd));
+
+        // collect field errors for inline block if verify step
+        if (step === "verify") {
+            const errors = (form.getFieldsError() || [])
+                .filter((f) => f.errors && f.errors.length > 0)
+                .map((f) => f.errors[0]);
+            setFieldErrors(errors);
+        } else {
+            setFieldErrors([]);
+        }
+    }, [form, step]);
+
+    // update password (step 2)
+    // only toast on password mismatch or server error (e.g., wrong code).
+    const handleUpdatePassword = useCallback(
+        async (values) => {
+            debugger
+            const raw = form.getFieldsValue();
+
+            const confirmPassword = (raw.confirmPassword || "").trim();
+            const newPassword = (raw.newPassword || "").trim();
+            const verificationCode = (raw.verificationCode || "").trim();
+
+
+            // Only these toast errors per your scenario:
+            if (newPassword !== confirmPassword) {
+                toast.error("Passwords do not match.");
+                return;
+            }
+
+            // require code and all rules satisfied; if not satisfied, we silently return (no toast)
+            if (!verificationCode || !allRulesSatisfied) {
+                // we do not show toast per your instruction; checklist guides the user
+                return;
+            }
+
+            setLoading(true);
+            try {
+                const obj = {
+                    email,
+                    password: newPassword,
+                    verificationCode,
+                }
+                const response = await authApi.updatePassword?.(obj);
+                console.log('((((((((((', response);
+
+                toast.success("Password updated. Please login with new password.");
+                navigate("/");
+            } catch (err) {
+                console.error("update password error", err);
+                debugger
+                // API error (e.g., wrong code) — show toast
+                if (err?.detail) {
+                    return toast.error(err.detail);
+                }
+                const message = err?.response?.data?.detail || "Unable to update password.";
+                toast.error(message);
+            } finally {
+                setLoading(false);
+            }
+        },
+        [email, navigate, allRulesSatisfied]
+    );
+
+    const handleBackToLogin = useCallback(() => {
+        navigate("/");
+    }, [navigate]);
+
+    // Collect form field errors (we'll show them in one block for verify step)
+    // onFieldsChange signature: (changedFields, allFields)
+    const handleFormFieldsChange = useCallback((_, allFields) => {
+        if (step !== "verify") {
+            setFieldErrors([]);
+            return;
+        }
+
+        const errors = allFields
+            .filter((f) => f.errors && f.errors.length > 0)
+            .map((f) => f.errors[0]);
+
+        setFieldErrors(errors);
+    }, [step]);
+
+    // choose card height depending on step
+    const cardHeightClass = step === "email" ? "md:h-[380px]" : "md:h-[570px]";
+
+    // password validation rule (pattern) kept for Form rules (same set)
+    const passwordPatternRule = {
+        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|]).{12,}$/,
+        message:
+            "Password must include lowercase, uppercase, number, special char and be at least 12 characters.",
+    };
+
+    // helper render for checklist item
+    const ChecklistItem = ({ ok, text }) => {
+        return (
+            <div className="flex items-center gap-2 text-xs">
+                <div className={`w-4 h-4 rounded-sm flex items-center justify-center ${ok ? "bg-green-500 text-white" : "border border-gray-300 text-gray-400"}`}>
+                    {ok ? "✓" : ""}
+                </div>
+                <div className={`${ok ? "text-green-700" : "text-gray-500"}`}>{text}</div>
+            </div>
+        );
+    };
+
+    return (
+        <div
+            className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-no-repeat"
+            style={{ backgroundImage: `url('/auth_page_bg.png')` }}
+        >
+            {/* responsive card */}
+            <div
+                className={
+                    "relative z-10 bg-white rounded-xl shadow-md " +
+                    `w-[90%] max-w-[420px] md:w-[384px] ${cardHeightClass} ` +
+                    "px-6 py-6 md:px-8 md:py-8 overflow-hidden"
+                }
+            >
+                <div className="h-full w-full flex flex-col" style={{ minHeight: 0 }}>
+                    <div className="absolute -inset-x-0 -bottom-2 pointer-events-none flex justify-center">
+                        <div className="w-[96%] border-t-2 border-sky-500 rounded-b-lg" />
+                    </div>
+
+                    <div className="w-full overflow-auto" style={{ paddingRight: 8 }}>
+                        {/* logo */}
+                        <div className="mb-4 flex items-center justify-center gap-2 w-full">
+                            <img src="/dna-strand.svg" alt="" className="h-6 w-6" />
+                            <div className="flex items-center">
+                                <span className="text-gray-800 text-xl font-extrabold font-creato uppercase leading-7">
+                                    INCOME
+                                </span>
+                                <span className="text-sky-500 text-xl font-extrabold font-creato uppercase leading-7 ml-1">
+                                    ANALYZER
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* headings */}
+                        <div className="text-center mb-4">
+                            <h2 className="text-2xl font-bold custom-font-jura leading-8 mb-1 ">
+                                {step === "verify" ? "Update Password" : "Forgot Password?"}
+                            </h2>
+                            <p className="text-xs md:text-sm text-gray-400 font-creato">
+                                {step === "verify"
+                                    ? `Verification code sent to ${email || "your email"}`
+                                    : "Enter your registered email id."}
+                            </p>
+                        </div>
+
+                        {/* Form */}
+                        <Form
+                            form={form}
+                            layout="vertical"
+                            // onFinish={step === "email" ? handleSendCode : handleUpdatePassword}
+                            onFieldsChange={handleFormFieldsChange}
+                            onValuesChange={handleFormValuesChange}
+                            requiredMark={false}
+                        >
+                            {step === "email" ? (
+                                <>
+                                    <FormField
+                                        type="text"
+                                        label="Email ID"
+                                        name="email"
+                                        placeholder="Enter your email address"
+                                        rules={[
+                                            { required: true, message: "Please enter your email" },
+                                            { type: "email", message: "Please enter a valid email" },
+                                        ]}
+                                        onChange={(e) => handleEmailChangeAndCheck(e?.target?.value)}
+                                    />
+
+                                    {!checkingEmail && form.getFieldValue("email") && !emailExists && (
+                                        <div className="text-red-500 text-xs mt-[-12px] mb-3">Email is not registered</div>
+                                    )}
+
+                                    <div className="mt-6">
+                                        <CustomButton
+                                            variant="primary"
+                                            type="button"
+                                            disabled={loading || checkingEmail}
+                                            onClick={handleSendCode}
+                                            className="w-full rounded-lg py-3 flex items-center justify-center gap-3 text-white text-base font-medium"
+                                        >
+                                            {loading ? "Sending..." : "Send Verification Code"}
+                                            <img src="/arrow-right-active.png" alt="" className="w-4 h-4" />
+                                        </CustomButton>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* VERIFY STEP - using FormField for all inputs */}
+                                    <FormField
+                                        type="otp"
+                                        label="Verification Code"
+                                        name="verificationCode"
+                                        placeholder="Enter Verification Code"
+                                        maxLength={6}
+                                        // rules={[{ required: true, message: "Please enter verification code" }]}
+                                        className="!mb-2"
+                                    />
+
+                                    <FormField
+                                        type="password"
+                                        label="New Password"
+                                        name="newPassword"
+                                        placeholder="Enter new password"
+                                        // rules={[{ required: true, message: "Please enter new password" }, passwordPatternRule]}
+                                        prefix={<LockOutlined />}
+                                        className="!mb-2"
+                                    />
+
+                                    <FormField
+                                        type="password"
+                                        label="Confirm New Password"
+                                        name="confirmPassword"
+                                        placeholder="Confirm new password"
+                                        dependencies={["newPassword"]}
+                                        // rules={[
+                                        //     { required: true, message: "Please confirm new password" },
+                                        //     ({ getFieldValue }) => ({
+                                        //         validator(rule, value) {
+                                        //             if (!value || getFieldValue("newPassword") === value) {
+                                        //                 return Promise.resolve();
+                                        //             }
+                                        //             return Promise.reject("Passwords do not match");
+                                        //         },
+                                        //     }),
+                                        // ]}
+                                        prefix={<LockOutlined />}
+                                        className="!mb-2"
+                                    />
+
+                                    {/* password rules checklist (above the update button) */}
+                                    {/* ultra-compact password rules */}
+                                    <div className="mb-2 text-[12px] leading-[13px] text-gray-600 font-creato">
+                                        <div className={pwdChecks.length ? "text-green-600" : ""}>
+                                            • Minimum 12 characters
+                                        </div>
+                                        <div className={pwdChecks.lowercase ? "text-green-600" : ""}>
+                                            • At least 1 lowercase letter
+                                        </div>
+                                        <div className={pwdChecks.uppercase ? "text-green-600" : ""}>
+                                            • At least 1 uppercase letter
+                                        </div>
+                                        <div className={pwdChecks.number ? "text-green-600" : ""}>
+                                            • At least 1 number
+                                        </div>
+                                        <div className={pwdChecks.special ? "text-green-600" : ""}>
+                                            • At least 1 special character from [!@#$%^&*(),.?":{ }|]
+                                        </div>
+                                    </div>
+
+
+                                    {/* global error block - shows all errors here (no toast for validation except mismatch/server) */}
+                                    {fieldErrors.length > 0 && (
+                                        <div className="text-red-500 text-xs mb-3 space-y-1">
+                                            {fieldErrors.map((err, i) => (
+                                                <div key={i}>{err}</div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <div className="mt-2">
+                                        <CustomButton
+                                            variant="primary"
+                                            type="button"
+                                            // enable only when all rules satisfied and passwords match and verification code is present
+                                            disabled={
+                                                loading ||
+                                                !allRulesSatisfied ||
+                                                (form.getFieldValue("newPassword") || "") !== (form.getFieldValue("confirmPassword") || "") ||
+                                                !(form.getFieldValue("verificationCode") || "")
+                                            }
+                                            onClick={handleUpdatePassword}
+                                            className="w-full rounded-lg py-3 flex items-center justify-center gap-3 text-white text-base font-medium disabled:cursor-not-allowed disabled:opacity-70"
+                                        >
+                                            {loading ? "Updating..." : "Update Password"}
+                                            <img src="/arrow-right-active.png" alt="" className="w-4 h-4" />
+                                        </CustomButton>
+                                    </div>
+                                </>
+                            )}
+
+                            {/* common back to login */}
+                            <div className="mt-5 text-center">
+                                <button
+                                    type="button"
+                                    onClick={handleBackToLogin}
+                                    className="text-Colors-Text-Primary-primary cursor-pointer text-sm font-medium hover:underline"
+                                >
+                                    Back to Log In
+                                </button>
+                            </div>
+                        </Form>
+                    </div>
+                </div>
+            </div>
+
+            {/* bottom logo */}
+            <img
+                src="/loandna_logo.png"
+                alt="Brand Logo"
+                className="pointer-events-none absolute bottom-8 right-12 z-10 h-10 w-auto"
+            />
+        </div>
+    );
+}

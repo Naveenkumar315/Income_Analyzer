@@ -232,7 +232,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                             type="button"
                             onClick={() => handleTabChange("company")}
                             className={`h-10 px-6 text-sm font-creato transition-all ${activeTab === "company"
-                                ? "bg-[#22B4E6] text-white"
+                                ? "bg-[#9AD4EF] text-white"
                                 : "bg-white text-[#3D4551] hover:bg-gray-50"
                                 }`}
                         >
@@ -242,7 +242,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                             type="button"
                             onClick={() => handleTabChange("individual")}
                             className={`h-10 px-6 text-sm font-creato transition-all border-l border-[#E5E7EB] ${activeTab === "individual"
-                                ? "bg-[#22B4E6] text-white"
+                                ? "bg-[#9AD4EF] text-white"
                                 : "bg-white text-[#3D4551] hover:bg-gray-50"
                                 }`}
                         >

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, BackgroundTasks
-from app.models.user import UserCreate, UserLogin, Token, SendCodeRequest, VerifyCodeRequest, SignupRequest, CheckEmailRequest
+from app.models.user import UserCreate, UserLogin, Token, SendCodeRequest, VerifyCodeRequest, SignupRequest, CheckEmailRequest, UpdatePasswordRequest
 from app.services.auth_service import register_user, login_user, signup_user, check_email_exists
 from app.services.send_code import send_verification_code, verify_otp_code
+from app.services.update_password import update_password
 from app.utils.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -61,3 +62,8 @@ async def signup(signup_data: SignupRequest):
     Creates user with temporary password, role, and type.
     """
     return await signup_user(signup_data)
+
+
+@router.post('/update-password')
+async def update__password(password_data: UpdatePasswordRequest):
+    return await update_password(password_data)

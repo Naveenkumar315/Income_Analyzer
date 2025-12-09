@@ -100,6 +100,10 @@ export default function LoginPage() {
         navigate('/signup');
     }, [navigate]);
 
+    const handleNavigateForgot = useCallback(() => {
+        navigate('/forgot-password')
+    }, [navigate])
+
     return (
         <div
             className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover  bg-no-repeat"
@@ -182,7 +186,7 @@ export default function LoginPage() {
 
 
                     {/* Forgot password */}
-                    <div className="text-Colors-Text-Primary-primary text-sm font-medium font-creato leading-4 cursor-pointer mb-6">
+                    <div className="text-Colors-Text-Primary-primary text-sm font-medium font-creato leading-4 cursor-pointer mb-6" onClick={handleNavigateForgot}>
                         Forgot password?
                     </div>
 
