@@ -6,6 +6,7 @@ import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
 import authApi from "../api/authApi";
 import { toast } from "react-toastify";
+import { setTokens } from "../utils/authService";
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
@@ -45,9 +46,12 @@ export default function LoginPage() {
                 return;
             }
 
-            // If status is 'active', store user info and redirect to home
-            localStorage.setItem("userRole", response.role || "user");
-            localStorage.setItem("userEmail", response.email);
+            // Save tokens to session storage
+            setTokens(response.access_token, response.refresh_token, {
+                email: response.email,
+                role: response.role,
+                user_id: response.user_id
+            });
 
             toast.success("Login successful!");
             navigate("/home");

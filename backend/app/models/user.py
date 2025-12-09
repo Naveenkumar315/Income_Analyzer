@@ -25,12 +25,18 @@ class UserLogin(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: Optional[str] = None
     token_type: str = "bearer"
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     status: Optional[str] = None  # "pending", "active", "inactive"
     user_id: Optional[str] = None
     role: Optional[str] = None  # "user", "admin"
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
 
 
 class SendCodeRequest(BaseModel):

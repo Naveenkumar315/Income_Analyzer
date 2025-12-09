@@ -10,6 +10,7 @@ import {
 import logo from "../assets/loandna.png";
 import dna_strand from "../assets/dna-strand.svg"
 import { useNavigate } from "react-router-dom";
+import { clearTokens, getUserData } from "../utils/authService";
 
 const menuItems = [
     { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined /> },
@@ -75,20 +76,14 @@ export default function Header() {
     const [selectedKey, setSelectedKey] = useState("dashboard");
     const navigate = useNavigate();
 
-    // Check if user is admin
-    const userRole = localStorage.getItem("userRole");
-    const isAdmin = userRole === "admin";
+    // Get user role from session storage
+    const userData = getUserData();
+    const isAdmin = userData.role === "admin";
 
     const handleLogout = () => {
-        // Add your logout logic here.
-        // Example: clear localStorage, call API, then redirect to login.
         console.log("logout clicked");
-        try {
-            // clear local state
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("userRole");
-            localStorage.removeItem("userEmail");
-        } catch (e) { }
+        // Clear all tokens from session storage
+        clearTokens();
         // redirect to login page
         navigate("/");
     };

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
-from app.models.user import UserCreate, UserLogin, Token, SendCodeRequest, VerifyCodeRequest, SignupRequest, CheckEmailRequest
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+from app.models.user import UserCreate, UserLogin, Token, SendCodeRequest, VerifyCodeRequest, SignupRequest, CheckEmailRequest, RefreshTokenRequest
 from app.services.auth_service import register_user, login_user, signup_user, check_email_exists
 from app.services.send_code import send_verification_code, verify_otp_code
 from app.utils.deps import get_current_user
+from app.utils.security import verify_token, create_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -61,3 +62,25 @@ async def signup(signup_data: SignupRequest):
     Creates user with temporary password, role, and type.
     """
     return await signup_user(signup_data)
+
+
+@router.post('/refresh', response_model=Token)
+async def refresh_token(request: RefreshTokenRequest):
+    """
+    Generate new access token from refresh token.
+    """
+    try:
+        # Verify refresh token
+        payload = verify_token(request.refresh_token, token_type="refresh")
+        
+        # Create new access token with same user data
+        token_data = {"sub": payload["sub"], "email": payload["email"]}
+        new_access_token = create_access_token(token_data)
+        
+        return {
+            "access_token": new_access_token,
+            "token_type": "bearer"
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+

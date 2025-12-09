@@ -1,5 +1,5 @@
 from app.db import db
-from app.utils.security import hash_password, verify_password, create_access_token
+from app.utils.security import hash_password, verify_password, create_access_token, create_refresh_token
 from app.models.user import UserCreate, UserLogin, SignupRequest
 from datetime import datetime
 from fastapi import HTTPException
@@ -34,10 +34,13 @@ async def login_user(user: UserLogin):
     if not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
-    token = create_access_token(
-        {"sub": str(db_user["_id"]), "email": db_user["email"]})
+    token_data = {"sub": str(db_user["_id"]), "email": db_user["email"]}
+    access_token = create_access_token(token_data)
+    refresh_token = create_refresh_token(token_data)
+    
     return {
-        "access_token": token, 
+        "access_token": access_token,
+        "refresh_token": refresh_token,
         "token_type": "bearer", 
         "username": db_user.get("username", ""), 
         "email": db_user["email"],
@@ -45,6 +48,7 @@ async def login_user(user: UserLogin):
         "user_id": str(db_user["_id"]),
         "role": db_user.get("role", "user")
     }
+
 
 
 async def signup_user(signup_data: SignupRequest):
