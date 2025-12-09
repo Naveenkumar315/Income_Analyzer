@@ -1,6 +1,7 @@
 // AdminTable.jsx
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { Modal } from "antd";
 import authApi from "../../api/authApi";
 import { toast } from "react-toastify";
 import FilterIcon from "../../assets/icons/Filter.svg";
@@ -115,76 +116,115 @@ export default function AdminTable() {
     };
 
     // Approve
-    const handleApprove = async (userId) => {
+    const handleApprove = (userId) => {
         if (!userId) return;
-        if (!window.confirm("Are you sure you want to approve this user?")) return;
-        setActionInProgress(true);
-        try {
-            await authApi.updateUserStatus(userId, "active");
-            toast.success("User approved successfully");
-            // refresh without hiding table
-            await fetchUsers({ suppressLoader: true });
-        } catch (error) {
-            console.error("Error approving user:", error);
-            toast.error("Failed to approve user");
-        } finally {
-            setActionInProgress(false);
-        }
+
+        Modal.confirm({
+            title: "Approve User",
+            icon: <ExclamationCircleOutlined />,
+            content: "Are you sure you want to approve this user?",
+            okText: "Approve",
+            okType: "primary",
+            cancelText: "Cancel",
+            onOk: async () => {
+                setActionInProgress(true);
+                try {
+                    await authApi.updateUserStatus(userId, "active");
+                    toast.success("User approved successfully");
+                    // refresh without hiding table
+                    await fetchUsers({ suppressLoader: true });
+                } catch (error) {
+                    console.error("Error approving user:", error);
+                    toast.error("Failed to approve user");
+                } finally {
+                    setActionInProgress(false);
+                }
+            }
+        });
     };
 
     // Reject
-    const handleReject = async (userId) => {
+    const handleReject = (userId) => {
         if (!userId) return;
-        if (!window.confirm("Are you sure you want to reject this user?")) return;
-        setActionInProgress(true);
-        try {
-            await authApi.updateUserStatus(userId, "inactive");
-            toast.success("User rejected successfully");
-            await fetchUsers({ suppressLoader: true });
-        } catch (error) {
-            console.error("Error rejecting user:", error);
-            toast.error("Failed to reject user");
-        } finally {
-            setActionInProgress(false);
-        }
+
+        Modal.confirm({
+            title: "Reject User",
+            icon: <ExclamationCircleOutlined />,
+            content: "Are you sure you want to reject this user?",
+            okText: "Reject",
+            okButtonProps: { danger: true },
+            cancelText: "Cancel",
+            onOk: async () => {
+                setActionInProgress(true);
+                try {
+                    await authApi.updateUserStatus(userId, "inactive");
+                    toast.success("User rejected successfully");
+                    await fetchUsers({ suppressLoader: true });
+                } catch (error) {
+                    console.error("Error rejecting user:", error);
+                    toast.error("Failed to reject user");
+                } finally {
+                    setActionInProgress(false);
+                }
+            }
+        });
     };
 
     // Delete
-    const handleDelete = async (userId) => {
+    const handleDelete = (userId) => {
         if (!userId) return;
-        if (
-            !window.confirm(
-                "Are you sure you want to permanently delete this user? This action cannot be undone."
-            )
-        )
-            return;
-        setActionInProgress(true);
-        try {
-            await authApi.deleteUser(userId);
-            toast.success("User deleted successfully");
-            await fetchUsers({ suppressLoader: true });
-        } catch (error) {
-            console.error("Error deleting user:", error);
-            toast.error("Failed to delete user");
-        } finally {
-            setActionInProgress(false);
-        }
+
+        Modal.confirm({
+            title: "Delete User",
+            icon: <ExclamationCircleOutlined />,
+            content: "Are you sure you want to permanently delete this user? This action cannot be undone.",
+            okText: "Delete",
+            okButtonProps: { danger: true },
+            cancelText: "Cancel",
+            onOk: async () => {
+                setActionInProgress(true);
+                try {
+                    await authApi.deleteUser(userId);
+                    toast.success("User deleted successfully");
+                    await fetchUsers({ suppressLoader: true });
+                } catch (error) {
+                    console.error("Error deleting user:", error);
+                    toast.error("Failed to delete user");
+                } finally {
+                    setActionInProgress(false);
+                }
+            }
+        });
     };
 
     // Toggle status for non-pending users
-    const handleStatusToggle = async (userId, newStatus) => {
+    const handleStatusToggle = (userId, newStatus) => {
         if (!userId) return;
-        setActionInProgress(true);
-        try {
-            await authApi.updateUserStatus(userId, newStatus);
-            toast.success(`User status updated to ${newStatus}`);
-            await fetchUsers({ suppressLoader: true });
-        } catch (error) {
-            console.error("Error updating user status:", error);
-            toast.error("Failed to update user status");
-        } finally {
-            setActionInProgress(false);
-        }
+
+        const actionText = newStatus === "active" ? "activate" : "deactivate";
+        const titleText = newStatus === "active" ? "Activate User" : "Deactivate User";
+
+        Modal.confirm({
+            title: titleText,
+            icon: <ExclamationCircleOutlined />,
+            content: `Are you sure you want to ${actionText} this user?`,
+            okText: "Yes",
+            okType: newStatus === "active" ? "primary" : "danger",
+            cancelText: "No",
+            onOk: async () => {
+                setActionInProgress(true);
+                try {
+                    await authApi.updateUserStatus(userId, newStatus);
+                    toast.success(`User status updated to ${newStatus}`);
+                    await fetchUsers({ suppressLoader: true });
+                } catch (error) {
+                    console.error("Error updating user status:", error);
+                    toast.error("Failed to update user status");
+                } finally {
+                    setActionInProgress(false);
+                }
+            }
+        });
     };
 
     useEffect(() => {
