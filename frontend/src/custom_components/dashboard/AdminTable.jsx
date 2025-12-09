@@ -422,7 +422,8 @@ export default function AdminTable() {
 
                     if (rawTarget.classList && rawTarget.classList.contains("status-toggle")) {
                         const id = rawTarget.dataset.id;
-                        const user = users.find((u) => u.id === id);
+                        // Use row data directly from the event to avoid stale state issues with 'users'
+                        const user = event.data;
 
                         if (user) {
                             event.event.preventDefault();

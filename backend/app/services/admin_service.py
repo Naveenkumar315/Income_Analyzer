@@ -61,7 +61,7 @@ async def update_user_status(user_id: str, new_status: str):
         {"$set": update_data}
     )
     
-    if result.modified_count == 0:
+    if result.matched_count == 0:
         raise HTTPException(status_code=400, detail="Failed to update user status")
     
     return {
@@ -90,7 +90,9 @@ async def delete_user(user_id: str):
     result = await db["users"].delete_one({"_id": object_id})
     
     if result.deleted_count == 0:
-        raise HTTPException(status_code=400, detail="Failed to delete user")
+        # If we passed the find_one check but failed here, it might be a race condition.
+        # But for the client, if it's gone, it's success.
+        pass
     
     return {
         "message": "User deleted successfully",
