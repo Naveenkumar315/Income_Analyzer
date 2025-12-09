@@ -41,7 +41,7 @@ async def login_user(user: UserLogin):
         "token_type": "bearer", 
         "username": db_user.get("username", ""), 
         "email": db_user["email"],
-        "isApproved": db_user.get("isApproved", False)
+        "status": db_user.get("status", "pending")
     }
 
 
@@ -67,7 +67,7 @@ async def signup_user(signup_data: SignupRequest):
         "password": hashed_password,
         "role": "user",
         "type": signup_data.type,
-        "isApproved": False,
+        "status": "pending",  # "pending", "active", "inactive"
         "created_at": now,
         "updated_at": now,
     }

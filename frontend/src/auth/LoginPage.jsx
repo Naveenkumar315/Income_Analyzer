@@ -26,14 +26,26 @@ export default function LoginPage() {
                 password: values.password
             });
 
-            // Check if user is approved
-            if (response.isApproved === false) {
-                toast.error("Admin has not approved your account yet. Please wait for approval.");
+            // Check user status - only 'active' users can login
+            if (response.status === "pending") {
+                toast.error("Your account is pending approval. Please wait for admin approval.");
                 setLoading(false);
                 return;
             }
 
-            // If approved, redirect to home
+            if (response.status === "inactive") {
+                toast.error("Your account has been deactivated. Please contact support.");
+                setLoading(false);
+                return;
+            }
+
+            if (response.status !== "active") {
+                toast.error("Unable to login. Please contact support.");
+                setLoading(false);
+                return;
+            }
+
+            // If status is 'active', redirect to home
             toast.success("Login successful!");
             navigate("/home");
         } catch (error) {
