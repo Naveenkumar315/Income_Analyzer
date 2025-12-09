@@ -140,6 +140,19 @@ export default function AdminTable() {
         }
     };
 
+    // Handle status toggle for approved/rejected users
+    const handleStatusToggle = async (userId, newStatus) => {
+        try {
+            await authApi.updateUserStatus(userId, newStatus);
+            toast.success(`User status updated to ${newStatus}`);
+            // Refresh users list
+            await fetchUsers();
+        } catch (error) {
+            console.error("Error updating user status:", error);
+            toast.error("Failed to update user status");
+        }
+    };
+
     useEffect(() => {
         // Load AG Grid CSS
         const cssLinks = [
@@ -213,15 +226,15 @@ export default function AdminTable() {
                             <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
                                 <input 
                                     type="checkbox" 
-                                    ${isActive ? 'checked' : ''} 
-                                    ${isPending ? '' : 'disabled'}
+                                    ${isActive ? 'checked' : ''}
                                     class="status-toggle" 
                                     data-id="${params.data.id}"
+                                    data-status="${params.data.status}"
                                     style="opacity: 0; width: 0; height: 0;"
                                 />
                                 <span style="
                                     position: absolute;
-                                    cursor: ${isPending ? 'pointer' : 'not-allowed'};
+                                    cursor: pointer;
                                     top: 0;
                                     left: 0;
                                     right: 0;
@@ -229,7 +242,6 @@ export default function AdminTable() {
                                     background-color: ${isActive ? '#3b82f6' : '#cbd5e1'};
                                     transition: 0.3s;
                                     border-radius: 24px;
-                                    opacity: ${isPending ? '1' : '0.5'};
                                 ">
                                     <span style="
                                         position: absolute;
@@ -469,14 +481,23 @@ export default function AdminTable() {
                         return;
                     }
 
-                    // Status toggle clicked (only for pending users)
+                    // Status toggle clicked
                     if (target.classList && target.classList.contains("status-toggle")) {
                         const id = target.dataset.id;
+                        const currentStatus = target.dataset.status;
                         const user = users.find(u => u.id === id);
-                        if (user && user.status === "pending") {
+
+                        if (user) {
                             event.event.preventDefault();
-                            // Toggle will be handled by approve action
-                            handleApprove(id);
+
+                            if (user.status === "pending") {
+                                // For pending users, trigger approval
+                                handleApprove(id);
+                            } else {
+                                // For approved/rejected users, toggle between active and inactive
+                                const newStatus = user.isActive ? "inactive" : "active";
+                                handleStatusToggle(id, newStatus);
+                            }
                         }
                         return;
                     }
