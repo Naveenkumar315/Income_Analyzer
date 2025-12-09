@@ -344,6 +344,11 @@ export default function AdminTable() {
                 headerName: "Actions",
                 width: 220,
                 pinned: "right",
+                resizable: false,
+                suppressMovable: true,
+                lockPosition: true,
+                lockPinned: true,
+                suppressSizeToFit: true,
                 cellRenderer: (params) => {
                     const isPending = params.data.status === "pending";
                     const baseBtnStyle = `
@@ -424,8 +429,13 @@ export default function AdminTable() {
                 suppressCellFocus: true,
                 onGridReady: (params) => {
                     setGridApi(params.api);
+                    params.api.sizeColumnsToFit();
                     params.api.addEventListener("paginationChanged", () => {
                         setCurrentPage(params.api.paginationGetCurrentPage() + 1);
+                    });
+                    // Re-size on window resize
+                    window.addEventListener("resize", () => {
+                        params.api.sizeColumnsToFit();
                     });
                 },
                 onCellClicked: (event) => {
@@ -541,16 +551,48 @@ export default function AdminTable() {
             <div style={{ borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)", border: "1px solid #eee", background: "white" }}>
                 <style>{`
           .ag-theme-alpine .ag-header { background: #0369a1 !important; border-bottom: 1px solid #075985; }
-          .ag-theme-alpine .ag-header-cell { color: white !important; font-weight: 600; }
+          .ag-theme-alpine .ag-header-cell { color: white !important; font-weight: 600; font-family: 'Jura', sans-serif !important; }
           .ag-theme-alpine .ag-header-cell-text { color: white !important; }
           .ag-theme-alpine .ag-header-icon { color: white !important; }
-          .ag-theme-alpine .ag-row-even { background: white; }
-          .ag-theme-alpine .ag-row-odd { background: #f9fafb; }
-          .ag-theme-alpine .ag-row-hover { background: #eff6ff !important; }
-          .ag-theme-alpine .ag-cell { border-bottom: 1px solid #f1f5f9; }
-          .ag-theme-alpine .ag-pinned-right-header { border-left: 1px solid #075985; }
-          .ag-theme-alpine .ag-pinned-right-cols-container .ag-cell { border-left: 1px solid #eee; }
+          
+          /* Row & Cell Styles */
+          .ag-theme-alpine .ag-row {
+              font-family: 'Jura', sans-serif !important;
+              font-size: 14px !important;
+              color: #303030 !important;
+              background-color: white;
+              border-bottom: 1px solid #E0E0E0 !important;
+          }
+           .ag-theme-alpine .ag-row-odd { background: #f9fafb; }
+           .ag-theme-alpine .ag-row-hover { background: #eff6ff !important; }
+
+          .ag-theme-alpine .ag-cell {
+              display: flex !important;
+              align-items: center !important;
+              padding: 4px 8px !important;
+              gap: 8px !important;
+              color: #303030 !important;
+              font-weight: 400 !important;
+              line-height: 16px !important;
+              border-bottom: none !important; /* Row handles border to look cleaner */
+          }
+
+          /* Global Action Column Styles (Pinned Right) */
+          .ag-theme-alpine .ag-pinned-right-cols-container .ag-cell { 
+              display: flex !important;
+              height: 48px !important;
+              padding: 0 8px !important;
+              align-items: center !important;
+              align-self: stretch !important;
+              border-bottom: 1px solid #E0E0E0 !important;
+              background: #FFF !important; /* Ensure opacity over scrolled content */
+              border-left: 1px solid #E0E0E0 !important;
+          }
+
           .ag-theme-alpine .ag-root-wrapper { border: none; }
+          
+          /* Hide horizontal scrollbar but keep functionality */
+          .ag-theme-alpine .ag-body-horizontal-scroll { display: none !important; }
         `}</style>
 
                 <div ref={gridRef} className="ag-theme-alpine" style={{ height: 450, width: "100%" }} />
