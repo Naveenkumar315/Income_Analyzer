@@ -30,6 +30,7 @@ class Token(BaseModel):
     email: Optional[EmailStr] = None
     status: Optional[str] = None  # "pending", "active", "inactive"
     user_id: Optional[str] = None
+    role: Optional[str] = None  # "user", "admin"
 
 
 class SendCodeRequest(BaseModel):

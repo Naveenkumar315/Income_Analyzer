@@ -42,7 +42,8 @@ async def login_user(user: UserLogin):
         "username": db_user.get("username", ""), 
         "email": db_user["email"],
         "status": db_user.get("status", "pending"),
-        "user_id": str(db_user["_id"])
+        "user_id": str(db_user["_id"]),
+        "role": db_user.get("role", "user")
     }
 
 

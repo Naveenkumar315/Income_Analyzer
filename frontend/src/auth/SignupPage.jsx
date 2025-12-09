@@ -90,30 +90,30 @@ function SignupPage() {
             setLoading(true);
 
             // TESTING MODE: Skip email verification and go directly to terms & conditions
-            // console.log("⚠️ EMAIL VERIFICATION DISABLED FOR TESTING");
-            // toast.info("Skipping email verification for testing");
-            // startTransition(() => setStep(SIGNUP_STEPS.TERMS_CONDITION));
+            console.log("⚠️ EMAIL VERIFICATION DISABLED FOR TESTING");
+            toast.info("Skipping email verification for testing");
+            startTransition(() => setStep(SIGNUP_STEPS.TERMS_CONDITION));
 
-            //ORIGINAL CODE - Uncomment to re-enable email verification
-            // Show verification screen immediately (optimistic)
-            startTransition(() => setStep(SIGNUP_STEPS.VERIFICATION_CODE));
+            // //ORIGINAL CODE - Uncomment to re-enable email verification
+            // // Show verification screen immediately (optimistic)
+            // startTransition(() => setStep(SIGNUP_STEPS.VERIFICATION_CODE));
 
-            // Fire-and-forget the API call so the UI is instant.
-            // Still handle success/error to show toasts, but don't block UI.
-            authApi.sendVerificationCode(userEmail)
-                .then(res => {
-                    console.log("OTP queued/sent:", res);
-                    toast.success("OTP sent successfully!");
-                    // optionally show success toast if you want
-                })
-                .catch(err => {
-                    console.error("Failed to send verification code:", err);
-                    // show an error toast and optionally move back to signup or let user retry
-                    // e.g. showToast("Failed to send code. Please retry.");
-                })
-                .finally(() => {
-                    // stop any spinner if you used one for the send
-                });
+            // // Fire-and-forget the API call so the UI is instant.
+            // // Still handle success/error to show toasts, but don't block UI.
+            // authApi.sendVerificationCode(userEmail)
+            //     .then(res => {
+            //         console.log("OTP queued/sent:", res);
+            //         toast.success("OTP sent successfully!");
+            //         // optionally show success toast if you want
+            //     })
+            //     .catch(err => {
+            //         console.error("Failed to send verification code:", err);
+            //         // show an error toast and optionally move back to signup or let user retry
+            //         // e.g. showToast("Failed to send code. Please retry.");
+            //     })
+            //     .finally(() => {
+            //         // stop any spinner if you used one for the send
+            //     });
         } catch (err) {
             console.error("Unexpected error:", err);
         } finally {

@@ -45,7 +45,10 @@ export default function LoginPage() {
                 return;
             }
 
-            // If status is 'active', redirect to home
+            // If status is 'active', store user info and redirect to home
+            localStorage.setItem("userRole", response.role || "user");
+            localStorage.setItem("userEmail", response.email);
+
             toast.success("Login successful!");
             navigate("/home");
         } catch (error) {
