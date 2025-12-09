@@ -303,128 +303,56 @@ export default function AdminTable() {
             {
                 field: "actions",
                 headerName: "Actions",
-                width: 250,
+                width: 180,
                 pinned: "right",
                 cellRenderer: (params) => {
                     const isPending = params.data.status === "pending";
 
-                    if (isPending) {
-                        // Show Approve, Reject, and Delete User buttons for pending users
-                        return `
-                            <div style="display: flex; flex-direction: column; gap: 6px; justify-content: center; align-items: flex-start; height: 100%; padding: 8px 0;">
-                                <button 
-                                    class="approve-btn" 
-                                    data-id="${params.data.id}"
-                                    style="
-                                        background: #16a34a;
-                                        color: white;
-                                        border: none;
-                                        border-radius: 6px;
-                                        padding: 6px 12px;
-                                        cursor: pointer;
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 8px;
-                                        font-size: 13px;
-                                        font-weight: 500;
-                                        transition: all 0.2s;
-                                        width: 100%;
-                                    "
-                                    onmouseover="this.style.background='#15803d'"
-                                    onmouseout="this.style.background='#16a34a'"
-                                    title="Approve">
-                                    <img src="${circleCheck}" alt="Approve" style="width: 16px; height: 16px;" />
-                                    <span>Approve</span>
-                                </button>
-                                
-                                <button 
-                                    class="reject-btn" 
-                                    data-id="${params.data.id}"
-                                    style="
-                                        background: #dc2626;
-                                        color: white;
-                                        border: none;
-                                        border-radius: 6px;
-                                        padding: 6px 12px;
-                                        cursor: pointer;
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 8px;
-                                        font-size: 13px;
-                                        font-weight: 500;
-                                        transition: all 0.2s;
-                                        width: 100%;
-                                    "
-                                    onmouseover="this.style.background='#b91c1c'"
-                                    onmouseout="this.style.background='#dc2626'"
-                                    title="Reject">
-                                    <img src="${circleClose}" alt="Reject" style="width: 16px; height: 16px;" />
-                                    <span>Reject</span>
-                                </button>
+                    // Shared button base style
+                    const btnStyle = `
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px 0;
+        `;
 
-                                <button 
-                                    class="delete-btn" 
-                                    data-id="${params.data.id}"
-                                    style="
-                                        background: #dc2626;
-                                        color: white;
-                                        border: none;
-                                        border-radius: 6px;
-                                        padding: 6px 12px;
-                                        cursor: pointer;
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 8px;
-                                        font-size: 13px;
-                                        font-weight: 500;
-                                        transition: all 0.2s;
-                                        width: 100%;
-                                    "
-                                    onmouseover="this.style.background='#b91c1c'"
-                                    onmouseout="this.style.background='#dc2626'"
-                                    title="Delete User">
-                                    <img src="${deleteIcon}" alt="Delete" style="width: 16px; height: 16px;" />
-                                    <span>Delete User</span>
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        // Show only Delete button for approved/rejected users
+                    if (isPending) {
                         return `
-                            <div style="display: flex; gap: 8px; justify-content: center; align-items: center; height: 100%;">
-                                <button 
-                                    class="delete-btn" 
-                                    data-id="${params.data.id}"
-                                    style="
-                                        background: #dc2626;
-                                        color: white;
-                                        border: none;
-                                        border-radius: 6px;
-                                        padding: 6px 12px;
-                                        cursor: pointer;
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 8px;
-                                        font-size: 13px;
-                                        font-weight: 500;
-                                        transition: all 0.2s;
-                                    "
-                                    onmouseover="this.style.background='#b91c1c'"
-                                    onmouseout="this.style.background='#dc2626'"
-                                    title="Delete User">
-                                    <img src="${deleteIcon}" alt="Delete" style="width: 16px; height: 16px;" />
-                                    <span>Delete User</span>
-                                </button>
-                            </div>
-                        `;
+                <div style="display: flex; flex-direction: column; gap: 6px; padding: 4px 0;">
+                    <button class="approve-btn" data-id="${params.data.id}" style="${btnStyle} color: #16a34a;">
+                        <img src="${circleCheck}" style="width: 14px;" />
+                        Approve
+                    </button>
+
+                    <button class="reject-btn" data-id="${params.data.id}" style="${btnStyle} color: #dc2626;">
+                        <img src="${circleClose}" style="width: 14px;" />
+                        Reject
+                    </button>
+
+                    <button class="delete-btn" data-id="${params.data.id}" style="${btnStyle} color: #dc2626;">
+                        <img src="${deleteIcon}" style="width: 14px;" />
+                        Delete User
+                    </button>
+                </div>
+            `;
                     }
-                },
-                cellStyle: {
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center"
+
+                    // For approved/rejected users → only delete
+                    return `
+            <div style="display: flex; flex-direction: column; padding: 4px 0;">
+                <button class="delete-btn" data-id="${params.data.id}" style="${btnStyle} color: #dc2626;">
+                    <img src="${deleteIcon}" style="width: 14px;" />
+                    Delete User
+                </button>
+            </div>
+        `;
                 }
             }
+
         ],
         []
     );
