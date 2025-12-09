@@ -19,6 +19,8 @@ const authApi = {
     getAllUsers: () => axiosClient.get("/admin/users"),
     updateUserStatus: (userId, status) =>
         axiosClient.put(`/admin/users/${userId}/status`, { status }),
+    deleteUser: (userId) =>
+        axiosClient.delete(`/admin/users/${userId}`),
 };
 
 export default authApi;

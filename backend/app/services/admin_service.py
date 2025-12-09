@@ -69,3 +69,31 @@ async def update_user_status(user_id: str, new_status: str):
         "user_id": user_id,
         "status": new_status
     }
+
+
+async def delete_user(user_id: str):
+    """
+    Permanently delete a user from the database.
+    """
+    try:
+        # Convert string ID to ObjectId
+        object_id = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+    
+    # Check if user exists
+    user = await db["users"].find_one({"_id": object_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Delete user
+    result = await db["users"].delete_one({"_id": object_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=400, detail="Failed to delete user")
+    
+    return {
+        "message": "User deleted successfully",
+        "user_id": user_id
+    }
+

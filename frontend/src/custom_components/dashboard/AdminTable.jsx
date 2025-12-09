@@ -34,7 +34,7 @@ export default function AdminTable() {
     // Transform user data to table format
     const transformUserData = (users) => {
         return users.map((user) => {
-            let name, email, phone, address, companyType, companySize;
+            let name, email, phone, companyType, companySize;
 
             if (user.type === "individual") {
                 // Individual user
@@ -42,27 +42,15 @@ export default function AdminTable() {
                 name = `${info.firstName || ""} ${info.lastName || ""}`.trim();
                 email = info.email || user.email;
                 phone = info.phone || "";
-                address = "-";
                 companyType = "Broker";
                 companySize = "1";
             } else if (user.type === "company") {
                 // Company user
                 const companyInfo = user.companyInfo || {};
-                const companyAddress = user.companyAddress || {};
-                const primaryContact = user.primaryContact || {};
 
                 name = companyInfo.companyName || "";
                 email = companyInfo.companyEmail || user.email;
                 phone = companyInfo.companyPhone || "";
-
-                // Build address string
-                const addressParts = [
-                    companyAddress.streetAddress,
-                    companyAddress.city,
-                    companyAddress.state,
-                    companyAddress.zipCode
-                ].filter(Boolean);
-                address = addressParts.length > 0 ? addressParts.join(", ") : "-";
 
                 companyType = "Broker Company";
                 companySize = companyInfo.companySize || "-";
@@ -71,7 +59,6 @@ export default function AdminTable() {
                 name = user.username || "-";
                 email = user.email;
                 phone = "-";
-                address = "-";
                 companyType = "-";
                 companySize = "-";
             }
@@ -81,41 +68,75 @@ export default function AdminTable() {
                 name,
                 email,
                 phone,
-                address,
-                submittedOn: user.created_at ? new Date(user.created_at).toLocaleDateString() : "-",
-                approvedOn: user.approvedOn ? new Date(user.approvedOn).toLocaleDateString() : null,
+                submittedOn: user.created_at ? new Date(user.created_at).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                }) : "-",
+                approvedOn: user.approvedOn ? new Date(user.approvedOn).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                }) : "-",
                 companyType,
                 companySize,
-                active: user.status === "active",
-                action: user.status === "active" ? "Approved" : (user.status === "inactive" ? "Rejected" : null),
-                status: user.status
+                status: user.status || "pending",
+                isActive: user.status === "active"
             };
         });
     };
 
     // Handle approve action
     const handleApprove = async (userId) => {
-        try {
-            await authApi.updateUserStatus(userId, "active");
-            toast.success("User approved successfully");
-            // Refresh users list
-            await fetchUsers();
-        } catch (error) {
-            console.error("Error approving user:", error);
-            toast.error("Failed to approve user");
+        // Show confirmation dialog
+        if (window.confirm("Are you sure you want to approve this user?")) {
+            try {
+                await authApi.updateUserStatus(userId, "active");
+                toast.success("User approved successfully");
+                // Refresh users list
+                await fetchUsers();
+            } catch (error) {
+                console.error("Error approving user:", error);
+                toast.error("Failed to approve user");
+            }
         }
     };
 
     // Handle reject action
     const handleReject = async (userId) => {
-        try {
-            await authApi.updateUserStatus(userId, "inactive");
-            toast.success("User rejected successfully");
-            // Refresh users list
-            await fetchUsers();
-        } catch (error) {
-            console.error("Error rejecting user:", error);
-            toast.error("Failed to reject user");
+        // Show confirmation dialog
+        if (window.confirm("Are you sure you want to reject this user?")) {
+            try {
+                await authApi.updateUserStatus(userId, "inactive");
+                toast.success("User rejected successfully");
+                // Refresh users list
+                await fetchUsers();
+            } catch (error) {
+                console.error("Error rejecting user:", error);
+                toast.error("Failed to reject user");
+            }
+        }
+    };
+
+    // Handle delete action
+    const handleDelete = async (userId) => {
+        // Show confirmation dialog
+        if (window.confirm("Are you sure you want to permanently delete this user? This action cannot be undone.")) {
+            try {
+                await authApi.deleteUser(userId);
+                toast.success("User deleted successfully");
+                // Refresh users list
+                await fetchUsers();
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                toast.error("Failed to delete user");
+            }
         }
     };
 
@@ -159,54 +180,99 @@ export default function AdminTable() {
         () => [
             {
                 field: "name",
-                headerName: "Name",
-                width: 200,
+                headerName: "Full Name",
+                width: 180,
                 filter: true,
                 sortable: true
             },
             {
                 field: "email",
                 headerName: "Email",
-                width: 250,
-                cellRenderer: (params) => {
-                    return `<a href="mailto:${params.value}" style="color: #2563eb; text-decoration: none;">${params.value}</a>`;
-                },
+                width: 220,
                 filter: true,
                 sortable: true
             },
             {
                 field: "phone",
-                headerName: "Phone",
-                width: 140,
+                headerName: "Phone Number",
+                width: 150,
                 filter: true,
                 sortable: true
             },
             {
-                field: "address",
-                headerName: "Address",
-                width: 240,
-                filter: true,
-                sortable: true
+                field: "status",
+                headerName: "Status",
+                width: 120,
+                sortable: true,
+                cellRenderer: (params) => {
+                    const isActive = params.data.isActive;
+                    const isPending = params.data.status === "pending";
+
+                    return `
+                        <div style="display: flex; align-items: center; height: 100%; padding-left: 8px;">
+                            <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
+                                <input 
+                                    type="checkbox" 
+                                    ${isActive ? 'checked' : ''} 
+                                    ${isPending ? '' : 'disabled'}
+                                    class="status-toggle" 
+                                    data-id="${params.data.id}"
+                                    style="opacity: 0; width: 0; height: 0;"
+                                />
+                                <span style="
+                                    position: absolute;
+                                    cursor: ${isPending ? 'pointer' : 'not-allowed'};
+                                    top: 0;
+                                    left: 0;
+                                    right: 0;
+                                    bottom: 0;
+                                    background-color: ${isActive ? '#3b82f6' : '#cbd5e1'};
+                                    transition: 0.3s;
+                                    border-radius: 24px;
+                                    opacity: ${isPending ? '1' : '0.5'};
+                                ">
+                                    <span style="
+                                        position: absolute;
+                                        content: '';
+                                        height: 18px;
+                                        width: 18px;
+                                        left: ${isActive ? '27px' : '3px'};
+                                        bottom: 3px;
+                                        background-color: white;
+                                        transition: 0.3s;
+                                        border-radius: 50%;
+                                    "></span>
+                                </span>
+                            </label>
+                            <span style="margin-left: 8px; font-size: 13px; color: #64748b;">
+                                ${isActive ? 'Active' : 'Inactive'}
+                            </span>
+                        </div>
+                    `;
+                },
+                cellStyle: {
+                    display: "flex",
+                    alignItems: "center"
+                }
             },
             {
                 field: "submittedOn",
                 headerName: "Submitted On",
-                width: 160,
+                width: 180,
                 filter: true,
                 sortable: true
             },
             {
                 field: "approvedOn",
                 headerName: "Approved / Rejected On",
-                width: 200,
+                width: 180,
                 filter: true,
-                sortable: true,
-                valueFormatter: (params) => params.value || "-"
+                sortable: true
             },
             {
                 field: "companyType",
                 headerName: "Company Type",
-                width: 150,
+                width: 140,
                 filter: true,
                 sortable: true
             },
@@ -219,40 +285,116 @@ export default function AdminTable() {
                 cellStyle: { textAlign: "center" }
             },
             {
-                field: "active",
-                headerName: "Active",
-                width: 110,
-                filter: true,
-                sortable: true,
-                cellStyle: { textAlign: "center" },
-                valueFormatter: (params) => params.value ? "Yes" : "No"
-            },
-            // === UPDATED ACTION COLUMN ===
-            {
-                field: "action",
-                headerName: "Action",
-                width: 180,
+                field: "actions",
+                headerName: "Actions",
+                width: 200,
                 pinned: "right",
                 cellRenderer: (params) => {
-                    if (params.value) {
-                        return `<div style="color: ${params.value === 'Approved' ? '#15803d' : '#b91c1c'}; font-weight: 600; text-align: center; line-height: 48px;">${params.value}</div>`;
+                    const isPending = params.data.status === "pending";
+
+                    if (isPending) {
+                        // Show Approve and Reject buttons for pending users
+                        return `
+                            <div style="display: flex; gap: 8px; justify-content: center; align-items: center; height: 100%;">
+                                <button 
+                                    class="approve-btn" 
+                                    data-id="${params.data.id}"
+                                    style="
+                                        background: #16a34a;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 50%;
+                                        width: 32px;
+                                        height: 32px;
+                                        cursor: pointer;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 16px;
+                                        transition: all 0.2s;
+                                    "
+                                    onmouseover="this.style.background='#15803d'"
+                                    onmouseout="this.style.background='#16a34a'"
+                                    title="Approve"
+                                >
+                                    ✓
+                                </button>
+                                <button 
+                                    class="reject-btn" 
+                                    data-id="${params.data.id}"
+                                    style="
+                                        background: #dc2626;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 50%;
+                                        width: 32px;
+                                        height: 32px;
+                                        cursor: pointer;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 16px;
+                                        transition: all 0.2s;
+                                    "
+                                    onmouseover="this.style.background='#b91c1c'"
+                                    onmouseout="this.style.background='#dc2626'"
+                                    title="Reject"
+                                >
+                                    ✗
+                                </button>
+                                <button 
+                                    class="delete-btn" 
+                                    data-id="${params.data.id}"
+                                    style="
+                                        background: #dc2626;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 6px;
+                                        padding: 6px 12px;
+                                        cursor: pointer;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 6px;
+                                        font-size: 13px;
+                                        transition: all 0.2s;
+                                    "
+                                    onmouseover="this.style.background='#b91c1c'"
+                                    onmouseout="this.style.background='#dc2626'"
+                                    title="Delete User"
+                                >
+                                    🗑️ Delete User
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        // Show only Delete button for approved/rejected users
+                        return `
+                            <div style="display: flex; gap: 8px; justify-content: center; align-items: center; height: 100%;">
+                                <button 
+                                    class="delete-btn" 
+                                    data-id="${params.data.id}"
+                                    style="
+                                        background: #dc2626;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 6px;
+                                        padding: 6px 12px;
+                                        cursor: pointer;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 6px;
+                                        font-size: 13px;
+                                        transition: all 0.2s;
+                                    "
+                                    onmouseover="this.style.background='#b91c1c'"
+                                    onmouseout="this.style.background='#dc2626'"
+                                    title="Delete User"
+                                >
+                                    🗑️ Delete User
+                                </button>
+                            </div>
+                        `;
                     }
-
-                    return `
-                        <div style="display: flex; gap: 12px; justify-content: center; align-items: center; height: 100%;">
-                            <a href="#" class="approve-link" data-id="${params.data.id}"
-                               style="color: #15803d; font-weight: 600; text-decoration: none; cursor: pointer;">
-                                Approve
-                            </a>
-
-                            <span style="color: #9ca3af;">|</span>
-
-                            <a href="#" class="reject-link" data-id="${params.data.id}"
-                               style="color: #b91c1c; font-weight: 600; text-decoration: none; cursor: pointer;">
-                                Reject
-                            </a>
-                        </div>
-                    `;
                 },
                 cellStyle: {
                     display: "flex",
@@ -303,21 +445,39 @@ export default function AdminTable() {
                 onCellClicked: (event) => {
                     const target = event.event.target;
 
-                    // Approve link clicked
-                    if (target.classList && target.classList.contains("approve-link")) {
+                    // Approve button clicked
+                    if (target.classList && target.classList.contains("approve-btn")) {
                         const id = target.dataset.id;
-                        console.log("Approve", id);
                         event.event.preventDefault();
                         handleApprove(id);
                         return;
                     }
 
-                    // Reject link clicked
-                    if (target.classList && target.classList.contains("reject-link")) {
+                    // Reject button clicked
+                    if (target.classList && target.classList.contains("reject-btn")) {
                         const id = target.dataset.id;
-                        console.log("Reject", id);
                         event.event.preventDefault();
                         handleReject(id);
+                        return;
+                    }
+
+                    // Delete button clicked
+                    if (target.classList && target.classList.contains("delete-btn")) {
+                        const id = target.dataset.id;
+                        event.event.preventDefault();
+                        handleDelete(id);
+                        return;
+                    }
+
+                    // Status toggle clicked (only for pending users)
+                    if (target.classList && target.classList.contains("status-toggle")) {
+                        const id = target.dataset.id;
+                        const user = users.find(u => u.id === id);
+                        if (user && user.status === "pending") {
+                            event.event.preventDefault();
+                            // Toggle will be handled by approve action
+                            handleApprove(id);
+                        }
                         return;
                     }
                 }
@@ -349,43 +509,104 @@ export default function AdminTable() {
 
     return (
         <div style={{ padding: 32, background: "#f8fafc", minHeight: "100vh" }}>
-            <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0, marginBottom: 24 }}>
-                Admin Table
-            </h2>
+            {/* Header */}
+            <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 24
+            }}>
+                <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>
+                    User Management
+                </h2>
+                <span style={{
+                    background: "#e0e7ff",
+                    color: "#3730a3",
+                    padding: "6px 16px",
+                    borderRadius: "20px",
+                    fontSize: "14px",
+                    fontWeight: 600
+                }}>
+                    {filteredData.length}
+                </span>
+            </div>
 
-            {/* Search Box */}
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-                <div
-                    style={{
-                        position: "relative",
-                        width: 360,
-                        borderRadius: 8,
-                        background: "#fff",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
-                    }}
-                >
-                    <SearchOutlined
+            {/* Search and Filter */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    <div
                         style={{
-                            position: "absolute",
-                            top: "50%",
-                            left: 14,
-                            transform: "translateY(-50%)",
-                            color: "#9CA3AF",
-                        }}
-                    />
-                    <input
-                        placeholder="Search..."
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        style={{
-                            width: "100%",
-                            border: "none",
-                            outline: "none",
-                            padding: "10px 14px 10px 42px",
+                            position: "relative",
+                            width: 360,
                             borderRadius: 8,
-                            fontSize: 15,
+                            background: "#fff",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
                         }}
-                    />
+                    >
+                        <SearchOutlined
+                            style={{
+                                position: "absolute",
+                                top: "50%",
+                                left: 14,
+                                transform: "translateY(-50%)",
+                                color: "#9CA3AF",
+                            }}
+                        />
+                        <input
+                            placeholder="Search loan, borrower etc."
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            style={{
+                                width: "100%",
+                                border: "none",
+                                outline: "none",
+                                padding: "10px 14px 10px 42px",
+                                borderRadius: 8,
+                                fontSize: 15,
+                            }}
+                        />
+                    </div>
+
+                    {/* Filter Button */}
+                    <button style={{
+                        background: "white",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: 8,
+                        padding: "10px 16px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        fontSize: 15,
+                        color: "#374151"
+                    }}>
+                        <span>☰</span>
+                        Filter
+                    </button>
+                </div>
+
+                {/* All Filter Chip */}
+                <div style={{
+                    background: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 20,
+                    padding: "6px 12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontSize: 14
+                }}>
+                    <span>All</span>
+                    <button style={{
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        color: "#9ca3af",
+                        fontSize: 16,
+                        padding: 0,
+                        display: "flex",
+                        alignItems: "center"
+                    }}>✕</button>
                 </div>
             </div>
 
@@ -399,14 +620,17 @@ export default function AdminTable() {
             }}>
                 <style>{`
           .ag-theme-alpine .ag-header {
-            background: #11699e !important;
-            border-bottom: 1px solid #0e5680;
+            background: #0369a1 !important;
+            border-bottom: 1px solid #075985;
           }
           .ag-theme-alpine .ag-header-cell {
             color: white !important;
             font-weight: 600;
           }
           .ag-theme-alpine .ag-header-cell-text {
+            color: white !important;
+          }
+          .ag-theme-alpine .ag-header-icon {
             color: white !important;
           }
           .ag-theme-alpine .ag-row-even {
@@ -422,7 +646,7 @@ export default function AdminTable() {
             border-bottom: 1px solid #f1f5f9;
           }
           .ag-theme-alpine .ag-pinned-right-header {
-            border-left: 1px solid #0e5680;
+            border-left: 1px solid #075985;
           }
           .ag-theme-alpine .ag-pinned-right-cols-container .ag-cell {
             border-left: 1px solid #eee;
