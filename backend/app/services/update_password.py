@@ -35,26 +35,33 @@ async def update_password(payload: UpdatePasswordRequest) -> Any:
     email = payload.email.lower().strip()
     password = (payload.password or "").strip()
     code = payload.verificationCode or ""
+    verifycode = payload.verifycode or ""
 
     print("Hey This is calling")
     # 1) validate password rules (fail fast)
-    validate_password_rules(password)
-
-    # 2) verify OTP (should raise HTTPException on invalid/expired/used/attempts)
-    await verify_otp_code(VerifyCodeRequest(email=email, code=code))
 
     # 3) hash the new password
+    validate_password_rules(password)
+
     hashed = hash_password(password)
+    update_data = {
+        "password": hashed,
+        "passwordUpdatedAt": datetime.utcnow(),
+    }
+
+    # 2) verify OTP (should raise HTTPException on invalid/expired/used/attempts)
+    if (verifycode):
+        await verify_otp_code(VerifyCodeRequest(email=email, code=code))
+    else:
+        if not verifycode:
+            update_data["is_first_time_user"] = False
 
     # 4) update user document
     users_coll = get_collection("users")
     result = await users_coll.update_one(
         {"email": email},
         {
-            "$set": {
-                "password": hashed,
-                "passwordUpdatedAt": datetime.utcnow(),
-            }
+            "$set": update_data
         },
     )
 

@@ -37,18 +37,18 @@ async def login_user(user: UserLogin):
     token_data = {"sub": str(db_user["_id"]), "email": db_user["email"]}
     access_token = create_access_token(token_data)
     refresh_token = create_refresh_token(token_data)
-    
+
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "token_type": "bearer", 
-        "username": db_user.get("username", ""), 
+        "token_type": "bearer",
+        "username": db_user.get("username", ""),
         "email": db_user["email"],
         "status": db_user.get("status", "pending"),
         "user_id": str(db_user["_id"]),
-        "role": db_user.get("role", "user")
+        "role": db_user.get("role", "user"),
+        "is_first_time_user": db_user.get("is_first_time_user"),
     }
-
 
 
 async def signup_user(signup_data: SignupRequest):
@@ -64,7 +64,7 @@ async def signup_user(signup_data: SignupRequest):
     # Hash temporary password
     temp_password = "Test@123"
     hashed_password = hash_password(temp_password)
-    
+
     now = datetime.utcnow()
 
     # Build user document based on type
@@ -92,7 +92,7 @@ async def signup_user(signup_data: SignupRequest):
 
     # Insert into users collection
     result = await db["users"].insert_one(user_document)
-    
+
     return {
         "message": "User registered successfully",
         "email": signup_data.email,

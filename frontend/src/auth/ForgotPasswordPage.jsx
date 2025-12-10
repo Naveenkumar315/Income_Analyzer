@@ -155,6 +155,7 @@ export default function ForgotPasswordPage() {
                     email,
                     password: newPassword,
                     verificationCode,
+                    "verifycode": true
                 }
                 const response = await authApi.updatePassword?.(obj);
                 console.log('((((((((((', response);
