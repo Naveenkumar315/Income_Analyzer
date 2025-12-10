@@ -355,6 +355,7 @@ export default function AdminTable() {
                 lockPosition: true,
                 lockPinned: true,
                 suppressSizeToFit: true,
+                // We keep cell renderer as-is; shadow will be applied to container (pinned area)
                 cellRenderer: (params) => {
                     const isPending = params.data.status === "pending";
                     const baseBtnStyle = `
@@ -400,7 +401,6 @@ export default function AdminTable() {
                     alignItems: "center",
                     justifyContent: "flex-start",
                     paddingLeft: "8px",
-                    // Styles handled by CSS class .ag-pinned-right-cols-container .ag-cell
                 },
             },
         ],
@@ -561,12 +561,30 @@ export default function AdminTable() {
           .ag-theme-alpine .ag-header-cell:hover { background-color: #0369a1 !important; background: #0369a1 !important; }
           .ag-theme-alpine .ag-header-cell-text { color: white !important; }
           .ag-theme-alpine .ag-header-icon { color: white !important; }
-          .ag-theme-alpine .ag-row { font-family: 'Jura', sans-serif !important; font-size: 14px !important; color: #303030 !important; border-bottom: 1px solid #E0E0E0 !important; display: flex !important; align-items: center !important; padding: 0 !important; }
+          .ag-theme-alpine .ag-row { font-family: 'Jura', sans-serif !important; font-size: 14px !important; color: #303030 !important; font-weight: 400 !important; border-bottom: 1px solid #E0E0E0 !important; display: flex !important; align-items: center !important; padding: 0 !important; }
           .ag-theme-alpine .ag-row-odd { background: #F7F7F7 !important; height: 48px !important; }
           .ag-theme-alpine .ag-row-even { background: #FFF !important; height: 48px !important; }
           .ag-theme-alpine .ag-row-hover { background: #eff6ff !important; }
           .ag-theme-alpine .ag-cell { display: flex !important; align-items: center !important; padding: 4px 8px !important; gap: 8px !important; color: #303030 !important; font-weight: 400 !important; line-height: normal !important; border: none !important; }
-          .ag-theme-alpine .ag-pinned-right-cols-container .ag-cell { background: inherit !important; border-left: 1px solid var(--Colors-Border-Base-base, #E0E0E0) !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+
+          /* === PINNED-RIGHT CONTAINER STYLES (left border + left-only shadow) === */
+          /* Applies the left border and a left-side shadow for the whole pinned-right area */
+          .ag-theme-alpine .ag-pinned-right-header,
+          .ag-theme-alpine .ag-pinned-right-cols-container {
+              background: inherit !important;
+              border-left: 1px solid var(--Colors-Border-Base-base, #E0E0E0);
+              /* negative X offset to push shadow leftwards */
+              box-shadow: -12px 0px 30px -12px rgba(0, 0, 0, 0.25);
+              z-index: 2; /* ensure it sits above the main body visually */
+          }
+
+          /* Ensure individual pinned cells don't duplicate the shadow */
+          .ag-theme-alpine .ag-pinned-right-cols-container .ag-cell {
+              background: inherit !important;
+              border-left: none !important;
+              box-shadow: none !important;
+          }
+
           .ag-theme-alpine .ag-root-wrapper { border: none; }
           /* allow internal vertical scrolling while hiding the horizontal scrollbar if desired */
           .ag-theme-alpine .ag-body-horizontal-scroll { display: none !important; }
