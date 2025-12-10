@@ -36,8 +36,15 @@ export default function AdminTable() {
                     companySize = "1";
                 } else if (user.type === "company") {
                     const companyInfo = user.companyInfo || {};
-                    name = companyInfo.companyName || "";
-                    email = companyInfo.companyEmail || user.email;
+                    const primaryContact = user.primaryContact || {};
+
+                    // Use Full name from primary contact
+                    name = `${primaryContact.firstName || ""} ${primaryContact.lastName || ""}`.trim();
+                    if (!name) name = companyInfo.companyName || ""; // Fallback
+
+                    // Use primary email
+                    email = primaryContact.email || user.email || companyInfo.companyEmail;
+
                     phone = companyInfo.companyPhone || "";
                     companyType = "Broker Company";
                     companySize = companyInfo.companySize || "-";
