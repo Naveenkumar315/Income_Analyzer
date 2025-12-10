@@ -557,7 +557,7 @@ export default function AdminTable() {
             <div style={{ borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)", border: "1px solid #eee", background: "white", display: "flex", flexDirection: "column" }}>
                 <style>{`
           .ag-theme-alpine .ag-header { background: #F7F7F7 !important; }
-          .ag-theme-alpine .ag-header-cell { background: #0369a1; color: white !important; font-family: 'Jura', sans-serif !important; font-weight: 600; padding: 4px 8px !important; display: flex; align-items: center; border-right: 1px solid rgba(255,255,255,0.2) !important; }
+          .ag-theme-alpine .ag-header-cell { background: #0369a1; color: white !important; font-family: 'Jura', sans-serif !important; font-weight: 600; padding: 4px 8px !important; display: flex; align-items: center; }
           .ag-theme-alpine .ag-header-cell:hover { background-color: #0369a1 !important; background: #0369a1 !important; }
           .ag-theme-alpine .ag-header-cell-text { color: white !important; }
           .ag-theme-alpine .ag-header-icon { color: white !important; }
