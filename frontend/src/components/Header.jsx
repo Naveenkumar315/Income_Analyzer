@@ -42,6 +42,7 @@ const HelpButton = () => {
 };
 
 const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
+    debugger
     // Derive display name/initials
     const email = userData?.email || "";
     const role = userData?.role || "User";
@@ -51,7 +52,7 @@ const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
     const formattedName = displayName.replace(/\./g, " ").replace(/\b\w/g, l => l.toUpperCase());
 
     return (
-        <div className="w-[280px] bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] overflow-hidden font-creato">
+        <div className="w-[260px] bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] overflow-hidden font-creato">
             {/* Decorative Header Background */}
             <div className="h-24 bg-gradient-to-r from-[#e6f7ff] to-[#f0f5ff] relative overflow-hidden">
                 <img
@@ -70,7 +71,7 @@ const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
                             size={80}
                             className="!bg-[#f5f5f5] !text-gray-600 !text-3xl !rounded-xl border border-gray-100 flex items-center justify-center font-creato"
                         >
-                            {formattedName.charAt(0)}
+                            {formattedName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
                         </Avatar>
                     </div>
                 </div>
