@@ -428,7 +428,7 @@ export default function AdminTable() {
                 pagination: true,
                 paginationPageSize: pageSize,
                 suppressPaginationPanel: true,
-                domLayout: "normal", // changed from autoHeight -> normal so grid scrolls inside container
+                domLayout: "normal",
                 rowHeight: 48,
                 headerHeight: 48,
                 suppressCellFocus: true,
@@ -520,10 +520,9 @@ export default function AdminTable() {
             style={{
                 padding: "24px",
                 background: "#f8fafc",
-                height: "calc(95vh - 48px)",
+                minHeight: "calc(100vh - 48px)",
                 display: "flex",
                 flexDirection: "column",
-                overflow: "hidden",
                 boxSizing: "border-box",
             }}
         >
@@ -556,7 +555,7 @@ export default function AdminTable() {
             </div>
 
             {/* AG Grid container - flex column. grid + footer share the remaining space */}
-            <div style={{ borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)", border: "1px solid #eee", background: "white", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+            <div style={{ borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)", border: "1px solid #eee", background: "white", display: "flex", flexDirection: "column" }}>
                 <style>{`
           .ag-theme-alpine .ag-header { background: #F7F7F7 !important; }
           .ag-theme-alpine .ag-header-cell { background: #0369a1; color: white !important; font-family: 'Jura', sans-serif !important; font-weight: 600; padding: 4px 8px !important; display: flex; align-items: center; border-right: 1px solid rgba(255,255,255,0.2) !important; }
@@ -574,8 +573,18 @@ export default function AdminTable() {
           .ag-theme-alpine .ag-body-horizontal-scroll { display: none !important; }
         `}</style>
 
-                {/* Grid wrapper: must allow flexbox children to shrink; minHeight:0 is critical */}
-                <div ref={gridRef} className="ag-theme-alpine custom-font-jura" style={{ flex: 1, width: "100%", minHeight: 0 }} />
+                {/* Grid wrapper: dynamic height with max limit */}
+                <div
+                    ref={gridRef}
+                    className="ag-theme-alpine custom-font-jura"
+                    style={{
+                        width: "100%",
+                        height: `${Math.max(1, Math.min(pageSize, filteredData.length - (currentPage - 1) * pageSize)) * 48 + 50}px`,
+                        maxHeight: "calc(100vh - 280px)",
+                        transition: "height 0.2s",
+                        minHeight: "150px"
+                    }}
+                />
 
                 {/* Pagination footer - fixed height inside this card */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderTop: "1px solid #e5e7eb", background: "white", flexShrink: 0 }}>
