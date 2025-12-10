@@ -47,7 +47,7 @@ async def login_user(user: UserLogin):
         "status": db_user.get("status", "pending"),
         "user_id": str(db_user["_id"]),
         "role": db_user.get("role", "user"),
-        "is_first_time_user": db_user.get("is_first_time_user"),
+        "is_first_time_user": db_user.get("is_first_time_user", False),
     }
 
 
