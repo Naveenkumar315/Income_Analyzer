@@ -5,7 +5,7 @@ import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
 import authApi from "../api/authApi";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { setTokens } from "../utils/authService";
 
 export default function LoginPage() {

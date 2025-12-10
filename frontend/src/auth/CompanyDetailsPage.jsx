@@ -5,7 +5,7 @@ import { UploadOutlined, DeleteOutlined, FileTextOutlined } from "@ant-design/ic
 import { useNavigate } from "react-router-dom";
 import "antd/dist/reset.css";
 import "../styles/formValidation.css"; // Import reusable form validation styles
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 
 import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";

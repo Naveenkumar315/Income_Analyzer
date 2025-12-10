@@ -5,7 +5,7 @@ import "antd/dist/reset.css";
 import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import authApi from "../api/authApi";
 
 const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {
@@ -51,7 +51,7 @@ const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {
             return;
         }
         if (resendCooldown > 0) {
-            toast.info(`Please wait ${resendCooldown}s before resending.`);
+            toast(`Please wait ${resendCooldown}s before resending.`, { icon: 'ℹ️' });
             return;
         }
 
@@ -59,7 +59,7 @@ const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {
             setResendLoading(true);
             // start cooldown immediately (optimistic UX)
             setResendCooldown(RESEND_COOLDOWN_SECONDS);
-            toast.info("Resending OTP...");
+            toast("Resending OTP...", { icon: 'ℹ️' });
 
             // call API — wait to confirm success/failure
             await authApi.sendVerificationCode(email);

@@ -5,7 +5,7 @@ import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
 import authApi from "../api/authApi";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { LockOutlined } from "@ant-design/icons";
 
 export default function ForgotPasswordPage() {

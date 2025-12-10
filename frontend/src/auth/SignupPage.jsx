@@ -9,7 +9,7 @@ import TermsConditionPage from "./TermsConditionPage";
 import SignupRequestSubmittedPage from "./SignupRequestSubmittedPage";
 import CompanyDetailsPage from "./CompanyDetailsPage";
 import authApi from "../api/authApi";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 
 
 export const SIGNUP_STEPS = Object.freeze({
@@ -91,7 +91,7 @@ function SignupPage() {
 
             // TESTING MODE: Skip email verification and go directly to terms & conditions
             console.log("⚠️ EMAIL VERIFICATION DISABLED FOR TESTING");
-            toast.info("Skipping email verification for testing");
+            toast("Skipping email verification for testing", { icon: 'ℹ️' });
             startTransition(() => setStep(SIGNUP_STEPS.TERMS_CONDITION));
             return
 
