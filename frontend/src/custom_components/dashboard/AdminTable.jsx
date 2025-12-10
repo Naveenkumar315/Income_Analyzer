@@ -281,6 +281,8 @@ export default function AdminTable() {
                 width: 180,
                 filter: true,
                 sortable: true,
+                resizable: false,
+                suppressSizeToFit: true,
             },
             {
                 field: "email",
@@ -288,19 +290,25 @@ export default function AdminTable() {
                 width: 220,
                 filter: true,
                 sortable: true,
+                resizable: false,
+                suppressSizeToFit: true,
             },
             {
                 field: "phone",
                 headerName: "Phone Number",
-                width: 150,
+                width: 140, // Applied 140px as requested for standard columns
                 filter: true,
                 sortable: true,
+                resizable: false,
+                suppressSizeToFit: true,
             },
             {
                 field: "status",
                 headerName: "Status",
-                width: 120,
+                width: 140, // Applied 140px
                 sortable: true,
+                resizable: false,
+                suppressSizeToFit: true,
                 cellRenderer: (params) => {
                     const isActive = params.data.isActive;
                     return `
@@ -311,7 +319,7 @@ export default function AdminTable() {
                   <span style="position:absolute;height:18px;width:18px;left:${isActive ? "27px" : "3px"};bottom:3px;background:white;transition:0.3s;border-radius:50%;"></span>
                 </span>
               </label>
-              <span style="margin-left:8px;font-size:13px;color:#64748b;">${isActive ? "Active" : "Inactive"}</span>
+              <span class="custom-font-jura" style="margin-left:8px;font-size:13px;color:#64748b;">${isActive ? "Active" : "Inactive"}</span>
             </div>
           `;
                 },
@@ -323,6 +331,8 @@ export default function AdminTable() {
                 width: 180,
                 filter: true,
                 sortable: true,
+                resizable: false,
+                suppressSizeToFit: true,
             },
             {
                 field: "approvedOn",
@@ -330,20 +340,26 @@ export default function AdminTable() {
                 width: 180,
                 filter: true,
                 sortable: true,
+                resizable: false,
+                suppressSizeToFit: true,
             },
             {
                 field: "companyType",
                 headerName: "Company Type",
-                width: 140,
+                width: 140, // Applied 140px
                 filter: true,
                 sortable: true,
+                resizable: false,
+                suppressSizeToFit: true,
             },
             {
                 field: "companySize",
                 headerName: "Company Size",
-                width: 130,
+                width: 140, // Applied 140px
                 filter: true,
                 sortable: true,
+                resizable: false,
+                suppressSizeToFit: true,
                 cellStyle: { textAlign: "center" },
             },
             {
@@ -374,12 +390,12 @@ export default function AdminTable() {
                         return `
               <div style="display:flex;flex-direction:column;gap:4px;padding:4px 0;">
                 <div style="display:flex;gap:12px;align-items:center;">
-                  <button class="approve-btn" data-id="${params.data.id}" style="${baseBtnStyle} color:#16a34a;" title="Approve">
+                  <button class="approve-btn custom-font-jura" data-id="${params.data.id}" style="${baseBtnStyle} color:#16a34a;" title="Approve">
                     <img src="${circleCheck}" alt="Approve" style="width:14px;height:14px;"/>
                     <span>Approve</span>
                   </button>
 
-                  <button class="reject-btn" data-id="${params.data.id}" style="${baseBtnStyle} color:#dc2626;" title="Reject">
+                  <button class="reject-btn custom-font-jura" data-id="${params.data.id}" style="${baseBtnStyle} color:#dc2626;" title="Reject">
                     <img src="${circleClose}" alt="Reject" style="width:14px;height:14px;"/>
                     <span>Reject</span>
                   </button>
@@ -391,7 +407,7 @@ export default function AdminTable() {
                     // non-pending: only delete
                     return `
             <div style="display:flex;flex-direction:column;padding:4px 0;">
-              <button class="delete-btn" data-id="${params.data.id}" style="${baseBtnStyle} color:#dc2626;" title="Delete User">
+              <button class="delete-btn custom-font-jura" data-id="${params.data.id}" style="${baseBtnStyle} color:#dc2626;" title="Delete User">
                 <img src="${deleteIcon}" alt="Delete" style="width:14px;height:14px;"/>
                 <span>Delete User</span>
               </button>
@@ -427,26 +443,26 @@ export default function AdminTable() {
                 columnDefs,
                 rowData: filteredData,
                 defaultColDef: {
-                    resizable: true,
+                    resizable: false, // Global disable resize
                     suppressMenu: true,
                 },
                 pagination: true,
                 paginationPageSize: pageSize,
                 suppressPaginationPanel: true,
-                domLayout: "normal",
+                domLayout: "autoHeight", // or normal
                 rowHeight: 48,
-                headerHeight: 48,
+                headerHeight: 48, // Ensure header aligns with fixed size request if needed, 48 is standard
                 suppressCellFocus: true,
                 onGridReady: (params) => {
                     setGridApi(params.api);
-                    params.api.sizeColumnsToFit();
+                    // DISABLED: params.api.sizeColumnsToFit(); -> User wants fixed sizes, not auto-fit
                     params.api.addEventListener("paginationChanged", () => {
                         setCurrentPage(params.api.paginationGetCurrentPage() + 1);
                     });
-                    // Re-size on window resize
-                    window.addEventListener("resize", () => {
-                        params.api.sizeColumnsToFit();
-                    });
+                    // DISABLED: Window resize listener
+                    // window.addEventListener("resize", () => {
+                    //    params.api.sizeColumnsToFit();
+                    // });
                 },
                 onCellClicked: (event) => {
                     const rawTarget = event.event.target;
@@ -560,22 +576,53 @@ export default function AdminTable() {
             {/* AG Grid container */}
             <div style={{ borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)", border: "1px solid #eee", background: "white" }}>
                 <style>{`
-          .ag-theme-alpine .ag-header { background: #0369a1 !important; border-bottom: 1px solid #075985; }
-          .ag-theme-alpine .ag-header-cell { color: white !important; font-weight: 600; font-family: 'Jura', sans-serif !important; }
+          /* Header Styles */
+          .ag-theme-alpine .ag-header { 
+              background: #F7F7F7 !important; /* Matches even row background for consistency or keep blue? User didn't specify header bg, but said "includes header" fixed size. keeping blue for now or ... User provided flex style for row includes header. */
+          }
+           /* Header Cell - fixed size 140px part is handled by columnDefs, here we handle the flex layout */
+          .ag-theme-alpine .ag-header-cell { 
+              background: #0369a1; 
+              color: white !important; 
+              font-family: 'Jura', sans-serif !important;
+              font-weight: 600;
+              padding: 4px 8px !important;
+              display: flex;
+              align-items: center;
+              border-right: 1px solid rgba(255,255,255,0.2) !important;
+          }
+          
           .ag-theme-alpine .ag-header-cell-text { color: white !important; }
           .ag-theme-alpine .ag-header-icon { color: white !important; }
-          
-          /* Row & Cell Styles */
+
+          /* ROW STYLING */
+          /* General row styles from default Theme are overridden below */
           .ag-theme-alpine .ag-row {
               font-family: 'Jura', sans-serif !important;
               font-size: 14px !important;
               color: #303030 !important;
-              background-color: white;
-              border-bottom: 1px solid #E0E0E0 !important;
+              border-bottom: 1px solid #E0E0E0 !important; /* var(--Colors-Border-Base-base, #E0E0E0) */
+              display: flex !important; /* As requested */
+              align-items: center !important;
+              padding: 0 !important; /* AG Grid handles padding in cells usually, but user asked for padding 0 8px on row. AG Grid puts content in cells. We can put padding on row but it might shift cells. Better to let cells have padding. User said "padding: 0 8px" for row. */
           }
-           .ag-theme-alpine .ag-row-odd { background: #f9fafb; }
-           .ag-theme-alpine .ag-row-hover { background: #eff6ff !important; }
 
+          /* ODD ROWS */
+          .ag-theme-alpine .ag-row-odd { 
+              background: #F7F7F7 !important; /* var(--Colors-Surface-Neutral-neutral-bold, #F7F7F7) */
+              height: 48px !important;
+          }
+
+          /* EVEN ROWS */
+          .ag-theme-alpine .ag-row-even { 
+              background: #FFF !important; /* var(--Colors-Surface-Neutral-neutral-subtle, #FFF) */
+              height: 48px !important;
+          }
+          
+          /* Hover effect override if needed, otherwise keep default or remove */
+          .ag-theme-alpine .ag-row-hover { background: #eff6ff !important; }
+
+          /* CELL STYLES - Matches "display: flex; width: 140px; padding: 4px 8px; ..." */
           .ag-theme-alpine .ag-cell {
               display: flex !important;
               align-items: center !important;
@@ -583,19 +630,13 @@ export default function AdminTable() {
               gap: 8px !important;
               color: #303030 !important;
               font-weight: 400 !important;
-              line-height: 16px !important;
-              border-bottom: none !important; /* Row handles border to look cleaner */
+              line-height: normal !important;
+              border: none !important;
           }
 
           /* Global Action Column Styles (Pinned Right) */
           .ag-theme-alpine .ag-pinned-right-cols-container .ag-cell { 
-              display: flex !important;
-              height: 48px !important;
-              padding: 0 8px !important;
-              align-items: center !important;
-              align-self: stretch !important;
-              border-bottom: 1px solid #E0E0E0 !important;
-              background: #FFF !important; /* Ensure opacity over scrolled content */
+              background: inherit !important; /* Match row background */
               border-left: 1px solid #E0E0E0 !important;
           }
 
@@ -605,14 +646,14 @@ export default function AdminTable() {
           .ag-theme-alpine .ag-body-horizontal-scroll { display: none !important; }
         `}</style>
 
-                <div ref={gridRef} className="ag-theme-alpine" style={{ height: 450, width: "100%" }} />
+                <div ref={gridRef} className="ag-theme-alpine custom-font-jura" style={{ height: 450, width: "100%" }} />
 
                 {/* Custom pagination */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderTop: "1px solid #e5e7eb", background: "white" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <span style={{ fontSize: "14px", color: "#374151", fontWeight: 500 }}>Items per page:</span>
+                        <span className="custom-font-jura" style={{ fontSize: "14px", color: "#374151", fontWeight: 500 }}>Items per page:</span>
                         <div style={{ position: "relative" }}>
-                            <select value={pageSize} onChange={(e) => {
+                            <select className="custom-font-jura" value={pageSize} onChange={(e) => {
                                 const newSize = Number(e.target.value);
                                 setPageSize(newSize);
                                 setCurrentPage(1);
@@ -628,7 +669,7 @@ export default function AdminTable() {
                             <span style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", fontSize: "12px", color: "#6b7280" }}>▼</span>
                         </div>
 
-                        <span style={{ fontSize: "14px", color: "#9ca3af", marginLeft: "8px" }}>
+                        <span className="custom-font-jura" style={{ fontSize: "14px", color: "#9ca3af", marginLeft: "8px" }}>
                             {Math.min((currentPage - 1) * pageSize + 1, filteredData.length)} - {Math.min(currentPage * pageSize, filteredData.length)} of {filteredData.length} items
                         </span>
                     </div>
@@ -648,12 +689,12 @@ export default function AdminTable() {
 
                             return pages.map((page, idx) => {
                                 if (page === "...") {
-                                    return <span key={`ellipsis-${idx}`} style={{ padding: "6px 8px", fontSize: "14px", color: "#9ca3af" }}>...</span>;
+                                    return <span key={`ellipsis-${idx}`} className="custom-font-jura" style={{ padding: "6px 8px", fontSize: "14px", color: "#9ca3af" }}>...</span>;
                                 }
                                 const isFirstThree = page <= 3;
                                 const isActive = currentPage === page;
                                 return (
-                                    <button key={page} onClick={() => {
+                                    <button className="custom-font-jura" key={page} onClick={() => {
                                         setCurrentPage(page);
                                         if (gridApi) gridApi.paginationGoToPage(page - 1);
                                     }} style={{ minWidth: "36px", height: "36px", padding: "6px 12px", fontSize: "14px", border: "none", borderRadius: "6px", background: isActive ? "#3b82f6" : (isFirstThree ? "#e0f2fe" : "transparent"), color: isActive ? "white" : "#374151", cursor: "pointer", fontWeight: isActive ? 600 : 400, transition: "all 0.2s" }}>
@@ -665,7 +706,7 @@ export default function AdminTable() {
 
                         <div style={{ width: "1px", height: "24px", background: "#e5e7eb", margin: "0 8px" }} />
 
-                        <button onClick={() => {
+                        <button className="custom-font-jura" onClick={() => {
                             if (currentPage > 1) {
                                 const newPage = currentPage - 1;
                                 setCurrentPage(newPage);
@@ -673,7 +714,7 @@ export default function AdminTable() {
                             }
                         }} disabled={currentPage === 1} style={{ border: "none", background: "transparent", cursor: currentPage === 1 ? "not-allowed" : "pointer", color: currentPage === 1 ? "#d1d5db" : "#374151", fontSize: "24px", padding: "0 8px", display: "flex", alignItems: "center" }}>‹</button>
 
-                        <button onClick={() => {
+                        <button className="custom-font-jura" onClick={() => {
                             const totalPages = Math.ceil(filteredData.length / pageSize);
                             if (currentPage < totalPages) {
                                 const newPage = currentPage + 1;
