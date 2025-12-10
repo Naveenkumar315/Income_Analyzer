@@ -591,6 +591,12 @@ export default function AdminTable() {
               align-items: center;
               border-right: 1px solid rgba(255,255,255,0.2) !important;
           }
+
+          /* Prevent header hover color change */
+          .ag-theme-alpine .ag-header-cell:hover {
+              background-color: #0369a1 !important;
+              background: #0369a1 !important;
+          }
           
           .ag-theme-alpine .ag-header-cell-text { color: white !important; }
           .ag-theme-alpine .ag-header-icon { color: white !important; }
