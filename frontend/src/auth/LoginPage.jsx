@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import authApi from "../api/authApi";
 import toast from "react-hot-toast";
 import { setTokens } from "../utils/authService";
+import { useApp } from "../contexts/AppContext";
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
@@ -16,12 +17,16 @@ export default function LoginPage() {
     const [emailExists, setEmailExists] = useState(false);
     const [checkingEmail, setCheckingEmail] = useState(false);
     const debounceTimerRef = useRef(null);
+    const { user, setUser } = useApp();
 
     const onFinish = useCallback(async (values) => {
         debugger
         setLoading(true);
         try {
             // Call login API
+            setUser(() => ({
+                email: values.email
+            }))
             const response = await authApi.login({
                 email: values.email,
                 password: values.password
@@ -44,6 +49,9 @@ export default function LoginPage() {
                 toast.error("Unable to login. Please contact support.");
                 setLoading(false);
                 return;
+            }
+            if (response?.is_first_time_user) {
+                return navigate("/update-password");
             }
 
             // Save tokens to session storage

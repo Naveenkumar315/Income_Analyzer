@@ -186,3 +186,79 @@ def get_welcome_email(name: str, email: str) -> str:
 </body>
 </html>
 """
+
+
+def get_welcome_email_html(full_name: str, temp_password: str) -> str:
+    """
+    Returns HTML email body for sending the welcome email with a temporary password.
+    """
+
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Welcome to Income Analyzer</title>
+</head>
+
+<body style="margin:0; padding:0; background-color:#1e1e1e; font-family:Arial, sans-serif; color:#ffffff;">
+
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding:30px 0;">
+        <tr>
+            <td align="center">
+
+                <table width="600" cellspacing="0" cellpadding="0" style="background:#262626; border-radius:8px; padding:40px;">
+
+                    <tr>
+                        <td align="center" style="font-size:28px; font-weight:bold; padding-bottom:20px; color:#ffffff;">
+                            Welcome to Income Analyzer
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-size:16px; line-height:1.6; color:#e6e6e6;">
+                            Hello <strong>{full_name}</strong>,
+                            <br><br>
+                            Your account request for Income Analyzer has been approved.
+                            <br><br>
+                            Use the temporary password below to log in and access your account.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding:25px 0;">
+                            <div style="
+                                background:#1a1a1a;
+                                border:1px solid #555;
+                                padding:14px;
+                                border-radius:6px;
+                                width:80%;
+                                color:#ffffff;
+                                font-size:18px;
+                                font-weight:bold;
+                                text-align:center;
+                                letter-spacing:1px;
+                            ">
+                                {temp_password}
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-size:16px; line-height:1.6; color:#cccccc;">
+                            If you have questions, please reach out to support.
+                            <br><br>
+                            Thank you,<br>
+                            <strong>The Income Analyzer Team</strong>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
+"""

@@ -99,18 +99,14 @@ function SignupPage() {
             // Show verification screen immediately(optimistic)
             startTransition(() => setStep(SIGNUP_STEPS.VERIFICATION_CODE));
 
-            // Fire-and-forget the API call so the UI is instant.
-            // Still handle success/error to show toasts, but don't block UI.
-            authApi.sendVerificationCode(userEmail)
+            const email_ = userEmail?.trim()?.toLowerCase()
+            authApi.sendVerificationCode(email_)
                 .then(res => {
                     console.log("OTP queued/sent:", res);
                     toast.success("OTP sent successfully!");
-                    // optionally show success toast if you want
                 })
                 .catch(err => {
                     console.error("Failed to send verification code:", err);
-                    // show an error toast and optionally move back to signup or let user retry
-                    // e.g. showToast("Failed to send code. Please retry.");
                 })
                 .finally(() => {
                     // stop any spinner if you used one for the send

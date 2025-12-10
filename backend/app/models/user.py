@@ -32,11 +32,11 @@ class Token(BaseModel):
     status: Optional[str] = None  # "pending", "active", "inactive"
     user_id: Optional[str] = None
     role: Optional[str] = None  # "user", "admin"
+    is_first_time_user: bool
 
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
-
 
 
 class SendCodeRequest(BaseModel):
@@ -94,3 +94,4 @@ class UpdatePasswordRequest(BaseModel):
     email: EmailStr
     password: str
     verificationCode: str
+    verifycode: bool

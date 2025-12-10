@@ -35,7 +35,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
 
                 // Prepare signup data based on type
                 const signupData = {
-                    email: userEmail,
+                    email: userEmail?.trim()?.toLowerCase(),
                     type: activeTab, // "company" or "individual"
                 };
 
@@ -65,7 +65,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                         firstName: values.firstName,
                         lastName: values.lastName,
                         phone: values.phone,
-                        email: values.email,
+                        email: values.email?.trim()?.toLowerCase(),
                     };
                 }
 

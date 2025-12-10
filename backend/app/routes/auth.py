@@ -68,6 +68,8 @@ async def signup(signup_data: SignupRequest):
 @router.post('/update-password')
 async def update__password(password_data: UpdatePasswordRequest):
     return await update_password(password_data)
+
+
 @router.post('/refresh', response_model=Token)
 async def refresh_token(request: RefreshTokenRequest):
     """
@@ -76,15 +78,14 @@ async def refresh_token(request: RefreshTokenRequest):
     try:
         # Verify refresh token
         payload = verify_token(request.refresh_token, token_type="refresh")
-        
+
         # Create new access token with same user data
         token_data = {"sub": payload["sub"], "email": payload["email"]}
         new_access_token = create_access_token(token_data)
-        
+
         return {
             "access_token": new_access_token,
             "token_type": "bearer"
         }
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
-

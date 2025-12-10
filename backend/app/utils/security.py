@@ -2,22 +2,28 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import jwt
 from app.config import settings
+import random
+import string
 
 # Use a stable, widely used algorithm without the 72-byte issue
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+
 
 def hash_password(password: str) -> str:
     # No need to manually truncate or convert to bytes;
     # Passlib handles encoding internally.
     return pwd_context.hash(password)
 
+
 def verify_password(password: str, hashed: str) -> bool:
     return pwd_context.verify(password, hashed)
+
 
 def create_access_token(data: dict) -> str:
     expire = datetime.utcnow() + timedelta(minutes=settings.jwt_expire_minutes)
     payload = {**data, "exp": expire, "type": "access"}
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
 
 def create_refresh_token(data: dict) -> str:
     """Create refresh token with 7 days expiration"""
@@ -25,13 +31,36 @@ def create_refresh_token(data: dict) -> str:
     payload = {**data, "exp": expire, "type": "refresh"}
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
+
 def verify_token(token: str, token_type: str = "access") -> dict:
     """Verify and decode JWT token"""
     try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+        payload = jwt.decode(token, settings.jwt_secret,
+                             algorithms=[settings.jwt_algorithm])
         if payload.get("type") != token_type:
             raise ValueError(f"Invalid token type. Expected {token_type}")
         return payload
     except Exception as e:
         raise ValueError(f"Invalid token: {str(e)}")
 
+
+def generate_secure_password(length: int = 12) -> str:
+    if length < 4:
+        raise ValueError(
+            "Password length must be at least 4 to include all character types.")
+
+    upper = random.choice(string.ascii_uppercase)
+    lower = random.choice(string.ascii_lowercase)
+    digit = random.choice(string.digits)
+    special = random.choice("!@#$%^&*()-_=+[]{}|;:,.<>?/")
+
+    # remaining characters (any type)
+    remaining_length = length - 4
+    all_chars = string.ascii_letters + string.digits + "!@#$%^&*()-_=+[]{}|;:,.<>?/"
+    remaining = [random.choice(all_chars) for _ in range(remaining_length)]
+
+    # combine all and shuffle
+    password_list = list(upper + lower + digit + special) + remaining
+    random.shuffle(password_list)
+
+    return "".join(password_list)
