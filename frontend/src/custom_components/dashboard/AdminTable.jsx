@@ -400,8 +400,7 @@ export default function AdminTable() {
                     alignItems: "center",
                     justifyContent: "flex-start",
                     paddingLeft: "8px",
-                    boxShadow: "0 25px 50px - 12px rgba(0, 0, 0, 0.25)",
-                    border: "1px solid #E0E0E0"
+                    // Styles handled by CSS class .ag-pinned-right-cols-container .ag-cell
                 },
             },
         ],
@@ -567,7 +566,7 @@ export default function AdminTable() {
           .ag-theme-alpine .ag-row-even { background: #FFF !important; height: 48px !important; }
           .ag-theme-alpine .ag-row-hover { background: #eff6ff !important; }
           .ag-theme-alpine .ag-cell { display: flex !important; align-items: center !important; padding: 4px 8px !important; gap: 8px !important; color: #303030 !important; font-weight: 400 !important; line-height: normal !important; border: none !important; }
-          .ag-theme-alpine .ag-pinned-right-cols-container .ag-cell { background: inherit !important; border-left: 1px solid #E0E0E0 !important; }
+          .ag-theme-alpine .ag-pinned-right-cols-container .ag-cell { background: inherit !important; border-left: 1px solid var(--Colors-Border-Base-base, #E0E0E0) !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
           .ag-theme-alpine .ag-root-wrapper { border: none; }
           /* allow internal vertical scrolling while hiding the horizontal scrollbar if desired */
           .ag-theme-alpine .ag-body-horizontal-scroll { display: none !important; }
