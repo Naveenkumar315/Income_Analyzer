@@ -520,7 +520,7 @@ export default function AdminTable() {
             style={{
                 padding: "24px",
                 background: "#f8fafc",
-                height: "calc(100vh - 48px)",
+                height: "calc(95vh - 48px)",
                 display: "flex",
                 flexDirection: "column",
                 overflow: "hidden",
