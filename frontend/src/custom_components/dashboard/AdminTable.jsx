@@ -313,10 +313,10 @@ export default function AdminTable() {
                     const isActive = params.data.isActive;
                     return `
             <div style="display:flex;align-items:center;height:100%;padding-left:8px;">
-              <label style="position:relative;display:inline-block;width:48px;height:24px;">
+              <label style="position:relative;display:flex;width:26px;height:16px;justify-content:center;align-items:center;">
                 <input type="checkbox" ${isActive ? "checked" : ""} class="status-toggle" data-id="${params.data.id}" data-status="${params.data.status}" style="opacity:0;width:0;height:0;" />
-                <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:${isActive ? "#3b82f6" : "#cbd5e1"};transition:0.3s;border-radius:24px;">
-                  <span style="position:absolute;height:18px;width:18px;left:${isActive ? "27px" : "3px"};bottom:3px;background:white;transition:0.3s;border-radius:50%;"></span>
+                <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:${isActive ? "#3b82f6" : "#cbd5e1"};transition:0.3s;border-radius:16px;">
+                  <span style="position:absolute;height:12px;width:12px;left:${isActive ? "12px" : "2px"};bottom:2px;background:white;transition:0.3s;border-radius:50%;"></span>
                 </span>
               </label>
               <span class="custom-font-jura" style="margin-left:8px;font-size:13px;color:#64748b;">${isActive ? "Active" : "Inactive"}</span>
@@ -409,7 +409,7 @@ export default function AdminTable() {
             <div style="display:flex;flex-direction:column;padding:4px 0;">
               <button class="delete-btn custom-font-jura" data-id="${params.data.id}" style="${baseBtnStyle} color:#dc2626;" title="Delete User">
                 <img src="${deleteIcon}" alt="Delete" style="width:14px;height:14px;"/>
-                <span>Delete User</span>
+                <span style="color:#4D4D4D;">Delete User</span>
               </button>
             </div>
           `;
