@@ -552,9 +552,9 @@ export default function AdminTable() {
             <div style={{ display: "flex", gap: "24px", alignItems: "center", marginBottom: 24, flexShrink: 0 }}>
                 <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0 }} className="custom-font-jura">User Management</h2>
 
-                <span style={{ display: "flex", padding: "4px", width: "60px", justifyContent: "center", alignItems: "center", gap: 8, alignSelf: "stretch", borderRadius: "999px", background: "#E0E0E0" }}>
-                    {filteredData.length}
-                </span>
+                <div style={{ display: "flex", width: "60px", height: '32px', padding: "4px 12px", margin: "4px 0px", justifyContent: "center", alignItems: "center", gap: 8, alignSelf: "stretch", borderRadius: "999px", background: "#E0E0E0" }}>
+                    <span style={{ textAlign: "center", color: "#303030", fontFamily: 'Creato Display', fontSize: "16px", fontStyle: 'normal', fontWeight: 400, lineHeight: "20px" }}>{filteredData.length}</span>
+                </div>
 
                 <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                     <div style={{ position: "relative", width: 360, borderRadius: "8px", border: "1px solid #E0E0E0", background: "#fff", boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px 0 rgba(0, 0, 0, 0.06)" }}>
