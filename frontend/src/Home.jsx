@@ -9,7 +9,6 @@ const Home = () => {
             <main className="p-6">
                 {/* rest of page */}
                 <h1 className="text-2xl font-semibold">Dashboard</h1>
-                <AdminTable />
             </main>
         </div>
     );
