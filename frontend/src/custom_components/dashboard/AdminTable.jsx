@@ -113,16 +113,40 @@ export default function AdminTable() {
         }
     };
 
+    const getConfirmModalContent = (title, message, iconSrc) => (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", textAlign: "center", width: "100%" }}>
+            {iconSrc && <img src={iconSrc} alt="icon" style={{ width: "48px", height: "48px" }} />}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <span style={{ fontSize: "16px", fontWeight: 600, color: "#18181B" }} className="custom-font-jura">{title}</span>
+                <span style={{ fontSize: "14px", fontWeight: 400, color: "#71717A" }} className="custom-font-jura">{message}</span>
+            </div>
+        </div>
+    );
+
+    const showCustomConfirm = ({ title, content, icon, onOk, okText = "Yes", cancelText = "No", okType = "primary", okButtonProps = {} }) => {
+        Modal.confirm({
+            className: "custom-confirm-modal",
+            icon: null, // We render icon in content
+            content: getConfirmModalContent(title, content, icon),
+            okText,
+            cancelText,
+            okType,
+            centered: true,
+            width: 360,
+            okButtonProps: { ...okButtonProps, style: { height: "32px", borderRadius: "6px", flex: 1, display: "flex", alignItems: "center", justifyContent: "center" } },
+            cancelButtonProps: { style: { height: "32px", borderRadius: "6px", flex: 1, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #E0E0E0" } },
+            onOk,
+        });
+    };
+
     const handleApprove = (userId) => {
         if (!userId) return;
 
-        Modal.confirm({
+        showCustomConfirm({
             title: "Approve User",
-            icon: <ExclamationCircleOutlined />,
             content: "Are you sure you want to approve this user?",
+            icon: circleCheck, // Using existing import
             okText: "Approve",
-            okType: "primary",
-            cancelText: "Cancel",
             onOk: async () => {
                 setActionInProgress(true);
                 try {
@@ -142,13 +166,12 @@ export default function AdminTable() {
     const handleReject = (userId) => {
         if (!userId) return;
 
-        Modal.confirm({
+        showCustomConfirm({
             title: "Reject User",
-            icon: <ExclamationCircleOutlined />,
             content: "Are you sure you want to reject this user?",
+            icon: circleClose, // Using existing import
             okText: "Reject",
             okButtonProps: { danger: true },
-            cancelText: "Cancel",
             onOk: async () => {
                 setActionInProgress(true);
                 try {
@@ -168,13 +191,12 @@ export default function AdminTable() {
     const handleDelete = (userId) => {
         if (!userId) return;
 
-        Modal.confirm({
+        showCustomConfirm({
             title: "Delete User",
-            icon: <ExclamationCircleOutlined />,
             content: "Are you sure you want to permanently delete this user? This action cannot be undone.",
-            okText: "Delete",
-            okButtonProps: { danger: true },
-            cancelText: "Cancel",
+            icon: deleteIcon, // Using existing import
+            okText: "Yes",
+            okButtonProps: { danger: true, style: { background: "#dc2626", borderColor: "#dc2626", color: "white" } }, // Explicit red for delete
             onOk: async () => {
                 setActionInProgress(true);
                 try {
@@ -196,14 +218,14 @@ export default function AdminTable() {
 
         const actionText = newStatus === "active" ? "activate" : "deactivate";
         const titleText = newStatus === "active" ? "Activate User" : "Deactivate User";
+        const icon = newStatus === "active" ? circleCheck : circleClose;
 
-        Modal.confirm({
+        showCustomConfirm({
             title: titleText,
-            icon: <ExclamationCircleOutlined />,
             content: `Are you sure you want to ${actionText} this user?`,
+            icon: icon,
             okText: "Yes",
             okType: newStatus === "active" ? "primary" : "danger",
-            cancelText: "No",
             onOk: async () => {
                 setActionInProgress(true);
                 try {
@@ -584,6 +606,46 @@ export default function AdminTable() {
               background: inherit !important;
               border-left: none !important;
               box-shadow: none !important;
+          }
+
+          /* === CUSTOM CONFIRM MODAL STYLES === */
+          .custom-confirm-modal .ant-modal-content {
+              padding: 16px !important;
+              border-radius: 6px !important;
+              width: 360px !important;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 16px;
+              border-bottom: 1px solid var(--Colors-Border-Base-base, #E0E0E0);
+              background: var(--background-or-layer-contextual, #FFF);
+          }
+          
+          .custom-confirm-modal .ant-modal-body {
+              padding: 0 !important;
+              margin: 0 !important;
+              width: 100%;
+          }
+
+          .custom-confirm-modal .ant-modal-confirm-content {
+             margin: 0 !important;
+          }
+
+          .custom-confirm-modal .ant-modal-confirm-btns {
+              margin-top: 16px !important;
+              width: 100%;
+              display: flex !important;
+              gap: 12px;
+              justify-content: center;
+              float: none !important;
+          }
+          
+          /* Hide default icon container since we put icon in content */
+          .custom-confirm-modal .ant-modal-confirm-body-wrapper {
+             align-items: center; 
+          }
+          .custom-confirm-modal .ant-modal-confirm-body .ant-modal-confirm-icon {
+              display: none !important;
           }
 
           .ag-theme-alpine .ag-root-wrapper { border: none; }
