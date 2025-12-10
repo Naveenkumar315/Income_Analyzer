@@ -586,8 +586,6 @@ export default function AdminTable() {
           }
 
           .ag-theme-alpine .ag-root-wrapper { border: none; }
-          /* allow internal vertical scrolling while hiding the horizontal scrollbar if desired */
-          .ag-theme-alpine .ag-body-horizontal-scroll { display: none !important; }
         `}</style>
 
                 {/* Grid wrapper: dynamic height with max limit */}
