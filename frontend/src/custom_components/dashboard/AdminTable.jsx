@@ -14,13 +14,12 @@ export default function AdminTable() {
     const [searchText, setSearchText] = useState("");
     const [gridApi, setGridApi] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
-    const [initialLoading, setInitialLoading] = useState(true); // only true on first mount
+    const [initialLoading, setInitialLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [users, setUsers] = useState([]);
-    const [actionInProgress, setActionInProgress] = useState(false); // toggles during approve/reject/delete
+    const [actionInProgress, setActionInProgress] = useState(false);
 
-    // Defensive transform: handle missing/invalid input
     const transformUserData = (usersArray) => {
         try {
             if (!Array.isArray(usersArray)) return [];
@@ -38,13 +37,10 @@ export default function AdminTable() {
                     const companyInfo = user.companyInfo || {};
                     const primaryContact = user.primaryContact || {};
 
-                    // Use Full name from primary contact
                     name = `${primaryContact.firstName || ""} ${primaryContact.lastName || ""}`.trim();
-                    if (!name) name = companyInfo.companyName || ""; // Fallback
+                    if (!name) name = companyInfo.companyName || "";
 
-                    // Use primary email
                     email = primaryContact.email || user.email || companyInfo.companyEmail;
-
                     phone = companyInfo.companyPhone || "";
                     companyType = "Broker Company";
                     companySize = companyInfo.companySize || "-";
@@ -93,8 +89,6 @@ export default function AdminTable() {
         }
     };
 
-    // Fetch users from backend
-    // suppressLoader=true -> do not show the initial spinner (used for action refresh)
     const fetchUsers = async ({ suppressLoader = false } = {}) => {
         if (!suppressLoader) setInitialLoading(true);
         try {
@@ -103,26 +97,22 @@ export default function AdminTable() {
             const transformedData = transformUserData(rawUsers);
             setUsers(transformedData);
 
-            // If grid is already initialized, update row data directly so grid doesn't get re-created
             if (gridApi && typeof gridApi.setRowData === "function") {
                 try {
                     gridApi.setRowData(transformedData);
                 } catch (innerErr) {
-                    // fallback
                     console.warn("gridApi.setRowData failed, ignoring", innerErr);
                 }
             }
         } catch (error) {
             console.error("Error fetching users:", error);
             toast.error("Failed to load users");
-            setUsers([]); // safe fallback so component doesn't crash
+            setUsers([]);
         } finally {
-            // only end initial loading if this was initial fetch
             if (!suppressLoader) setInitialLoading(false);
         }
     };
 
-    // Approve
     const handleApprove = (userId) => {
         if (!userId) return;
 
@@ -138,7 +128,6 @@ export default function AdminTable() {
                 try {
                     await authApi.updateUserStatus(userId, "active");
                     toast.success("User approved successfully");
-                    // refresh without hiding table
                     await fetchUsers({ suppressLoader: true });
                 } catch (error) {
                     console.error("Error approving user:", error);
@@ -150,7 +139,6 @@ export default function AdminTable() {
         });
     };
 
-    // Reject
     const handleReject = (userId) => {
         if (!userId) return;
 
@@ -177,7 +165,6 @@ export default function AdminTable() {
         });
     };
 
-    // Delete
     const handleDelete = (userId) => {
         if (!userId) return;
 
@@ -204,7 +191,6 @@ export default function AdminTable() {
         });
     };
 
-    // Toggle status for non-pending users
     const handleStatusToggle = (userId, newStatus) => {
         if (!userId) return;
 
@@ -235,7 +221,6 @@ export default function AdminTable() {
     };
 
     useEffect(() => {
-        // Load AG Grid CSS
         const cssLinks = [
             "https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-grid.css",
             "https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-theme-alpine.css",
@@ -250,7 +235,6 @@ export default function AdminTable() {
             }
         });
 
-        // Load AG Grid JS
         if (!window.agGrid) {
             const script = document.createElement("script");
             script.src =
@@ -261,14 +245,13 @@ export default function AdminTable() {
             };
             script.onerror = () => {
                 console.error("Failed to load AG Grid");
-                setIsLoaded(true); // avoid blocking rendering; grid code will warn if not available
+                setIsLoaded(true);
             };
             document.body.appendChild(script);
         } else {
             setIsLoaded(true);
         }
 
-        // initial fetch (show spinner)
         fetchUsers({ suppressLoader: false });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -296,7 +279,7 @@ export default function AdminTable() {
             {
                 field: "phone",
                 headerName: "Phone Number",
-                width: 140, // Applied 140px as requested for standard columns
+                width: 140,
                 filter: true,
                 sortable: true,
                 resizable: false,
@@ -305,7 +288,7 @@ export default function AdminTable() {
             {
                 field: "status",
                 headerName: "Status",
-                width: 140, // Applied 140px
+                width: 140,
                 sortable: true,
                 resizable: false,
                 suppressSizeToFit: true,
@@ -346,7 +329,7 @@ export default function AdminTable() {
             {
                 field: "companyType",
                 headerName: "Company Type",
-                width: 140, // Applied 140px
+                width: 140,
                 filter: true,
                 sortable: true,
                 resizable: false,
@@ -355,7 +338,7 @@ export default function AdminTable() {
             {
                 field: "companySize",
                 headerName: "Company Size",
-                width: 140, // Applied 140px
+                width: 140,
                 filter: true,
                 sortable: true,
                 resizable: false,
@@ -386,7 +369,6 @@ export default function AdminTable() {
           `;
 
                     if (isPending) {
-                        // Approve + Reject side-by-side, Delete below
                         return `
               <div style="display:flex;flex-direction:column;gap:4px;padding:4px 0;">
                 <div style="display:flex;gap:12px;align-items:center;">
@@ -404,7 +386,6 @@ export default function AdminTable() {
             `;
                     }
 
-                    // non-pending: only delete
                     return `
             <div style="display:flex;flex-direction:column;padding:4px 0;">
               <button class="delete-btn custom-font-jura" data-id="${params.data.id}" style="${baseBtnStyle} color:#dc2626;" title="Delete User">
@@ -419,13 +400,11 @@ export default function AdminTable() {
                     alignItems: "center",
                     justifyContent: "flex-start",
                     paddingLeft: "8px",
-
                     boxShadow: "0 25px 50px - 12px rgba(0, 0, 0, 0.25)",
                     border: "1px solid #E0E0E0"
                 },
             },
         ],
-        // icons referenced in renderer are imported above; memo stable
         []
     );
 
@@ -443,26 +422,21 @@ export default function AdminTable() {
                 columnDefs,
                 rowData: filteredData,
                 defaultColDef: {
-                    resizable: false, // Global disable resize
+                    resizable: false,
                     suppressMenu: true,
                 },
                 pagination: true,
                 paginationPageSize: pageSize,
                 suppressPaginationPanel: true,
-                domLayout: "autoHeight", // or normal
+                domLayout: "normal", // changed from autoHeight -> normal so grid scrolls inside container
                 rowHeight: 48,
-                headerHeight: 48, // Ensure header aligns with fixed size request if needed, 48 is standard
+                headerHeight: 48,
                 suppressCellFocus: true,
                 onGridReady: (params) => {
                     setGridApi(params.api);
-                    // DISABLED: params.api.sizeColumnsToFit(); -> User wants fixed sizes, not auto-fit
                     params.api.addEventListener("paginationChanged", () => {
                         setCurrentPage(params.api.paginationGetCurrentPage() + 1);
                     });
-                    // DISABLED: Window resize listener
-                    // window.addEventListener("resize", () => {
-                    //    params.api.sizeColumnsToFit();
-                    // });
                 },
                 onCellClicked: (event) => {
                     const rawTarget = event.event.target;
@@ -498,7 +472,6 @@ export default function AdminTable() {
 
                     if (rawTarget.classList && rawTarget.classList.contains("status-toggle")) {
                         const id = rawTarget.dataset.id;
-                        // Use row data directly from the event to avoid stale state issues with 'users'
                         const user = event.data;
 
                         if (user) {
@@ -514,12 +487,10 @@ export default function AdminTable() {
                 },
             };
 
-            // create the grid once
             window.agGrid.createGrid(gridRef.current, gridOptions);
         }
     }, [isLoaded, columnDefs, filteredData, gridApi, pageSize, users]);
 
-    // keep grid rows in sync when filteredData changes
     useEffect(() => {
         if (gridApi) {
             try {
@@ -534,19 +505,30 @@ export default function AdminTable() {
         }
     }, [filteredData, gridApi]);
 
-    // show spinner only for the initial load
+    // Loading view uses same calc to respect the external fixed 48px header
     if (!isLoaded || initialLoading) {
         return (
-            <div style={{ padding: 32, background: "#f8fafc", minHeight: "100vh" }}>
+            <div style={{ padding: 32, background: "#f8fafc", minHeight: "calc(100vh - 48px)" }}>
                 <div style={{ textAlign: "center", padding: 40 }}>Loading...</div>
             </div>
         );
     }
 
     return (
-        <div style={{ padding: "0px 24px", background: "#f8fafc", minHeight: "100dvh" }}>
+        // NOTE: outer height subtracts external header (48px). Adjust if your external header is different.
+        <div
+            style={{
+                padding: "24px",
+                background: "#f8fafc",
+                height: "calc(100vh - 48px)",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+                boxSizing: "border-box",
+            }}
+        >
             {/* header + search UI (unchanged) */}
-            <div style={{ display: "flex", gap: "24px", alignItems: "center", marginBottom: 24 }}>
+            <div style={{ display: "flex", gap: "24px", alignItems: "center", marginBottom: 24, flexShrink: 0 }}>
                 <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0 }} className="custom-font-jura">User Management</h2>
 
                 <span style={{ display: "flex", padding: "4px", width: "60px", justifyContent: "center", alignItems: "center", gap: 8, alignSelf: "stretch", borderRadius: "999px", background: "#E0E0E0" }}>
@@ -573,89 +555,30 @@ export default function AdminTable() {
                 </div>
             </div>
 
-            {/* AG Grid container */}
-            <div style={{ borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)", border: "1px solid #eee", background: "white" }}>
+            {/* AG Grid container - flex column. grid + footer share the remaining space */}
+            <div style={{ borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)", border: "1px solid #eee", background: "white", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
                 <style>{`
-          /* Header Styles */
-          .ag-theme-alpine .ag-header { 
-              background: #F7F7F7 !important; /* Matches even row background for consistency or keep blue? User didn't specify header bg, but said "includes header" fixed size. keeping blue for now or ... User provided flex style for row includes header. */
-          }
-           /* Header Cell - fixed size 140px part is handled by columnDefs, here we handle the flex layout */
-          .ag-theme-alpine .ag-header-cell { 
-              background: #0369a1; 
-              color: white !important; 
-              font-family: 'Jura', sans-serif !important;
-              font-weight: 600;
-              padding: 4px 8px !important;
-              display: flex;
-              align-items: center;
-              border-right: 1px solid rgba(255,255,255,0.2) !important;
-          }
-
-          /* Prevent header hover color change */
-          .ag-theme-alpine .ag-header-cell:hover {
-              background-color: #0369a1 !important;
-              background: #0369a1 !important;
-          }
-          
+          .ag-theme-alpine .ag-header { background: #F7F7F7 !important; }
+          .ag-theme-alpine .ag-header-cell { background: #0369a1; color: white !important; font-family: 'Jura', sans-serif !important; font-weight: 600; padding: 4px 8px !important; display: flex; align-items: center; border-right: 1px solid rgba(255,255,255,0.2) !important; }
+          .ag-theme-alpine .ag-header-cell:hover { background-color: #0369a1 !important; background: #0369a1 !important; }
           .ag-theme-alpine .ag-header-cell-text { color: white !important; }
           .ag-theme-alpine .ag-header-icon { color: white !important; }
-
-          /* ROW STYLING */
-          /* General row styles from default Theme are overridden below */
-          .ag-theme-alpine .ag-row {
-              font-family: 'Jura', sans-serif !important;
-              font-size: 14px !important;
-              color: #303030 !important;
-              border-bottom: 1px solid #E0E0E0 !important; /* var(--Colors-Border-Base-base, #E0E0E0) */
-              display: flex !important; /* As requested */
-              align-items: center !important;
-              padding: 0 !important; /* AG Grid handles padding in cells usually, but user asked for padding 0 8px on row. AG Grid puts content in cells. We can put padding on row but it might shift cells. Better to let cells have padding. User said "padding: 0 8px" for row. */
-          }
-
-          /* ODD ROWS */
-          .ag-theme-alpine .ag-row-odd { 
-              background: #F7F7F7 !important; /* var(--Colors-Surface-Neutral-neutral-bold, #F7F7F7) */
-              height: 48px !important;
-          }
-
-          /* EVEN ROWS */
-          .ag-theme-alpine .ag-row-even { 
-              background: #FFF !important; /* var(--Colors-Surface-Neutral-neutral-subtle, #FFF) */
-              height: 48px !important;
-          }
-          
-          /* Hover effect override if needed, otherwise keep default or remove */
+          .ag-theme-alpine .ag-row { font-family: 'Jura', sans-serif !important; font-size: 14px !important; color: #303030 !important; border-bottom: 1px solid #E0E0E0 !important; display: flex !important; align-items: center !important; padding: 0 !important; }
+          .ag-theme-alpine .ag-row-odd { background: #F7F7F7 !important; height: 48px !important; }
+          .ag-theme-alpine .ag-row-even { background: #FFF !important; height: 48px !important; }
           .ag-theme-alpine .ag-row-hover { background: #eff6ff !important; }
-
-          /* CELL STYLES - Matches "display: flex; width: 140px; padding: 4px 8px; ..." */
-          .ag-theme-alpine .ag-cell {
-              display: flex !important;
-              align-items: center !important;
-              padding: 4px 8px !important;
-              gap: 8px !important;
-              color: #303030 !important;
-              font-weight: 400 !important;
-              line-height: normal !important;
-              border: none !important;
-          }
-
-          /* Global Action Column Styles (Pinned Right) */
-          .ag-theme-alpine .ag-pinned-right-cols-container .ag-cell { 
-              background: inherit !important; /* Match row background */
-              border-left: 1px solid #E0E0E0 !important;
-          }
-
+          .ag-theme-alpine .ag-cell { display: flex !important; align-items: center !important; padding: 4px 8px !important; gap: 8px !important; color: #303030 !important; font-weight: 400 !important; line-height: normal !important; border: none !important; }
+          .ag-theme-alpine .ag-pinned-right-cols-container .ag-cell { background: inherit !important; border-left: 1px solid #E0E0E0 !important; }
           .ag-theme-alpine .ag-root-wrapper { border: none; }
-          
-          /* Hide horizontal scrollbar but keep functionality */
+          /* allow internal vertical scrolling while hiding the horizontal scrollbar if desired */
           .ag-theme-alpine .ag-body-horizontal-scroll { display: none !important; }
         `}</style>
 
-                <div ref={gridRef} className="ag-theme-alpine custom-font-jura" style={{ height: 450, width: "100%" }} />
+                {/* Grid wrapper: must allow flexbox children to shrink; minHeight:0 is critical */}
+                <div ref={gridRef} className="ag-theme-alpine custom-font-jura" style={{ flex: 1, width: "100%", minHeight: 0 }} />
 
-                {/* Custom pagination */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderTop: "1px solid #e5e7eb", background: "white" }}>
+                {/* Pagination footer - fixed height inside this card */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderTop: "1px solid #e5e7eb", background: "white", flexShrink: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         <span className="custom-font-jura" style={{ fontSize: "14px", color: "#374151", fontWeight: 500 }}>Items per page:</span>
                         <div style={{ position: "relative" }}>
@@ -681,7 +604,6 @@ export default function AdminTable() {
                     </div>
 
                     <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                        {/* page number buttons */}
                         {(() => {
                             const totalPages = Math.ceil(filteredData.length / pageSize);
                             const pages = [];
