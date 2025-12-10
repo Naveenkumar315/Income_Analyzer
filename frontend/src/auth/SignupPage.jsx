@@ -90,10 +90,10 @@ function SignupPage() {
             setLoading(true);
 
             // TESTING MODE: Skip email verification and go directly to terms & conditions
-            console.log("⚠️ EMAIL VERIFICATION DISABLED FOR TESTING");
-            toast("Skipping email verification for testing", { icon: 'ℹ️' });
-            startTransition(() => setStep(SIGNUP_STEPS.TERMS_CONDITION));
-            return
+            // console.log("⚠️ EMAIL VERIFICATION DISABLED FOR TESTING");
+            // toast("Skipping email verification for testing", { icon: 'ℹ️' });
+            // startTransition(() => setStep(SIGNUP_STEPS.TERMS_CONDITION));
+            // return
 
             // //ORIGINAL CODE - Uncomment to re-enable email verification
             // Show verification screen immediately(optimistic)
