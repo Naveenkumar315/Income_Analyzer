@@ -6,6 +6,9 @@ import {
     SettingOutlined,
     BellOutlined,
     UserOutlined,
+    LogoutOutlined,
+    TeamOutlined,
+    SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import logo from "../assets/loandna.png";
 import dna_strand from "../assets/dna-strand.svg"
@@ -38,34 +41,73 @@ const HelpButton = () => {
     );
 };
 
-const ProfileOverlay = ({ onLogout, onAdmin, isAdmin }) => {
+const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
+    // Derive display name/initials
+    const email = userData?.email || "";
+    const role = userData?.role || "User";
+    // Simple logic to get a name-like string or fallback to email
+    const displayName = email.split("@")[0] || "User";
+    // Title case for name
+    const formattedName = displayName.replace(/\./g, " ").replace(/\b\w/g, l => l.toUpperCase());
+
     return (
-        <div className="min-w-[170px] bg-white rounded-md shadow-lg p-2">
-            {/* top: Logout */}
-            <button
-                type="button"
-                onClick={onLogout}
-                className="w-full text-left px-3 py-2 font-creato rounded-md hover:bg-gray-50 text-sm text-gray-700"
-            >
-                Logout
-            </button>
+        <div className="w-[280px] bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] overflow-hidden font-creato">
+            {/* Decorative Header Background */}
+            <div className="h-24 bg-gradient-to-r from-[#e6f7ff] to-[#f0f5ff] relative overflow-hidden">
+                <img
+                    src={dna_strand}
+                    alt=""
+                    className="absolute top-[-20%] right-[-10%] w-32 opacity-30 rotate-12"
+                />
+            </div>
 
-            {/* Only show Admin Page for admin users */}
-            {isAdmin && (
-                <>
-                    {/* divider */}
-                    <div className="my-1 border-t border-gray-100" />
+            {/* Content Container - Negative margin to pull avatar up */}
+            <div className="px-6 pb-6 relative">
+                {/* Avatar */}
+                <div className="flex justify-center -mt-10 mb-3">
+                    <div className="bg-white p-1 rounded-2xl shadow-sm">
+                        <Avatar
+                            size={80}
+                            className="!bg-[#f5f5f5] !text-gray-600 !text-3xl !rounded-xl border border-gray-100 flex items-center justify-center font-creato"
+                        >
+                            {formattedName.charAt(0)}
+                        </Avatar>
+                    </div>
+                </div>
 
-                    {/* bottom: Admin Page */}
+                {/* User Info */}
+                <div className="text-center mb-6">
+                    <h3 className="text-lg font-bold text-gray-800 mb-1">{formattedName}</h3>
+                    <div className="flex items-center justify-center gap-1.5 text-gray-500 text-sm">
+                        <SafetyCertificateOutlined />
+                        <span className="capitalize">{role === 'admin' ? 'Master Admin' : role}</span>
+                    </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-1">
+                    {/* Only show Admin Page for admin users */}
+                    {isAdmin && (
+                        <button
+                            type="button"
+                            onClick={onAdmin}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors group"
+                        >
+                            <TeamOutlined className="text-lg text-gray-400 group-hover:text-gray-600" />
+                            <span className="text-sm font-medium">Users Management</span>
+                        </button>
+                    )}
+
                     <button
                         type="button"
-                        onClick={onAdmin}
-                        className="w-full text-left px-3 py-2 font-creato rounded-md hover:bg-gray-50 text-sm text-gray-700"
+                        onClick={onLogout}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-[#ff4d4f] hover:bg-[#fff1f0] rounded-lg transition-colors group"
                     >
-                        User Management
+                        <LogoutOutlined className="text-lg" />
+                        <span className="text-sm font-medium">Logout</span>
                     </button>
-                </>
-            )}
+                </div>
+            </div>
         </div>
     );
 };
@@ -104,6 +146,7 @@ export default function Header() {
             onLogout={() => { dropdownClose(); handleLogout(); }}
             onAdmin={() => { dropdownClose(); handleAdmin(); }}
             isAdmin={isAdmin}
+            userData={userData}
         />
     );
 
