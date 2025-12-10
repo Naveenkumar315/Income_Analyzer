@@ -117,8 +117,8 @@ export default function AdminTable() {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", textAlign: "center", width: "100%" }}>
             {iconSrc && <img src={iconSrc} alt="icon" style={{ width: "48px", height: "48px" }} />}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <span style={{ fontSize: "16px", fontWeight: 600, color: "#18181B" }} className="custom-font-jura">{title}</span>
-                <span style={{ fontSize: "14px", fontWeight: 400, color: "#71717A" }} className="custom-font-jura">{message}</span>
+                <span style={{ fontSize: "16px", fontWeight: 600, color: "#18181B" }} className="font-creato">{title}</span>
+                <span style={{ fontSize: "14px", fontWeight: 400, color: "#71717A" }} className="font-creato">{message}</span>
             </div>
         </div>
     );
@@ -325,7 +325,7 @@ export default function AdminTable() {
                   <span style="position:absolute;height:12px;width:12px;left:${isActive ? "12px" : "2px"};bottom:2px;background:white;transition:0.3s;border-radius:50%;"></span>
                 </span>
               </label>
-              <span class="custom-font-jura" style="margin-left:8px;font-size:13px;color:#64748b;">${isActive ? "Active" : "Inactive"}</span>
+              <span class="font-creato" style="margin-left:8px;font-size:13px;color:#64748b;">${isActive ? "Active" : "Inactive"}</span>
             </div>
           `;
                 },
@@ -396,12 +396,12 @@ export default function AdminTable() {
                         return `
               <div style="display:flex;flex-direction:column;gap:4px;padding:4px 0;">
                 <div style="display:flex;gap:12px;align-items:center;">
-                  <button class="approve-btn custom-font-jura" data-id="${params.data.id}" style="${baseBtnStyle} color:#16a34a;" title="Approve">
+                  <button class="approve-btn font-creato" data-id="${params.data.id}" style="${baseBtnStyle} color:#16a34a;" title="Approve">
                     <img src="${circleCheck}" alt="Approve" style="width:14px;height:14px;"/>
                     <span>Approve</span>
                   </button>
 
-                  <button class="reject-btn custom-font-jura" data-id="${params.data.id}" style="${baseBtnStyle} color:#dc2626;" title="Reject">
+                  <button class="reject-btn font-creato" data-id="${params.data.id}" style="${baseBtnStyle} color:#dc2626;" title="Reject">
                     <img src="${circleClose}" alt="Reject" style="width:14px;height:14px;"/>
                     <span>Reject</span>
                   </button>
@@ -412,7 +412,7 @@ export default function AdminTable() {
 
                     return `
             <div style="display:flex;flex-direction:column;padding:4px 0;">
-              <button class="delete-btn custom-font-jura" data-id="${params.data.id}" style="${baseBtnStyle} color:#dc2626;" title="Delete User">
+              <button class="delete-btn font-creato" data-id="${params.data.id}" style="${baseBtnStyle} color:#dc2626;" title="Delete User">
                 <img src="${deleteIcon}" alt="Delete" style="width:14px;height:14px;"/>
                 <span style="color:#4D4D4D;">Delete User</span>
               </button>
@@ -580,11 +580,11 @@ export default function AdminTable() {
             <div style={{ borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)", border: "1px solid #eee", background: "white", display: "flex", flexDirection: "column" }}>
                 <style>{`
           .ag-theme-alpine .ag-header { background: #F7F7F7 !important; }
-          .ag-theme-alpine .ag-header-cell { background: #0369a1; color: white !important; font-family: 'Jura', sans-serif !important; font-weight: 600; padding: 4px 8px !important; display: flex; align-items: center; }
+          .ag-theme-alpine .ag-header-cell { background: #0369a1; color: white !important; font-family: 'Creato Display', sans-serif !important; font-weight: 400; padding: 4px 8px !important; display: flex; align-items: center; font-size: 14px !important; line-height: 16px !important; font-style: normal !important; }
           .ag-theme-alpine .ag-header-cell:hover { background-color: #0369a1 !important; background: #0369a1 !important; }
           .ag-theme-alpine .ag-header-cell-text { color: white !important; }
           .ag-theme-alpine .ag-header-icon { color: white !important; }
-          .ag-theme-alpine .ag-row { font-family: 'Jura', sans-serif !important; font-size: 14px !important; color: #303030 !important; font-weight: 400 !important; border-bottom: 1px solid #E0E0E0 !important; display: flex !important; align-items: center !important; padding: 0 !important; }
+          .ag-theme-alpine .ag-row { font-family: 'Creato Display', sans-serif !important; font-size: 14px !important; color: #303030 !important; font-weight: 400 !important; border-bottom: 1px solid #E0E0E0 !important; display: flex !important; align-items: center !important; padding: 0 !important; }
           .ag-theme-alpine .ag-row-odd { background: #F7F7F7 !important; height: 48px !important; }
           .ag-theme-alpine .ag-row-even { background: #FFF !important; height: 48px !important; }
           .ag-theme-alpine .ag-row-hover { background: #eff6ff !important; }
@@ -654,7 +654,7 @@ export default function AdminTable() {
                 {/* Grid wrapper: dynamic height with max limit */}
                 <div
                     ref={gridRef}
-                    className="ag-theme-alpine custom-font-jura"
+                    className="ag-theme-alpine font-creato"
                     style={{
                         width: "100%",
                         height: `${Math.max(1, Math.min(pageSize, filteredData.length - (currentPage - 1) * pageSize)) * 48 + 50}px`,
@@ -667,9 +667,9 @@ export default function AdminTable() {
                 {/* Pagination footer - fixed height inside this card */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderTop: "1px solid #e5e7eb", background: "white", flexShrink: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <span className="custom-font-jura" style={{ fontSize: "14px", color: "#374151", fontWeight: 500 }}>Items per page:</span>
+                        <span className="font-creato" style={{ fontSize: "14px", color: "#374151", fontWeight: 500 }}>Items per page:</span>
                         <div style={{ position: "relative" }}>
-                            <select className="custom-font-jura" value={pageSize} onChange={(e) => {
+                            <select className="font-creato" value={pageSize} onChange={(e) => {
                                 const newSize = Number(e.target.value);
                                 setPageSize(newSize);
                                 setCurrentPage(1);
@@ -685,7 +685,7 @@ export default function AdminTable() {
                             <span style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", fontSize: "12px", color: "#6b7280" }}>▼</span>
                         </div>
 
-                        <span className="custom-font-jura" style={{ fontSize: "14px", color: "#9ca3af", marginLeft: "8px" }}>
+                        <span className="font-creato" style={{ fontSize: "14px", color: "#9ca3af", marginLeft: "8px" }}>
                             {Math.min((currentPage - 1) * pageSize + 1, filteredData.length)} - {Math.min(currentPage * pageSize, filteredData.length)} of {filteredData.length} items
                         </span>
                     </div>
@@ -704,12 +704,12 @@ export default function AdminTable() {
 
                             return pages.map((page, idx) => {
                                 if (page === "...") {
-                                    return <span key={`ellipsis-${idx}`} className="custom-font-jura" style={{ padding: "6px 8px", fontSize: "14px", color: "#9ca3af" }}>...</span>;
+                                    return <span key={`ellipsis-${idx}`} className="font-creato" style={{ padding: "6px 8px", fontSize: "14px", color: "#9ca3af" }}>...</span>;
                                 }
                                 const isFirstThree = page <= 3;
                                 const isActive = currentPage === page;
                                 return (
-                                    <button className="custom-font-jura" key={page} onClick={() => {
+                                    <button className="font-creato" key={page} onClick={() => {
                                         setCurrentPage(page);
                                         if (gridApi) gridApi.paginationGoToPage(page - 1);
                                     }} style={{ minWidth: "36px", height: "36px", padding: "6px 12px", fontSize: "14px", border: "none", borderRadius: "6px", background: isActive ? "#3b82f6" : (isFirstThree ? "#e0f2fe" : "transparent"), color: isActive ? "white" : "#374151", cursor: "pointer", fontWeight: isActive ? 600 : 400, transition: "all 0.2s" }}>
@@ -721,7 +721,7 @@ export default function AdminTable() {
 
                         <div style={{ width: "1px", height: "24px", background: "#e5e7eb", margin: "0 8px" }} />
 
-                        <button className="custom-font-jura" onClick={() => {
+                        <button className="font-creato" onClick={() => {
                             if (currentPage > 1) {
                                 const newPage = currentPage - 1;
                                 setCurrentPage(newPage);
@@ -729,7 +729,7 @@ export default function AdminTable() {
                             }
                         }} disabled={currentPage === 1} style={{ border: "none", background: "transparent", cursor: currentPage === 1 ? "not-allowed" : "pointer", color: currentPage === 1 ? "#d1d5db" : "#374151", fontSize: "24px", padding: "0 8px", display: "flex", alignItems: "center" }}>‹</button>
 
-                        <button className="custom-font-jura" onClick={() => {
+                        <button className="font-creato" onClick={() => {
                             const totalPages = Math.ceil(filteredData.length / pageSize);
                             if (currentPage < totalPages) {
                                 const newPage = currentPage + 1;
