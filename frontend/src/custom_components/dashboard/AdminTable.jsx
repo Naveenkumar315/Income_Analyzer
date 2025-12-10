@@ -294,11 +294,12 @@ export default function AdminTable() {
                 suppressSizeToFit: true,
                 cellRenderer: (params) => {
                     const isActive = params.data.isActive;
+                    const isPending = params.data.status === "pending";
                     return `
             <div style="display:flex;align-items:center;height:100%;padding-left:8px;">
-              <label style="position:relative;display:flex;width:26px;height:16px;justify-content:center;align-items:center;">
-                <input type="checkbox" ${isActive ? "checked" : ""} class="status-toggle" data-id="${params.data.id}" data-status="${params.data.status}" style="opacity:0;width:0;height:0;" />
-                <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:${isActive ? "#3b82f6" : "#cbd5e1"};transition:0.3s;border-radius:16px;">
+              <label style="position:relative;display:flex;width:26px;height:16px;justify-content:center;align-items:center;cursor:${isPending ? "not-allowed" : "pointer"};opacity:${isPending ? "0.6" : "1"};">
+                <input type="checkbox" ${isActive ? "checked" : ""} ${isPending ? "disabled" : ""} class="status-toggle" data-id="${params.data.id}" data-status="${params.data.status}" style="opacity:0;width:0;height:0;pointer-events:none;" />
+                <span style="position:absolute;cursor:${isPending ? "not-allowed" : "pointer"};top:0;left:0;right:0;bottom:0;background-color:${isActive ? "#3b82f6" : "#cbd5e1"};transition:0.3s;border-radius:16px;">
                   <span style="position:absolute;height:12px;width:12px;left:${isActive ? "12px" : "2px"};bottom:2px;background:white;transition:0.3s;border-radius:50%;"></span>
                 </span>
               </label>
@@ -476,7 +477,7 @@ export default function AdminTable() {
                         if (user) {
                             event.event.preventDefault();
                             if (user.status === "pending") {
-                                handleApprove(id);
+                                return;
                             } else {
                                 const newStatus = user.isActive ? "inactive" : "active";
                                 handleStatusToggle(id, newStatus);
