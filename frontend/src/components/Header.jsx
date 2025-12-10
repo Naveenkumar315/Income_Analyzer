@@ -62,7 +62,7 @@ const ProfileOverlay = ({ onLogout, onAdmin, isAdmin }) => {
                         onClick={onAdmin}
                         className="w-full text-left px-3 py-2 font-creato rounded-md hover:bg-gray-50 text-sm text-gray-700"
                     >
-                        Admin Page
+                        User Management
                     </button>
                 </>
             )}
