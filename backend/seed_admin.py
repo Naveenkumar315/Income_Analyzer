@@ -10,7 +10,7 @@ from app.utils.security import hash_password
 async def seed_admin():
     print("Seeding admin user...")
     
-    email = "lsaravanan@loandna.com"
+    email = "lsaravanan@loandna.com".lower().strip()
     password = "Test@123"
     
     # Check if user exists

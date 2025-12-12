@@ -6,6 +6,7 @@ from fastapi import HTTPException
 
 
 async def register_user(user: UserCreate):
+    user.email = user.email.lower().strip()
     existing = await db["users"].find_one({"email": user.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -27,6 +28,7 @@ async def register_user(user: UserCreate):
 
 async def login_user(user: UserLogin):
     print("LOGIN API CALLING!!!!!!")
+    user.email = user.email.lower().strip()
     db_user = await db["users"].find_one({"email": user.email})
     if not db_user:
         raise HTTPException(status_code=400, detail="Invalid credentials")
@@ -56,6 +58,17 @@ async def signup_user(signup_data: SignupRequest):
     Handle user signup with company or individual details.
     Creates user with temporary password Test@123, role as 'user', and nested data structure.
     """
+    signup_data.email = signup_data.email.lower().strip()
+
+    if signup_data.companyInfo:
+        signup_data.companyInfo.companyEmail = signup_data.companyInfo.companyEmail.lower().strip()
+
+    if signup_data.primaryContact:
+        signup_data.primaryContact.email = signup_data.primaryContact.email.lower().strip()
+
+    if signup_data.individualInfo:
+        signup_data.individualInfo.email = signup_data.individualInfo.email.lower().strip()
+
     # Check if user already exists
     existing = await db["users"].find_one({"email": signup_data.email})
     if existing:
@@ -106,6 +119,7 @@ async def check_email_exists(email: str):
     Check if an email already exists in the users collection.
     Returns exists status and email.
     """
+    email = email.lower().strip()
     existing = await db["users"].find_one({"email": email})
     return {
         "exists": existing is not None,
