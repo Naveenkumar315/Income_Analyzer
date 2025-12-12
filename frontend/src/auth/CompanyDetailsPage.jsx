@@ -1,6 +1,6 @@
 // src/pages/CompanyDetailsPage.jsx
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import { Form } from "antd";
+import { Form, message } from "antd";
 import { UploadOutlined, DeleteOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "antd/dist/reset.css";
@@ -273,7 +273,8 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         label="Company Name"
                                         name="companyName"
                                         placeholder="Enter Company Name"
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a Company Name" }]}
+
                                     />
                                     <FormField
                                         type="dropdown"
@@ -294,7 +295,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         name="companyPhone"
                                         placeholder="Enter Company Phone Number"
                                         onChange={handlePhoneNumberChange}
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a Company Phone Number" }]}
                                     />
                                     <FormField
                                         type="text"
@@ -302,7 +303,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         name="companyEmail"
                                         placeholder="Enter Company Email"
                                         rules={[
-                                            { required: true },
+                                            { required: true, message: "Please enter a Company Email" },
                                             { type: "email", message: "Invalid email format" }
                                         ]}
                                     />
@@ -318,7 +319,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         label="Street Address"
                                         name="streetAddress"
                                         placeholder="Enter Street Address"
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a Street Address" }]}
                                     />
                                     <FormField
                                         type="text"
@@ -327,7 +328,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         placeholder="Enter Zip Code"
                                         onChange={handleZipCodeChange}
                                         maxLength={5}
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a Zip Code" }]}
                                     />
                                     <FormField
                                         type="text"
@@ -335,7 +336,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         name="city"
                                         placeholder="Enter City"
                                         disabled={isLoadingZip}
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a City" }]}
                                     />
                                     <FormField
                                         type="dropdown"
@@ -344,7 +345,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         placeholder="Select State"
                                         options={statesList}
                                         disabled={isLoadingZip}
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please select a state"}]}
                                     />
                                 </div>
 
@@ -358,14 +359,14 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         label="First Name"
                                         name="primaryFirstName"
                                         placeholder="Enter First Name"
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a First Name" }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Last Name"
                                         name="primaryLastName"
                                         placeholder="Enter Last Name"
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a Last Name" }]}
                                     />
                                     <FormField
                                         type="text"
@@ -373,7 +374,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         name="primaryPhone"
                                         placeholder="Enter Phone Number"
                                         onChange={handlePhoneNumberChange}
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a Phone Number" }]}
                                     />
                                     <FormField
                                         type="text"
@@ -382,7 +383,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         placeholder="Enter Email"
                                         disabled={true}
                                         rules={[
-                                            { required: true },
+                                            { required: true, message: "Please enter an Email" },
                                             { type: "email", message: "Invalid email format" }
                                         ]}
                                     />
@@ -469,14 +470,14 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         label="First Name"
                                         name="firstName"
                                         placeholder="Enter First Name"
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a First Name" }]}
                                     />
                                     <FormField
                                         type="text"
                                         label="Last Name"
                                         name="lastName"
                                         placeholder="Enter Last Name"
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a Last Name" }]}
                                     />
                                     <FormField
                                         type="text"
@@ -484,7 +485,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         name="phone"
                                         placeholder="Enter Phone Number"
                                         onChange={handlePhoneNumberChange}
-                                        rules={[{ required: true }]}
+                                        rules={[{ required: true, message: "Please enter a Phone Number" }]}
                                     />
                                     <FormField
                                         type="text"
@@ -493,7 +494,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                         placeholder="Enter Email"
                                         disabled={true}
                                         rules={[
-                                            { required: true },
+                                            { required: true, message: "Please enter an Email" },
                                             { type: "email", message: "Invalid email format" }
                                         ]}
                                     />
