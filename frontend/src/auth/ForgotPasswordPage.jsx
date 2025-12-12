@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
             } catch (err) {
                 console.error("send code error", err);
                 const message = err?.response?.data?.detail || "Unable to send verification code.";
-                toast.error(message);
+                toast.error(message); // <-- server error (e.g., "email not registered") shown on button click
             } finally {
                 setLoading(false);
             }
@@ -228,18 +228,16 @@ export default function ForgotPasswordPage() {
             <div
                 className={
                     "relative z-10 bg-white rounded-xl shadow-md " +
-                    `w-[90%] max-w-[420px] md:w-[384px] ${cardHeightClass} ` +
-                    "px-6 py-6 md:px-8 md:py-8 overflow-hidden"
+                    `w-[90%] max-w-[420px] md:w-[400px] ${cardHeightClass} ` +
+                    "px-3 py-6 md:px-8 md:py-4 overflow-hidden"
                 }
             >
-                <div className="h-full w-full flex flex-col" style={{ minHeight: 0 }}>
-                    <div className="absolute -inset-x-0 -bottom-2 pointer-events-none flex justify-center">
-                        <div className="w-[96%] border-t-2 border-sky-500 rounded-b-lg" />
-                    </div>
+                <div className="w-full flex flex-col" style={{ minHeight: 0 }}>
 
-                    <div className="w-full overflow-auto" style={{ paddingRight: 8 }}>
+
+                    <div className="w-full overflow-auto" >
                         {/* logo */}
-                        <div className="mb-4 flex items-center justify-center gap-2 w-full">
+                        <div className="mb-2 flex items-center justify-center gap-2 w-full">
                             <img src="/dna-strand.svg" alt="" className="h-6 w-6" />
                             <div className="flex items-center">
                                 <span className="text-gray-800 text-xl font-extrabold font-creato uppercase leading-7">
@@ -252,7 +250,7 @@ export default function ForgotPasswordPage() {
                         </div>
 
                         {/* headings */}
-                        <div className="text-center mb-4">
+                        <div className="text-center mb-2">
                             <h2 className="text-2xl font-bold custom-font-jura leading-8 mb-1 ">
                                 {step === "verify" ? "Update Password" : "Forgot Password?"}
                             </h2>
@@ -286,17 +284,27 @@ export default function ForgotPasswordPage() {
                                         onChange={(e) => handleEmailChangeAndCheck(e?.target?.value)}
                                     />
 
+                                    {/* 
+                                        COMMENTED OUT: hide "Email is not registered" while typing.
+                                        We only show this via toast when user clicks Send (handleSendCode).
+                                    */}
+                                    {/*
                                     {!checkingEmail && form.getFieldValue("email") && !emailExists && (
                                         <div className="text-red-500 text-xs mt-[-12px] mb-3">Email is not registered</div>
                                     )}
+                                    */}
 
-                                    <div className="mt-6">
+                                    <div className={`mt-6 ${loading || checkingEmail || !emailExists ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
                                         <CustomButton
                                             variant="primary"
                                             type="button"
-                                            disabled={loading || checkingEmail}
+                                            disabled={loading || checkingEmail || !emailExists}
                                             onClick={handleSendCode}
-                                            className="w-full rounded-lg py-3 flex items-center justify-center gap-3 text-white text-base font-medium"
+                                            className={`
+                                                w-full rounded-lg py-3 flex items-center justify-center gap-3 
+                                                text-white text-base font-medium
+                                                
+                                                `}
                                         >
                                             {loading ? "Sending..." : "Send Verification Code"}
                                             <img src="/arrow-right-active.png" alt="" className="w-4 h-4" />
@@ -349,21 +357,14 @@ export default function ForgotPasswordPage() {
 
                                     {/* password rules checklist (above the update button) */}
                                     {/* ultra-compact password rules */}
-                                    <div className="mb-2 text-[12px] leading-[13px] text-gray-600 font-creato">
-                                        <div className={pwdChecks.length ? "text-green-600" : ""}>
-                                            • Minimum 12 characters
-                                        </div>
-                                        <div className={pwdChecks.lowercase ? "text-green-600" : ""}>
-                                            • At least 1 lowercase letter
-                                        </div>
-                                        <div className={pwdChecks.uppercase ? "text-green-600" : ""}>
-                                            • At least 1 uppercase letter
-                                        </div>
-                                        <div className={pwdChecks.number ? "text-green-600" : ""}>
-                                            • At least 1 number
-                                        </div>
-                                        <div className={pwdChecks.special ? "text-green-600" : ""}>
-                                            • At least 1 special character from [!@#$%^&*(),.?":{ }|]
+                                    {/* Password rule block – matches screenshot style */}
+                                    <div className="mt-2">
+                                        <div
+                                            className={`text-[12px] leading-[16px] font-creato transition-all duration-200 ${Object.values(pwdChecks).every(Boolean) ? "text-green-700" : "text-gray-600"
+                                                }`}
+                                        >
+                                            At least one lowercase, one uppercase, one number,<br />
+                                            one special character – [!@#$%^&*(),.?":{ }|], Minimum 12 characters
                                         </div>
                                     </div>
 

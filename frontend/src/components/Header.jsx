@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Menu, Badge, Avatar, Dropdown } from "antd";
 import {
     DashboardOutlined,
@@ -14,11 +14,16 @@ import logo from "../assets/loandna.png";
 import dna_strand from "../assets/dna-strand.svg"
 import { useNavigate } from "react-router-dom";
 import { clearTokens, getUserData } from "../utils/authService";
+import layoutdashboard from "../assets/layout-dashboard.svg"
+import settings from "../assets/settings.svg"
+import filesearch2 from "../assets/file-search-2.svg"
+import scrolltext from "../assets/scroll-text.svg"
 
 const menuItems = [
-    { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined /> },
-    { key: "loan-search", label: "Loan Product Search", icon: <SearchOutlined /> },
-    { key: "settings", label: "Settings", icon: <SettingOutlined /> },
+    { key: "dashboard", label: "Dashboard", icon: layoutdashboard },
+    { key: "loan-search", label: "Loan Product Search", icon: filesearch2 },
+    { key: "Rules", label: "Rules", icon: scrolltext },
+    { key: "settings", label: "Settings", icon: settings },
 ];
 
 const HelpButton = () => {
@@ -132,14 +137,23 @@ export default function Header() {
     };
 
     const handleAdmin = () => {
+        debugger
         console.log("admin clicked");
         if (typeof navigate === "function") {
-            navigate("/admin");
+            setSelectedKey("")
+            return navigate("/admin");
         } else {
             // fallback
             window.location.href = "/admin";
         }
     };
+
+    useEffect(() => {
+        console.log("===================>", selectedKey)
+        if (selectedKey === "dashboard") {
+            navigate('/home')
+        }
+    }, [selectedKey, navigate])
 
     // custom overlay element for Dropdown
     const overlay = (
@@ -181,14 +195,14 @@ export default function Header() {
                             label: (
                                 <div
                                     className={`
-                    h-12 px-3 
+                    h-12 px-1 
                     inline-flex items-center  
                     border-b-2
                     ${selectedKey === it.key ? "border-[#24A1DD]" : "border-transparent"}
                   `}
                                 >
-                                    <div className="w-5 h-5 flex items-center justify-center">
-                                        {it.icon}
+                                    <div className="w-5 mr-2 h-5 flex items-center justify-center">
+                                        <img src={it.icon} alt="" className="w-5 h-5 object-contain" />
                                     </div>
                                     <span className="text-sm font-normal">{it.label}</span>
                                 </div>

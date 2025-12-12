@@ -20,19 +20,24 @@ export default function LoginPage() {
     const { user, setUser } = useApp();
 
     const onFinish = useCallback(async (values) => {
-        debugger
         setLoading(true);
         try {
-            // Call login API
+            const email = (values.email || "").trim();
+            const password = (values.password || "").trim();
+
+            // We intentionally DO NOT block submit just because email may not exist.
+            // Let server respond with clear error and show toast.
+
             setUser(() => ({
                 email: values.email
-            }))
+            }));
+
             const response = await authApi.login({
-                email: values.email,
-                password: values.password
+                email,
+                password
             });
 
-            // Check user status - only 'active' users can login
+            // success path
             if (response.status === "pending") {
                 toast.error("Your account is pending approval. Please wait for admin approval.");
                 setLoading(false);
@@ -50,11 +55,13 @@ export default function LoginPage() {
                 setLoading(false);
                 return;
             }
+
             if (response?.is_first_time_user) {
+                setLoading(false);
                 return navigate("/update-password");
             }
 
-            // Save tokens to session storage
+            // Save tokens and continue
             setTokens(response.access_token, response.refresh_token, {
                 email: response.email,
                 role: response.role,
@@ -65,56 +72,55 @@ export default function LoginPage() {
             navigate("/home");
         } catch (error) {
             console.error("Login error:", error);
-            const errorMessage = error.response?.data?.detail || "Invalid email or password";
-            toast.error(errorMessage);
+
+            // Show toast message for wrong credentials / not registered email
+            // Prefer server-provided message if available.
+            const serverMsg = error?.response?.data?.detail;
+            if (serverMsg) {
+                toast.error(serverMsg);
+            } else {
+                // fallback message
+                toast.error("Invalid email or password");
+            }
         } finally {
             setLoading(false);
         }
-    }, [navigate]);
+    }, [navigate, setUser]);
 
+    // ---------- UPDATED: compute form-validity locally (no waiting on server) ----------
     const handleFieldsChange = useCallback(() => {
         const values = form.getFieldsValue();
         const email = values.email?.trim() || "";
         const password = values.password?.trim() || "";
         const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-        // Clear existing debounce timer
-        if (debounceTimerRef.current) {
-            clearTimeout(debounceTimerRef.current);
-        }
+        // Immediately enable button when both fields are filled and email format valid
+        setIsFormValid(isValidEmail && password.length > 0);
 
-        // If email is valid, debounce the API call
-        if (isValidEmail) {
-            setCheckingEmail(true);
-            debounceTimerRef.current = setTimeout(async () => {
-                try {
-                    const response = await authApi.checkEmailExists(email);
-                    setEmailExists(response.exists);
-                    // Form is valid only if email exists and password is entered
-                    setIsFormValid(response.exists && password.length > 0);
-                } catch (error) {
-                    console.error("Error checking email:", error);
-                    setEmailExists(false);
-                    setIsFormValid(false);
-                } finally {
-                    setCheckingEmail(false);
-                }
-            }, 500); // 500ms debounce delay
-        } else {
-            setIsFormValid(false);
-            setEmailExists(false);
-            setCheckingEmail(false);
-        }
+        // ---------- COMMENTED OUT: debounced server-side email existence check ----------
+        // if you want to keep server-side check while typing, re-enable this block.
+        // if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        // if (isValidEmail) {
+        //   setCheckingEmail(true);
+        //   debounceTimerRef.current = setTimeout(async () => {
+        //     try {
+        //       const response = await authApi.checkEmailExists(email);
+        //       setEmailExists(response.exists);
+        //     } catch (e) {
+        //       setEmailExists(false);
+        //     } finally {
+        //       setCheckingEmail(false);
+        //     }
+        //   }, 500);
+        // } else {
+        //   setEmailExists(false);
+        //   setCheckingEmail(false);
+        // }
+        // -------------------------------------------------------------------------------
 
-        // Immediate validation for password changes when email is already validated
-        if (isValidEmail && emailExists && password.length > 0) {
-            setIsFormValid(true);
-        } else if (isValidEmail && emailExists && password.length === 0) {
-            setIsFormValid(false);
-        }
-    }, [form, emailExists]);
+    }, [form]); // no emailExists dependency so it updates immediately when typing
+    // -------------------------------------------------------------------------------------
 
-    // Cleanup debounce timer on unmount
     useEffect(() => {
         return () => {
             if (debounceTimerRef.current) {
@@ -161,7 +167,6 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-
                 {/* headings */}
                 <div className="text-center">
                     <div className="justify-start text-Colors-Text-Base-base text-2xl font-bold custom-font-jura leading-8">
@@ -181,6 +186,7 @@ export default function LoginPage() {
                     onFieldsChange={handleFieldsChange}
                     requiredMark={false}
                     className="mt-5"
+                    hasFeedback={false}
                 >
                     {/* EMAIL */}
                     <FormField
@@ -194,12 +200,7 @@ export default function LoginPage() {
                         ]}
                     />
 
-                    {/* Email validation feedback */}
-                    {!checkingEmail && form.getFieldValue('email') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.getFieldValue('email')) && !emailExists && (
-                        <div className="text-red-500 text-xs mt-[-16px] mb-4">
-                            Email is not registered
-                        </div>
-                    )}
+                    {/* (Inline "Email not registered" removed — we handle via toast on submit) */}
 
                     {/* PASSWORD */}
                     <FormField
@@ -210,8 +211,6 @@ export default function LoginPage() {
                         rules={[{ required: true, message: "Please enter password" }]}
                     />
 
-
-
                     {/* Forgot password */}
                     <div className="text-Colors-Text-Primary-primary text-sm font-medium font-creato leading-4 cursor-pointer mb-6" onClick={handleNavigateForgot}>
                         Forgot password?
@@ -221,7 +220,8 @@ export default function LoginPage() {
                     <CustomButton
                         variant={isFormValid ? "primary" : "disabled"}
                         type="submit"
-                        className="mt-0"
+                        // keep cursor change so user sees not-allowed when button is disabled
+                        className={`mt-0 ${isFormValid ? "cursor-pointer" : "!cursor-not-allowed"}`}
                         disabled={!isFormValid || loading || checkingEmail}
                     >
                         {loading ? "Logging in..." : "Login"}
