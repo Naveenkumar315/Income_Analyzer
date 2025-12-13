@@ -57,12 +57,12 @@ async def check_email(request: CheckEmailRequest):
 
 
 @router.post('/signup')
-async def signup(signup_data: SignupRequest):
+async def signup(signup_data: SignupRequest, background_tasks: BackgroundTasks):
     """
     Complete user signup with company or individual details.
     Creates user with temporary password, role, and type.
     """
-    return await signup_user(signup_data)
+    return await signup_user(signup_data, background_tasks)
 
 
 @router.post('/update-password')

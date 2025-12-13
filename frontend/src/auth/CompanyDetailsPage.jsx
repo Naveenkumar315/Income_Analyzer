@@ -40,6 +40,10 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                 };
 
                 if (activeTab === "company") {
+                    const username =
+                        `${values.primaryFirstName || ""} ${values.primaryLastName || ""}`.trim();
+
+                    signupData.username = username; //
                     // Structure company data
                     signupData.companyInfo = {
                         companyName: values.companyName,
@@ -60,6 +64,10 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                         email: values.primaryEmail,
                     };
                 } else if (activeTab === "individual") {
+                    const username =
+                        `${values.firstName || ""} ${values.lastName || ""}`.trim();
+
+                    signupData.username = username;
                     // Structure individual data
                     signupData.individualInfo = {
                         firstName: values.firstName,
@@ -68,6 +76,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                         email: values.email?.trim()?.toLowerCase(),
                     };
                 }
+                console.log('signupData', signupData);
 
                 // Call signup API
                 const response = await authApi.signup(signupData);

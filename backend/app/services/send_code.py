@@ -91,7 +91,7 @@ def send_verification_code(request: SendCodeRequest, background_tasks: Optional[
     meta = _upsert_code_record(email, code)
 
     # Build email content (HTML)
-    html = get_verification_code_email(code=code, email=email)
+    html = get_verification_code_email(code=code, recipient_name="")
 
     dispatch_method = "none"
 
@@ -100,7 +100,7 @@ def send_verification_code(request: SendCodeRequest, background_tasks: Optional[
         try:
             # Enqueue the task with minimal args (matching worker signature)
             send_verification_email_task.apply_async(
-                args=[email, "Your Verification Code", html],
+                args=[email, "Your Verification Code - Income Analyzer", html],
                 queue="send_email_queue",
                 retry=False
             )

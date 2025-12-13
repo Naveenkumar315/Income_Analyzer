@@ -88,6 +88,7 @@ class SignupRequest(BaseModel):
     companyAddress: Optional[CompanyAddress] = None
     primaryContact: Optional[PrimaryContact] = None
     individualInfo: Optional[IndividualInfo] = None
+    username: str
 
 
 class UpdatePasswordRequest(BaseModel):

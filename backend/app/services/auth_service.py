@@ -2,7 +2,9 @@ from app.db import db
 from app.utils.security import hash_password, verify_password, create_access_token, create_refresh_token
 from app.models.user import UserCreate, UserLogin, SignupRequest
 from datetime import datetime
-from fastapi import HTTPException
+from fastapi import HTTPException, BackgroundTasks
+from app.utils.email_template import get_admin_new_broker_signup_email_html, get_signup_submitted_email_html
+from app.services.email_service import send_email
 
 
 async def register_user(user: UserCreate):
@@ -53,11 +55,14 @@ async def login_user(user: UserLogin):
     }
 
 
-async def signup_user(signup_data: SignupRequest):
+async def signup_user(
+    signup_data: SignupRequest,
+    background_tasks: BackgroundTasks
+):
     """
-    Handle user signup with company or individual details.
-    Creates user with temporary password Test@123, role as 'user', and nested data structure.
+    Handle user signup and send emails asynchronously (non-blocking).
     """
+
     signup_data.email = signup_data.email.lower().strip()
 
     if signup_data.companyInfo:
@@ -74,43 +79,73 @@ async def signup_user(signup_data: SignupRequest):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # Hash temporary password
-    temp_password = "Test@123"
-    hashed_password = hash_password(temp_password)
-
     now = datetime.utcnow()
 
-    # Build user document based on type
     user_document = {
         "email": signup_data.email,
-        "password": hashed_password,
         "role": "user",
         "type": signup_data.type,
-        "status": "pending",  # "pending", "active", "inactive"
+        "status": "pending",
         "created_at": now,
         "updated_at": now,
+        "username": signup_data.username,
     }
 
-    # Add nested data based on type
+    # Build name (used for emails)
     if signup_data.type == "company":
-        if signup_data.companyInfo:
-            user_document["companyInfo"] = signup_data.companyInfo.dict()
-        if signup_data.companyAddress:
-            user_document["companyAddress"] = signup_data.companyAddress.dict()
-        if signup_data.primaryContact:
-            user_document["primaryContact"] = signup_data.primaryContact.dict()
-    elif signup_data.type == "individual":
-        if signup_data.individualInfo:
-            user_document["individualInfo"] = signup_data.individualInfo.dict()
+        primary = signup_data.primaryContact
+        full_name = f"{primary.firstName} {primary.lastName}".strip()
 
-    # Insert into users collection
-    result = await db["users"].insert_one(user_document)
+        user_document["companyInfo"] = signup_data.companyInfo.dict()
+        user_document["companyAddress"] = signup_data.companyAddress.dict()
+        user_document["primaryContact"] = signup_data.primaryContact.dict()
 
+        admin_email_html = get_admin_new_broker_signup_email_html(
+            name=full_name,
+            email=primary.email,
+            phone=primary.phone
+        )
+
+    else:  # individual
+        info = signup_data.individualInfo
+        full_name = f"{info.firstName} {info.lastName}".strip()
+
+        user_document["individualInfo"] = signup_data.individualInfo.dict()
+
+        admin_email_html = get_admin_new_broker_signup_email_html(
+            name=full_name,
+            email=info.email,
+            phone=info.phone
+        )
+
+    # Insert user
+    await db["users"].insert_one(user_document)
+
+    # Email to user
+    user_email_html = get_signup_submitted_email_html(full_name)
+
+    background_tasks.add_task(
+        send_email,
+        to_email=signup_data.email,
+        subject="Income Analyzer Onboarding Process Started",
+        html_body=user_email_html
+    )
+
+    # Email to admin
+    background_tasks.add_task(
+        send_email,
+        to_email="nmurugan@loandna.com",
+        subject="New Broker Signup Request Submitted for Review",
+        html_body=admin_email_html
+    )
+
+    # Return immediately (emails send in background)
     return {
         "message": "User registered successfully",
         "email": signup_data.email,
         "type": signup_data.type,
-        "role": "user"
+        "role": "user",
+        "status": "pending"
     }
 
 
