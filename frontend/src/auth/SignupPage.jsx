@@ -190,7 +190,7 @@ function SignupPage() {
                                 />
 
                                 {emailExists && (
-                                    <div className="text-red-500 text-sm mt-1 -mt-4 mb-2">
+                                    <div className="text-red-500 text-sm mt-1 -mt-4 mb-2 font-creato">
                                         This email is already registered.
                                     </div>
                                 )}
@@ -200,9 +200,9 @@ function SignupPage() {
                                         Checking email availability...
                                     </div>
                                 )}
-
                                 <div className="mt-6">
                                     <CustomButton
+                                        className={`mt-0 ${isFormValid ? "cursor-pointer" : "!cursor-not-allowed"}`}
                                         variant={isFormValid ? "primary" : "disabled"}
                                         type="button"
                                         disabled={!isFormValid || emailExists || checkingEmail || loading}
