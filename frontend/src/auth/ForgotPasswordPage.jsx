@@ -288,26 +288,30 @@ export default function ForgotPasswordPage() {
                                         COMMENTED OUT: hide "Email is not registered" while typing.
                                         We only show this via toast when user clicks Send (handleSendCode).
                                     */}
-                                    {/*
-                                    {!checkingEmail && form.getFieldValue("email") && !emailExists && (
+                                    
+                                    {/* {!checkingEmail && form.getFieldValue("email") && !emailExists && (
                                         <div className="text-red-500 text-xs mt-[-12px] mb-3">Email is not registered</div>
-                                    )}
-                                    */}
+                                    )} */}
+                                   
 
-                                    <div className={`mt-6 ${loading || checkingEmail || !emailExists ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
+                                    <div className="mt-6">
                                         <CustomButton
-                                            variant="primary"
+                                            variant={loading || checkingEmail || !emailExists ? "disabled" : "primary"}
                                             type="button"
                                             disabled={loading || checkingEmail || !emailExists}
                                             onClick={handleSendCode}
-                                            className={`
-                                                w-full rounded-lg py-3 flex items-center justify-center gap-3 
-                                                text-white text-base font-medium
-                                                
-                                                `}
+                                            className={`mt-0 ${loading || checkingEmail || !emailExists ? "!cursor-not-allowed" : "cursor-pointer"}`}
                                         >
                                             {loading ? "Sending..." : "Send Verification Code"}
-                                            <img src="/arrow-right-active.png" alt="" className="w-4 h-4" />
+                                            <img
+                                                src={
+                                                    loading || checkingEmail || !emailExists 
+                                                        ? "/arrow-right.svg"
+                                                        : "/arrow-right-active.png"
+                                                }
+                                                alt=""
+                                                className="w-4 h-4"
+                                            />
                                         </CustomButton>
                                     </div>
                                 </>
@@ -400,7 +404,7 @@ export default function ForgotPasswordPage() {
                             )}
 
                             {/* common back to login */}
-                            <div className="mt-5 text-center">
+                            <div className="mt-5 text-center font-creato">
                                 <button
                                     type="button"
                                     onClick={handleBackToLogin}

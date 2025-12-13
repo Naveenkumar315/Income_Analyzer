@@ -200,6 +200,7 @@ const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {
                         />
                         <div className="mt-5">
                             <CustomButton
+                                className={`mt-0 ${isFormValid ? "cursor-pointer" : "!cursor-not-allowed"}`}
                                 variant={isFormValid ? "primary" : "disabled"}
                                 type="button"
                                 disabled={!isFormValid || loading}
@@ -229,8 +230,9 @@ const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {
                             </CustomButton>
                         </div>
 
-                        <div className="mt-4 text-center">
+                        <div className="mt-4 text-center font-creato">
                             <button
+
                                 type="button"
                                 onClick={handleBackToSignup}
                                 className="text-Colors-Text-Primary-primary text-sm font-creato font-medium leading-4"
