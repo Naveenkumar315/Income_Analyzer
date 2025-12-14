@@ -98,7 +98,7 @@ async def update_user_status(
             send_email,
             to_email=user_email,
             subject="Income Analyzer — Account Request Update",
-            html_body=get_rejection_email_html(full_name)
+            html_body=get_rejection_email_html(full_name, reason = "")
         )
 
     # 🚀 RETURN IMMEDIATELY (NO WAIT)

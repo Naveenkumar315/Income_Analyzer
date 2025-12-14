@@ -524,7 +524,7 @@ def get_admin_new_broker_signup_email_html(
 """
 
 
-def get_rejection_email_html(full_name: str, reason: str = None) -> str:
+def get_rejection_email_html(full_name: str, reason: str = None, ) -> str:
     """
     Returns HTML email body for sending the rejection/decline notification.
     `reason` is optional — if provided, it will be included in the email.

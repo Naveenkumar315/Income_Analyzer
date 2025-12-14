@@ -214,8 +214,8 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
             <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-[130%] rounded-[50%] bg-slate-100" />
 
             {/* background circles */}
-            <div className="pointer-events-none absolute -left-40 -top-24 h-96 w-96 rounded-full bg-white/15" />
-            <div className="pointer-events-none absolute -right-32 top-20 h-72 w-72 rounded-full bg-white/15" />
+            {/* <div className="pointer-events-none absolute -left-40 -top-24 h-96 w-96 rounded-full bg-white/15" />
+            <div className="pointer-events-none absolute -right-32 top-20 h-72 w-72 rounded-full bg-white/15" /> */}
 
             {/* main modal card */}
             <div className="relative z-10 w-[720px] max-h-[80vh] rounded-xl bg-white shadow-md flex flex-col">
@@ -279,15 +279,22 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
                                     <FormField
                                         type="text"
-                                        label="Company Name"
+                                        label={
+                                            <span>
+                                                Company Name <span className="text-red-500">*</span>
+                                            </span>
+                                        }   
                                         name="companyName"
                                         placeholder="Enter Company Name"
                                         rules={[{ required: true, message: "Please enter a Company Name" }]}
-
                                     />
                                     <FormField
                                         type="dropdown"
-                                        label="Company Size"
+                                        label={
+                                            <span>
+                                                Company Size <span className="text-red-500">*</span>
+                                            </span>
+                                        }   
                                         name="companySize"
                                         placeholder="Select Company Size"
                                         options={[
@@ -300,7 +307,11 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                     />
                                     <FormField
                                         type="text"
-                                        label="Company Phone Number"
+                                        label={
+                                            <span>
+                                                Company Phone Number <span className="text-red-500">*</span>
+                                            </span>
+                                        }   
                                         name="companyPhone"
                                         placeholder="Enter Company Phone Number"
                                         onChange={handlePhoneNumberChange}
@@ -308,7 +319,11 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                     />
                                     <FormField
                                         type="text"
-                                        label="Company Email"
+                                        label={
+                                            <span>
+                                                Company Email <span className="text-red-500">*</span>
+                                            </span>
+                                        }   
                                         name="companyEmail"
                                         placeholder="Enter Company Email"
                                         rules={[
@@ -325,14 +340,22 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
                                     <FormField
                                         type="text"
-                                        label="Street Address"
+                                        label={
+                                            <span>
+                                                Street Address <span className="text-red-500">*</span>
+                                            </span>
+                                        }   
                                         name="streetAddress"
                                         placeholder="Enter Street Address"
                                         rules={[{ required: true, message: "Please enter a Street Address" }]}
                                     />
                                     <FormField
                                         type="text"
-                                        label="Zip Code"
+                                        label={
+                                            <span>
+                                                Zip Code <span className="text-red-500">*</span>
+                                            </span>
+                                        }   
                                         name="zipCode"
                                         placeholder="Enter Zip Code"
                                         onChange={handleZipCodeChange}
@@ -341,7 +364,11 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                     />
                                     <FormField
                                         type="text"
-                                        label="City"
+                                        label={
+                                            <span>
+                                                City <span className="text-red-500">*</span>
+                                            </span>
+                                        }   
                                         name="city"
                                         placeholder="Enter City"
                                         disabled={isLoadingZip}
@@ -349,7 +376,11 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                     />
                                     <FormField
                                         type="dropdown"
-                                        label="State"
+                                        label={
+                                            <span>
+                                                State <span className="text-red-500">*</span>
+                                            </span>
+                                        }   
                                         name="state"
                                         placeholder="Select State"
                                         options={statesList}
@@ -365,21 +396,33 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
                                     <FormField
                                         type="text"
-                                        label="First Name"
+                                        label={
+                                            <span>
+                                                First Name <span className="text-red-500">*</span>
+                                            </span>
+                                        }
                                         name="primaryFirstName"
                                         placeholder="Enter First Name"
                                         rules={[{ required: true, message: "Please enter a First Name" }]}
                                     />
                                     <FormField
                                         type="text"
-                                        label="Last Name"
+                                        label={
+                                            <span>
+                                                Last Name <span className="text-red-500">*</span>
+                                            </span>
+                                        }   
                                         name="primaryLastName"
                                         placeholder="Enter Last Name"
                                         rules={[{ required: true, message: "Please enter a Last Name" }]}
                                     />
                                     <FormField
                                         type="text"
-                                        label="Phone Number"
+                                        label={
+                                            <span>
+                                                Phone Number <span className="text-red-500">*</span>
+                                            </span>
+                                        }       
                                         name="primaryPhone"
                                         placeholder="Enter Phone Number"
                                         onChange={handlePhoneNumberChange}
@@ -387,7 +430,11 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                     />
                                     <FormField
                                         type="text"
-                                        label="Email"
+                                        label={
+                                            <span>
+                                                Email <span className="text-red-500">*</span>
+                                            </span>
+                                        }       
                                         name="primaryEmail"
                                         placeholder="Enter Email"
                                         disabled={true}
@@ -476,21 +523,33 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                     <FormField
                                         type="text"
-                                        label="First Name"
+                                        label = {
+                                            <span>
+                                                First Name <span className="text-red-500">*</span>
+                                            </span>
+                                        }
                                         name="firstName"
                                         placeholder="Enter First Name"
                                         rules={[{ required: true, message: "Please enter a First Name" }]}
                                     />
                                     <FormField
                                         type="text"
-                                        label="Last Name"
+                                        label = {
+                                            <span>
+                                                Last Name <span className="text-red-500">*</span>
+                                            </span>
+                                        }
                                         name="lastName"
                                         placeholder="Enter Last Name"
                                         rules={[{ required: true, message: "Please enter a Last Name" }]}
                                     />
                                     <FormField
                                         type="text"
-                                        label="Phone Number"
+                                        label = {
+                                            <span>
+                                                Phone Number <span className="text-red-500">*</span>
+                                            </span>
+                                        }
                                         name="phone"
                                         placeholder="Enter Phone Number"
                                         onChange={handlePhoneNumberChange}
@@ -498,7 +557,11 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                                     />
                                     <FormField
                                         type="text"
-                                        label="Email"
+                                        label = {
+                                            <span>
+                                                Email <span className="text-red-500">*</span>
+                                            </span>
+                                        }
                                         name="email"
                                         placeholder="Enter Email"
                                         disabled={true}
@@ -518,7 +581,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                     <button
                         type="button"
                         onClick={() => navigate("/")}
-                        className="px-8 py-2.5 rounded-lg border border-[#D1D5DB] bg-white text-[#3D4551] text-sm font-creato font-medium hover:bg-gray-50 transition-colors"
+                        className="px-8 py-2.5 rounded-lg border border-[#D1D5DB] bg-white text-[#3D4551] text-sm font-creato font-medium hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                         Cancel
                     </button>
@@ -526,7 +589,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                         style={{ color: 'white' }}
                         type="submit"
                         // onClick={handleFormSumbit}
-                        className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors"
+                        className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors cursor-pointer"
                         disabled={loading}
                         onClick={() => form.submit()}
                     // className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

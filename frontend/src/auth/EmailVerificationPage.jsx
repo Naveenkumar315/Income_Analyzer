@@ -148,8 +148,8 @@ const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {
             <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-[130%] rounded-[50%] bg-slate-100" />
 
             {/* background circles */}
-            <div className="pointer-events-none absolute -left-40 -top-24 h-96 w-96 rounded-full bg-white/15" />
-            <div className="pointer-events-none absolute -right-32 top-20 h-72 w-72 rounded-full bg-white/15" />
+            {/* <div className="pointer-events-none absolute -left-40 -top-24 h-96 w-96 rounded-full bg-white/15" />
+            <div className="pointer-events-none absolute -right-32 top-20 h-72 w-72 rounded-full bg-white/15" /> */}
 
             {/* card */}
             <div className="relative z-10 w-[360px] rounded-xl bg-white px-8 py-8 shadow-md">
@@ -235,7 +235,7 @@ const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {
 
                                 type="button"
                                 onClick={handleBackToSignup}
-                                className="text-Colors-Text-Primary-primary text-sm font-creato font-medium leading-4"
+                                className="text-Colors-Text-Primary-primary text-sm font-creato font-medium leading-4 cursor-pointer"
                             >
                                 Back to Signup
                             </button>

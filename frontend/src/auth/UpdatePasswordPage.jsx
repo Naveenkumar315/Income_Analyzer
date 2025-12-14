@@ -88,6 +88,7 @@ const UpdatePasswordPage = () => {
             className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-no-repeat"
             style={{ backgroundImage: `url('/auth_page_bg.png')` }}
         >
+            <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-[130%] rounded-[50%] bg-slate-100" />
             <div className="relative z-10 bg-white rounded-xl shadow-md w-[90%] max-w-[420px] md:w-[384px] md:h-[500px] px-6 py-6 md:px-8 md:py-8">
 
                 {/* Logo */}
@@ -138,7 +139,7 @@ const UpdatePasswordPage = () => {
                     />
 
                     {/* 🔥 EXACT UI STYLE from Forgot Password */}
-                    <div className="mb-3 text-[12px] leading-[13px] text-gray-600 font-creato mt-3">
+                    {/* <div className="mb-3 text-[12px] leading-[13px] text-gray-600 font-creato mt-3">
                         <div className={pwdChecks.length ? "text-green-600" : ""}>
                             • Minimum 12 characters
                         </div>
@@ -154,26 +155,63 @@ const UpdatePasswordPage = () => {
                         <div className={pwdChecks.special ? "text-green-600" : ""}>
                             • At least 1 special character from [!@#$%^&*(),.?":{ }|]
                         </div>
-                    </div>
+                    </div> */}
+
+                    <div className="mt-2 text-[12px] leading-[16px] font-creato">
+                        <span className={pwdChecks.lowercase ? "text-green-700" : "text-gray-600"}>
+                            At least one lowercase
+                        </span>
+                        {", "}
+
+                        <span className={pwdChecks.uppercase ? "text-green-700" : "text-gray-600"}>
+                            one uppercase
+                        </span>
+                        {", "}
+
+                        <span className={pwdChecks.number ? "text-green-700" : "text-gray-600"}>
+                            one number
+                        </span>
+                        {","}
+                        <br />
+
+                        <span className={pwdChecks.special ? "text-green-700" : "text-gray-600"}>
+                            one special character – [!@#$%^&*(),.?":{ }|]
+                        </span>
+                        {", "}
+
+                        <span className={pwdChecks.length ? "text-green-700" : "text-gray-600"}>
+                            Minimum 12 characters
+                        </span>
+                        </div>
+
 
                     <div className="mt-3">
                         <CustomButton
-                            variant="primary"
+                            variant= {loading || !allRulesSatisfied || !passwordsMatch ? "disabled" : "primary"}
                             type="button"
                             disabled={loading || !allRulesSatisfied || !passwordsMatch}
                             onClick={handleUpdatePassword}
-                            className="w-full rounded-lg py-3 flex items-center justify-center gap-3 text-white text-base font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                            // className="w-full rounded-lg py-3 flex items-center justify-center gap-3 text-white text-base font-medium disabled:opacity-60 disabled:cursor-not-allowed"'
+                            className={`mt-0 ${loading || !allRulesSatisfied || !passwordsMatch ? "!cursor-not-allowed" : "cursor-pointer"}`}   
                         >
                             {loading ? "Updating..." : "Update Password"}
-                            <img src="/arrow-right-active.png" alt="" className="w-4 h-4" />
+                             <img
+                            src={
+                                 loading || !allRulesSatisfied || !passwordsMatch
+                                    ? "/arrow-right.svg"
+                                    : "/arrow-right-active.png"
+                            }
+                            alt=""
+                            className="w-4 h-4"
+                        />
                         </CustomButton>
                     </div>
 
-                    <div className="mt-3 text-Colors-Text-Primary-primary text-center cursor-pointer">
+                    <div className="mt-3 text-Colors-Text-Primary-primary text-center cursor-pointer font-creato">
                         <button
                             type="button"
                             onClick={() => navigate("/")}
-                            className="text-sm font-medium hover:underline font-creato"
+                            className="text-sm font-medium hover:underline font-creato cursor-pointer"
                         >
                             Back to Log In
                         </button>
