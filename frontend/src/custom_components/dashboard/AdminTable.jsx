@@ -3,7 +3,7 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { Modal } from "antd";
 import authApi from "../../api/authApi";
-import toast from "react-hot-toast";
+import toast from "../../utils/ToastService";
 import FilterIcon from "../../assets/icons/Filter.svg";
 import circleCheck from "../../assets/icons/circle-check.svg";
 import circleClose from "../../assets/icons/circle-close.svg";

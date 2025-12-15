@@ -5,7 +5,7 @@ import "antd/dist/reset.css";
 import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import toast from "../utils/ToastService";
 import authApi from "../api/authApi";
 
 const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {

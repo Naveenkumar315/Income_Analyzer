@@ -5,7 +5,7 @@ import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
 import authApi from "../api/authApi";
-import toast from "react-hot-toast";
+import toast from "../utils/ToastService";
 import { setTokens } from "../utils/authService";
 import { useApp } from "../contexts/AppContext";
 
