@@ -65,7 +65,8 @@ export default function LoginPage() {
             setTokens(response.access_token, response.refresh_token, {
                 email: response.email,
                 role: response.role,
-                user_id: response.user_id
+                user_id: response.user_id,
+                username: response.username
             });
 
             toast.success("Login successful!");

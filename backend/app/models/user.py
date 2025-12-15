@@ -88,7 +88,7 @@ class SignupRequest(BaseModel):
     companyAddress: Optional[CompanyAddress] = None
     primaryContact: Optional[PrimaryContact] = None
     individualInfo: Optional[IndividualInfo] = None
-    username: str
+    username: Optional[str] = None  # Optional, will be auto-generated from first/last name
 
 
 class UpdatePasswordRequest(BaseModel):
