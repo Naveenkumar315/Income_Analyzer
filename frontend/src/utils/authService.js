@@ -9,7 +9,8 @@ const TOKEN_KEYS = {
     REFRESH_TOKEN: 'refresh_token',
     USER_EMAIL: 'user_email',
     USER_ROLE: 'user_role',
-    USER_ID: 'user_id'
+    USER_ID: 'user_id',
+    USER_NAME: 'user_name'
 };
 
 /**
@@ -27,6 +28,9 @@ export const setTokens = (accessToken, refreshToken, userData = {}) => {
     }
     if (userData.user_id) {
         sessionStorage.setItem(TOKEN_KEYS.USER_ID, userData.user_id);
+    }
+    if (userData.username) {
+        sessionStorage.setItem(TOKEN_KEYS.USER_NAME, userData.username);
     }
 };
 
@@ -51,7 +55,8 @@ export const getUserData = () => {
     return {
         email: sessionStorage.getItem(TOKEN_KEYS.USER_EMAIL),
         role: sessionStorage.getItem(TOKEN_KEYS.USER_ROLE),
-        user_id: sessionStorage.getItem(TOKEN_KEYS.USER_ID)
+        user_id: sessionStorage.getItem(TOKEN_KEYS.USER_ID),
+        username: sessionStorage.getItem(TOKEN_KEYS.USER_NAME)
     };
 };
 
@@ -64,6 +69,7 @@ export const clearTokens = () => {
     sessionStorage.removeItem(TOKEN_KEYS.USER_EMAIL);
     sessionStorage.removeItem(TOKEN_KEYS.USER_ROLE);
     sessionStorage.removeItem(TOKEN_KEYS.USER_ID);
+    sessionStorage.removeItem(TOKEN_KEYS.USER_NAME);
 
     // Also clear localStorage items for backward compatibility
     localStorage.removeItem('userRole');

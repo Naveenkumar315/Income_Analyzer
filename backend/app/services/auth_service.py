@@ -81,6 +81,14 @@ async def signup_user(
 
     now = datetime.utcnow()
 
+    # Build username from first and last names based on user type
+    if signup_data.type == "company":
+        primary = signup_data.primaryContact
+        full_name = f"{primary.firstName} {primary.lastName}".strip()
+    else:  # individual
+        info = signup_data.individualInfo
+        full_name = f"{info.firstName} {info.lastName}".strip()
+
     user_document = {
         "email": signup_data.email,
         "role": "user",
@@ -88,13 +96,12 @@ async def signup_user(
         "status": "pending",
         "created_at": now,
         "updated_at": now,
-        "username": signup_data.username,
+        "username": full_name,  # Set username to full name
     }
 
-    # Build name (used for emails)
+    # Add type-specific information
     if signup_data.type == "company":
         primary = signup_data.primaryContact
-        full_name = f"{primary.firstName} {primary.lastName}".strip()
 
         user_document["companyInfo"] = signup_data.companyInfo.dict()
         user_document["companyAddress"] = signup_data.companyAddress.dict()
@@ -108,7 +115,6 @@ async def signup_user(
 
     else:  # individual
         info = signup_data.individualInfo
-        full_name = f"{info.firstName} {info.lastName}".strip()
 
         user_document["individualInfo"] = signup_data.individualInfo.dict()
 

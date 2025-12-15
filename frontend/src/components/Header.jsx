@@ -49,10 +49,11 @@ const HelpButton = () => {
 const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
     debugger
     // Derive display name/initials
+    const username = userData?.username || "";
     const email = userData?.email || "";
     const role = userData?.role || "User";
-    // Simple logic to get a name-like string or fallback to email
-    const displayName = email.split("@")[0] || "User";
+    // Use username if available, otherwise fallback to email split
+    const displayName = username || "User";
     // Title case for name
     const formattedName = displayName.replace(/\./g, " ").replace(/\b\w/g, l => l.toUpperCase());
 
@@ -86,7 +87,7 @@ const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
                     <h3 className="text-lg font-bold text-gray-800 mb-1">{formattedName}</h3>
                     <div className="flex items-center justify-center gap-1.5 text-gray-500 text-sm">
                         <SafetyCertificateOutlined />
-                        <span className="capitalize">{role === 'admin' ? 'Master Admin' : role}</span>
+                        <span className="capitalize">{role === 'admin' ? 'Admin' : role}</span>
                     </div>
                 </div>
 
