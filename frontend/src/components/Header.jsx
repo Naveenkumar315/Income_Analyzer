@@ -18,6 +18,7 @@ import layoutdashboard from "../assets/layout-dashboard.svg"
 import settings from "../assets/settings.svg"
 import filesearch2 from "../assets/file-search-2.svg"
 import scrolltext from "../assets/scroll-text.svg"
+import NotificationBell from "./NotificationBell";
 
 const menuItems = [
     { key: "dashboard", label: "Dashboard", icon: layoutdashboard },
@@ -215,9 +216,8 @@ export default function Header() {
                 {/* RIGHT BLOCK — border-left wraps HelpButton + Notification + Avatar */}
                 <div className="h-12 flex items-center gap-3 border-l border-gray-200 pl-3 pr-3">
 
-                    <Badge count={3} size="small" offset={[0, 0]}>
-                        <BellOutlined className="text-base cursor-pointer" />
-                    </Badge>
+                    {/* Show NotificationBell only for admin users */}
+                    {isAdmin && <NotificationBell />}
 
                     <Dropdown
                         trigger={["click"]}

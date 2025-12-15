@@ -5,6 +5,9 @@ from datetime import datetime
 from fastapi import HTTPException, BackgroundTasks
 from app.utils.email_template import get_admin_new_broker_signup_email_html, get_signup_submitted_email_html
 from app.services.email_service import send_email
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def register_user(user: UserCreate):
@@ -138,6 +141,70 @@ async def signup_user(
         subject="New Broker Signup Request Submitted for Review",
         html_body=admin_email_html
     )
+
+    # ✅ Create in-app notifications for all admins
+    from app.services.notification_service import notify_admins
+    from app.services.websocket_manager import websocket_manager
+    from app.models.notification import NotificationType
+    
+    async def send_notifications_to_admins():
+        """Send real-time notifications to all admin users"""
+        try:
+            # Prepare notification data
+            title = "New User Registration"
+            message = f"New {signup_data.type} user '{signup_data.username}' ({signup_data.email}) has registered and is pending approval."
+            metadata = {
+                "user_email": signup_data.email,
+                "username": signup_data.username,
+                "user_type": signup_data.type,
+                "action_required": True
+            }
+            
+            # Create notifications in database for all admins and send via WebSocket immediately
+            notification_ids = await notify_admins(
+                notification_type=NotificationType.USER_REGISTRATION,
+                title=title,
+                message=message,
+                metadata=metadata
+            )
+            
+            # Send real-time WebSocket notifications to connected admins
+            # We create the notification object directly to avoid database fetch delay
+            from app.db import db
+            from datetime import datetime
+            
+            # Get all admin users to send WebSocket notifications
+            admin_users = await db["users"].find({"role": "admin"}).to_list(length=None)
+            
+            for admin in admin_users:
+                admin_id = str(admin["_id"])
+                
+                # Create notification object for WebSocket (matches database structure)
+                ws_notification = {
+                    "id": notification_ids[admin_users.index(admin)] if admin_users.index(admin) < len(notification_ids) else "",
+                    "recipient_id": admin_id,
+                    "type": "USER_REGISTRATION",
+                    "title": title,
+                    "message": message,
+                    "metadata": metadata,
+                    "is_read": False,
+                    "created_at": datetime.utcnow().isoformat(),
+                    "read_at": None
+                }
+                
+                # Send immediately via WebSocket
+                await websocket_manager.send_personal_notification(
+                    user_id=admin_id,
+                    notification=ws_notification
+                )
+            
+            logger.info(f"Sent {len(notification_ids)} notifications for new user {signup_data.email}")
+        except Exception as e:
+            logger.error(f"Error sending admin notifications: {e}")
+    
+    # Add notification task to background tasks
+    background_tasks.add_task(send_notifications_to_admins)
+
 
     # Return immediately (emails send in background)
     return {

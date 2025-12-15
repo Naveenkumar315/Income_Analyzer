@@ -24,10 +24,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             raise HTTPException(status_code=404, detail="User not found")
 
         return {
+            "user_id": str(user["_id"]),
             "id": str(user["_id"]),
-            "username": user["username"],
+            "username": user.get("username", ""),
             "email": user["email"],
-            "created_at": user["created_at"],
+            "role": user.get("role", "user"),
+            "created_at": user.get("created_at"),
         }
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")

@@ -9,7 +9,7 @@ import yaml
 import uvicorn
 from bson import ObjectId
 
-from app.routes import auth, uploaded_data, admin
+from app.routes import auth, uploaded_data, admin, notifications
 from app.utils.borrower_cleanup_service import clean_borrower_documents_from_dict
 from app.db import db
 from app.services.audit_service import log_action  # <-- audit service
@@ -49,6 +49,7 @@ app = FastAPI(title="Income Analyzer API", version="1.0.0")
 app.include_router(auth.router)
 app.include_router(uploaded_data.router)
 app.include_router(admin.router)
+app.include_router(notifications.router)
 
 # CORS
 origins = ["*"]
@@ -133,6 +134,15 @@ async def startup_event():
         logger.info("MCP client connected successfully")
     except Exception as e:
         logger.error(f"Failed to connect MCP client: {e}")
+    
+    # Create indexes for notifications collection
+    try:
+        await db["notifications"].create_index([("recipient_id", 1), ("created_at", -1)])
+        await db["notifications"].create_index([("recipient_id", 1), ("is_read", 1)])
+        logger.info("Notification indexes created successfully")
+    except Exception as e:
+        logger.error(f"Failed to create notification indexes: {e}")
+
 
 
 @app.on_event("shutdown")

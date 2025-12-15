@@ -86,12 +86,22 @@ export const updateAccessToken = (accessToken) => {
     sessionStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, accessToken);
 };
 
+/**
+ * Get user role from session storage
+ */
+export const getUserRole = () => {
+    return sessionStorage.getItem(TOKEN_KEYS.USER_ROLE);
+};
+
+
 export default {
     setTokens,
     getAccessToken,
     getRefreshToken,
     getUserData,
+    getUserRole,
     clearTokens,
     isAuthenticated,
     updateAccessToken
 };
+
