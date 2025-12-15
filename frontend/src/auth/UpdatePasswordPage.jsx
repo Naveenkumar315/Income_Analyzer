@@ -4,7 +4,7 @@ import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { useNavigate } from "react-router-dom";
 import authApi from "../api/authApi";
-import { toast } from "react-toastify";
+import toast from "../utils/ToastService";
 import { LockOutlined } from "@ant-design/icons";
 import { useApp } from "../contexts/AppContext";
 

@@ -9,7 +9,7 @@ import TermsConditionPage from "./TermsConditionPage";
 import SignupRequestSubmittedPage from "./SignupRequestSubmittedPage";
 import CompanyDetailsPage from "./CompanyDetailsPage";
 import authApi from "../api/authApi";
-import toast from "react-hot-toast";
+import toast from "../utils/ToastService";
 
 export const SIGNUP_STEPS = Object.freeze({
   EMAIL: "email",
