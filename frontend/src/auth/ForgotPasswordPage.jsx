@@ -395,11 +395,27 @@ export default function ForgotPasswordPage() {
                                             one special character – [!@#$%^&*(),.?":{ }|], Minimum 12 characters
                                         </div>
                                     </div> */}
-
+                 {/* <div className="mb-3 text-[12px] leading-[13px] text-gray-600 font-creato mt-3">
+                        <div className={pwdChecks.length ? "text-[#1D5C1B]" : ""}>
+                            • Minimum 12 characters
+                        </div>
+                        <div className={pwdChecks.lowercase ? "text-[#1D5C1B]" : ""}>
+                            • At least 1 lowercase letter
+                        </div>
+                        <div className={pwdChecks.uppercase ? "text-[#1D5C1B]" : ""}>
+                            • At least 1 uppercase letter
+                        </div>
+                        <div className={pwdChecks.number ? "text-[#1D5C1B]" : ""}>
+                            • At least 1 number
+                        </div>
+                        <div className={pwdChecks.special ? "text-[#1D5C1B]" : ""}>
+                            • At least 1 special character from [!@#$%^&*(),.?":{ }|]
+                        </div>
+                    </div> */}
                   <div className="mt-2 text-[12px] leading-[16px] font-creato">
                     <span
                       className={
-                        pwdChecks.lowercase ? "text-green-700" : "text-gray-600"
+                        pwdChecks.lowercase ? "text-[#119d0c]" : "text-gray-600"
                       }
                     >
                       At least one lowercase
@@ -408,7 +424,7 @@ export default function ForgotPasswordPage() {
 
                     <span
                       className={
-                        pwdChecks.uppercase ? "text-green-700" : "text-gray-600"
+                        pwdChecks.uppercase ? "text-[#119d0c]" : "text-gray-600"
                       }
                     >
                       one uppercase
@@ -417,7 +433,7 @@ export default function ForgotPasswordPage() {
 
                     <span
                       className={
-                        pwdChecks.number ? "text-green-700" : "text-gray-600"
+                        pwdChecks.number ? "text-[#119d0c]" : "text-gray-600"
                       }
                     >
                       one number
@@ -427,7 +443,7 @@ export default function ForgotPasswordPage() {
 
                     <span
                       className={
-                        pwdChecks.special ? "text-green-700" : "text-gray-600"
+                        pwdChecks.special ? "text-[#119d0c]" : "text-gray-600"
                       }
                     >
                       one special character – [!@#$%^&*(),.?":{}|]
@@ -436,7 +452,7 @@ export default function ForgotPasswordPage() {
 
                     <span
                       className={
-                        pwdChecks.length ? "text-green-700" : "text-gray-600"
+                        pwdChecks.length ? "text-[#119d0c]" : "text-gray-600"
                       }
                     >
                       Minimum 12 characters
