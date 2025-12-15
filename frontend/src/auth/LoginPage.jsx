@@ -139,13 +139,13 @@ export default function LoginPage() {
 
     return (
         <div
-            className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover  bg-no-repeat"
+            className="relative flex min-h-screen w-full items-center justify-center bg-cover bg-center bg-no-repeat"
             style={{
                 backgroundImage: `url('/auth_page_bg.png')`,
             }}
         >
             {/* white curve */}
-            <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-[130%] rounded-[50%] bg-slate-100" />
+            {/* <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-[130%] rounded-[50%] bg-slate-100" /> */}
 
             {/* background circles */}
             {/* <div className="pointer-events-none absolute -left-40 -top-24 h-96 w-96 rounded-full bg-white/15" />

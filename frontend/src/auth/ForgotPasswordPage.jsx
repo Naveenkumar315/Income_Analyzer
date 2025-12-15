@@ -236,10 +236,10 @@ export default function ForgotPasswordPage() {
 
   return (
     <div
-      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-no-repeat"
+      className="relative flex min-h-screen w-full items-center justify-center bg-center bg-cover bg-no-repeat"
       style={{ backgroundImage: `url('/auth_page_bg.png')` }}
     >
-      <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-[130%] rounded-[50%] bg-slate-100" />
+      {/* <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-[130%] rounded-[50%] bg-slate-100" /> */}
 
       {/* responsive card */}
       <div
