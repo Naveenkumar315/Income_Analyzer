@@ -169,72 +169,94 @@ export default function Header() {
     // control dropdown programmatically so we can close it after click
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownClose = () => setDropdownOpen(false);
-    const dropdownOpenToggle = (open) => setDropdownOpen(open);
+    const dropdownOpenToggle = (open) => {
+        setDropdownOpen(open);
+        // Add/remove blur class to body content
+        const bodyContent = document.getElementById('app-body-content');
+        if (bodyContent) {
+            if (open) {
+                bodyContent.classList.add('blur-effect');
+            } else {
+                bodyContent.classList.remove('blur-effect');
+            }
+        }
+    };
 
     return (
-        <header className="w-full bg-white shadow-sm"> {/* bottom shadow kept */}
-            <div className="w-full flex items-center h-12"> {/* header height reduced */}
-                {/* LEFT LOGO BLOCK — only RIGHT border */}
-                <div className="h-12 px-3 border-r border-gray-200 flex items-center justify-center">
-                    <img
-                        src={logo}
-                        alt="logo"
-                        className="w-32 h-12 object-contain" /* adjust width if needed */
-                        loading="lazy"
-                    />
-                </div>
+        <>
+            {/* Backdrop overlay - only shown when dropdown is open */}
+            {dropdownOpen && (
+                <div
+                    className="fixed inset-0 bg-black/10 backdrop-blur-sm z-[999]"
+                    style={{ top: '48px' }} // Start below header (h-12 = 48px)
+                    onClick={dropdownClose}
+                />
+            )}
 
-                {/* MENU */}
-                <div className="flex-1 flex items-center">
-                    <Menu
-                        mode="horizontal"
-                        selectedKeys={[selectedKey]}
-                        onClick={(e) => setSelectedKey(e.key)}
-                        className="flex-1 bg-transparent border-none !h-12 flex items-center"
-                        items={menuItems.map((it) => ({
-                            key: it.key,
-                            label: (
-                                <div
-                                    className={`
-                    h-12 px-1 
-                    inline-flex items-center  
-                    border-b-2
-                    ${selectedKey === it.key ? "border-[#24A1DD]" : "border-transparent"}
-                  `}
-                                >
-                                    <div className="w-5 mr-2 h-5 flex items-center justify-center">
-                                        <img src={it.icon} alt="" className="w-5 h-5 object-contain" />
+            <header className="w-full bg-white shadow-sm relative z-[1000]"> {/* Increased z-index */}
+                <div className="w-full flex items-center h-12">
+                    {/* LEFT LOGO BLOCK — only RIGHT border */}
+                    <div className="h-12 px-3 border-r border-gray-200 flex items-center justify-center">
+                        <img
+                            src={logo}
+                            alt="logo"
+                            className="w-32 h-12 object-contain"
+                            loading="lazy"
+                        />
+                    </div>
+
+                    {/* MENU */}
+                    <div className="flex-1 flex items-center">
+                        <Menu
+                            mode="horizontal"
+                            selectedKeys={[selectedKey]}
+                            onClick={(e) => setSelectedKey(e.key)}
+                            className="flex-1 bg-transparent border-none !h-12 flex items-center"
+                            items={menuItems.map((it) => ({
+                                key: it.key,
+                                label: (
+                                    <div
+                                        className={`
+                        h-12 px-1 
+                        inline-flex items-center  
+                        border-b-2
+                        ${selectedKey === it.key ? "border-[#24A1DD]" : "border-transparent"}
+                      `}
+                                    >
+                                        <div className="w-5 mr-2 h-5 flex items-center justify-center">
+                                            <img src={it.icon} alt="" className="w-5 h-5 object-contain" />
+                                        </div>
+                                        <span className="text-sm font-normal">{it.label}</span>
                                     </div>
-                                    <span className="text-sm font-normal">{it.label}</span>
-                                </div>
-                            ),
-                        }))}
-                    />
+                                ),
+                            }))}
+                        />
+                    </div>
+
+                    <HelpButton />
+                    {/* RIGHT BLOCK — border-left wraps HelpButton + Notification + Avatar */}
+                    <div className="h-12 flex items-center gap-3 border-l border-gray-200 pl-3 pr-3">
+
+                        <Badge count={3} size="small" offset={[0, 0]}>
+                            <BellOutlined className="text-base cursor-pointer" />
+                        </Badge>
+
+                        <Dropdown
+                            trigger={["click"]}
+                            placement="bottomRight"
+                            open={dropdownOpen}
+                            onOpenChange={dropdownOpenToggle}
+                            arrow={false}
+                            dropdownRender={() => overlay}
+                        >
+                            <div aria-haspopup="true" aria-expanded={dropdownOpen} role="button" tabIndex={0}>
+                                <Avatar size={28} icon={<UserOutlined />} className="cursor-pointer" />
+                            </div>
+                        </Dropdown>
+
+                    </div>
                 </div>
-
-                <HelpButton />
-                {/* RIGHT BLOCK — border-left wraps HelpButton + Notification + Avatar */}
-                <div className="h-12 flex items-center gap-3 border-l border-gray-200 pl-3 pr-3">
-
-                    <Badge count={3} size="small" offset={[0, 0]}>
-                        <BellOutlined className="text-base cursor-pointer" />
-                    </Badge>
-
-                    <Dropdown
-                        trigger={["click"]}
-                        placement="bottomRight"
-                        open={dropdownOpen}
-                        onOpenChange={dropdownOpenToggle}
-                        arrow={false}
-                        dropdownRender={() => overlay}
-                    >
-                        <div aria-haspopup="true" aria-expanded={dropdownOpen} role="button" tabIndex={0}>
-                            <Avatar size={28} icon={<UserOutlined />} className="cursor-pointer" />
-                        </div>
-                    </Dropdown>
-
-                </div>
-            </div>
-        </header>
+            </header>
+        </>
     );
 }
