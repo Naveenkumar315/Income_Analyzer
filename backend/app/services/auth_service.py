@@ -188,7 +188,7 @@ async def signup_user(
                     "message": message,
                     "metadata": metadata,
                     "is_read": False,
-                    "created_at": datetime.utcnow().isoformat(),
+                    "created_at": datetime.utcnow().isoformat() + "Z",  # Add 'Z' to indicate UTC
                     "read_at": None
                 }
                 

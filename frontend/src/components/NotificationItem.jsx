@@ -54,8 +54,20 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
     // Format timestamp
     const formatTime = (timestamp) => {
         try {
-            return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
-        } catch {
+            if (!timestamp) return 'Recently';
+
+            // Parse the timestamp - handle both ISO string and Date object
+            const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+                console.warn('Invalid timestamp:', timestamp);
+                return 'Recently';
+            }
+
+            return formatDistanceToNow(date, { addSuffix: true });
+        } catch (error) {
+            console.error('Error formatting timestamp:', error, timestamp);
             return 'Recently';
         }
     };
