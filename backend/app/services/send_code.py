@@ -156,8 +156,6 @@ async def verify_otp_code(request: VerifyCodeRequest) -> bool:
     Validate OTP from MongoDB, handle attempts, mark as used.
     """
 
-    print('***********************************************')
-
     email = request.email.lower().strip()
     input_code = request.code
     db = get_db()  # this is your Motor async DB instance

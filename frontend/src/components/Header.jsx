@@ -187,7 +187,7 @@ export default function Header() {
             {/* Backdrop overlay - only shown when dropdown is open */}
             {dropdownOpen && (
                 <div
-                    className="fixed inset-0 bg-black/10 backdrop-blur-sm z-[999]"
+                    className="fixed inset-0 bg-black/10 backdrop-blur-[2px] z-[999]"
                     style={{ top: '48px' }} // Start below header (h-12 = 48px)
                     onClick={dropdownClose}
                 />
