@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     email_pass: str
     smtp_server: str = "smtp.office365.com"
     smtp_port: int = 587
+    tenant_id: str
+    sso_reply_url: str
 
     class Config:
         env_file = ".env"

@@ -11,6 +11,7 @@ import MainLayout from './layouts/MainLayout';
 import ForgotPasswordPage from './auth/ForgotPasswordPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import UpdatePasswordPage from './auth/UpdatePasswordPage';
+import SSOCallback from './auth/SSOCallback';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path='/forgot-password' element={<ForgotPasswordPage />} />
         <Route path='/update-password' element={<UpdatePasswordPage />} />
+        <Route path="/sso" element={<SSOCallback />} />
 
         {/* Protected routes with MainLayout */}
         <Route element={

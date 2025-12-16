@@ -8,6 +8,7 @@ import authApi from "../api/authApi";
 import toast from "../utils/ToastService";
 import { setTokens } from "../utils/authService";
 import { useApp } from "../contexts/AppContext";
+import microsoft from "../assets/Microsoft icon.svg"
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
@@ -138,6 +139,11 @@ export default function LoginPage() {
         navigate('/forgot-password')
     }, [navigate])
 
+    const handleMicrosoftLogin = () => {
+        let url = `${import.meta.env.VITE_API_BASE_URL}/ValidateAzureAD`
+        window.location.href = url;
+    }
+
     return (
         <div
             className="relative flex min-h-screen w-full items-center justify-center bg-cover bg-center bg-no-repeat"
@@ -187,7 +193,7 @@ export default function LoginPage() {
                     onFieldsChange={handleFieldsChange}
                     requiredMark={false}
                     className="mt-5"
-                    hasFeedback={false}
+                // hasFeedback={false}
                 >
                     {/* EMAIL */}
                     <FormField
@@ -236,6 +242,41 @@ export default function LoginPage() {
                             className="w-4 h-4"
                         />
                     </CustomButton>
+
+                    <div className="flex items-center my-3">
+                        <div className="flex-1 h-px bg-gray-200" />
+                        <span className="font-creato px-3 text-[10px] text-gray-400 uppercase tracking-wide">
+                            OR LOG IN WITH
+                        </span>
+
+                        <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
+
+                    <button
+                        type="button"
+                        onClick={handleMicrosoftLogin}
+                        className="
+                            w-full h-10
+                            flex items-center justify-center gap-3
+                            border border-[#0078D4]
+                            rounded-lg
+                            bg-white
+                            hover:bg-[#f5faff]
+                            transition
+                            cursor-pointer
+                        "
+                    >
+                        <img
+                            src={microsoft}
+                            alt="Microsoft"
+                            className="w-5 h-5"
+                        />
+                        <span className="text-base font-medium text-gray-800">
+                            Microsoft
+                        </span>
+                    </button>
+
 
                     {/* Sign Up */}
                     <div className="mt-4 flex justify-center items-center text-sm font-creato leading-4">

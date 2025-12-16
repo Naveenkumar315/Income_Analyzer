@@ -17,7 +17,7 @@ const authApi = {
     // Add more:
     login: (data) => axiosClient.post("/auth/login", data),
     signup: (data) => axiosClient.post("/auth/signup", data),
-
+    ssoExchange: (data) => axiosClient.post("/sso-exchange", data),
     // Admin APIs
     getAllUsers: () => axiosClient.get("/admin/users"),
     updateUserStatus: (userId, status) =>
