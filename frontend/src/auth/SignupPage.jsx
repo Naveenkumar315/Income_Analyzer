@@ -26,8 +26,9 @@ function SignupPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(SIGNUP_STEPS.EMAIL);
   const [userEmail, setUserEmail] = useState(""); // Store user's email
-  const [emailExists, setEmailExists] = useState(false); // Track if email already exists
-  const [checkingEmail, setCheckingEmail] = useState(false); // Track email check loading state
+  // const [emailExists, setEmailExists] = useState(false); // Track if email already exists
+  // const [checkingEmail, setCheckingEmail] = useState(false); // Track email check loading state
+  const [isEmailValid, setIsEmailValid] = useState(false);
 
   const bgStyle = useMemo(
     () => ({ backgroundImage: `url('/auth_page_bg.png')` }),
@@ -44,32 +45,40 @@ function SignupPage() {
     // setStep(SIGNUP_STEPS.VERIFICATION_CODE);
   }, []);
 
-  const handleFieldsChange = useCallback(async () => {
-    const values = form.getFieldsValue();
-    const email = values.email?.trim() || "";
-    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // const handleFieldsChange = useCallback(async () => {
+  //   const values = form.getFieldsValue();
+  //   const email = values.email?.trim() || "";
+  //   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    setUserEmail(email);
+  //   setUserEmail(email);
 
-    if (isValidEmail) {
-      setCheckingEmail(true);
-      try {
-        const response = await authApi.checkEmailExists(email);
-        // Note: axiosClient already unwraps response.data, so we access response.exists directly
-        setEmailExists(response.exists);
-        setIsFormValid(true);
-      } catch (error) {
-        console.error("Error checking email:", error);
-        setEmailExists(false);
-        setIsFormValid(false);
-      } finally {
-        setCheckingEmail(false);
-      }
-    } else {
-      setEmailExists(false);
-      setIsFormValid(false);
-    }
-  }, [form]);
+  //   if (isValidEmail) {
+  //     setCheckingEmail(true);
+  //     try {
+  //       const response = await authApi.checkEmailExists(email);
+  //       // Note: axiosClient already unwraps response.data, so we access response.exists directly
+  //       setEmailExists(response.exists);
+  //       setIsFormValid(true);
+  //     } catch (error) {
+  //       console.error("Error checking email:", error);
+  //       setEmailExists(false);
+  //       setIsFormValid(false);
+  //     } finally {
+  //       setCheckingEmail(false);
+  //     }
+  //   } else {
+  //     setEmailExists(false);
+  //     setIsFormValid(false);
+  //   }
+  // }, [form]);
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value.trim();
+    setUserEmail(value);
+
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    setIsEmailValid(isValid);
+  };
 
   const handleNavigate = useCallback(() => {
     navigate("/");
@@ -80,21 +89,13 @@ function SignupPage() {
   }, []);
 
   const handleSendEmail = useCallback(async () => {
-    if (!userEmail) return;
+    const email_ = userEmail?.trim()?.toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email_)) {
+      toast.error("Please enter a valid email.");
+      return;
+    }
 
     try {
-      setLoading(true);
-
-      // TESTING MODE: Skip email verification and go directly to terms & conditions
-      // console.log("⚠️ EMAIL VERIFICATION DISABLED FOR TESTING");
-      // toast("Skipping email verification for testing", { icon: 'ℹ️' });
-      // startTransition(() => setStep(SIGNUP_STEPS.TERMS_CONDITION));
-      // return
-
-      // //ORIGINAL CODE - Uncomment to re-enable email verification
-      // Show verification screen immediately(optimistic)
-
-      const email_ = userEmail?.trim()?.toLowerCase();
       const response = await authApi.checkEmailExists(email_);
 
       if (response.exists) {
@@ -116,10 +117,10 @@ function SignupPage() {
         .finally(() => {
           // stop any spinner if you used one for the send
         });
-    } catch (err) {
-      console.error("Unexpected error:", err);
+
+    } catch (error) {
+      console.error("Unexpected error:", error);
     } finally {
-      // Keep loading off because we already moved on
       setLoading(false);
     }
   }, [userEmail, setStep]);
@@ -179,7 +180,7 @@ function SignupPage() {
                 form={form}
                 layout="vertical"
                 onFinish={onFinish}
-                onFieldsChange={handleFieldsChange}
+                onChange={handleEmailChange}
                 requiredMark={false}
                 className="mt-5"
               >
@@ -200,25 +201,24 @@ function SignupPage() {
                   </div>
                 )} */}
 
-                {checkingEmail && (
+                {/* {checkingEmail && (
                   <div className="text-gray-500 text-sm mt-1 -mt-4 mb-2">
                     Checking email availability...
                   </div>
-                )}
+                )} */}
                 <div className="mt-6">
                   <CustomButton
-                    className={`mt-0 ${
-                      isFormValid ? "cursor-pointer" : "!cursor-not-allowed"
-                    }`}
-                    variant={isFormValid ? "primary" : "disabled"}
+                    className={`mt-0 ${isEmailValid ? "cursor-pointer" : "!cursor-not-allowed"
+                      }`}
+                    variant={isEmailValid ? "primary" : "disabled"}
                     type="button"
-                    disabled={!isFormValid || checkingEmail || loading}
+                    disabled={!isEmailValid || loading}
                     onClick={handleSendEmail}
                   >
                     Send Verification Code
                     <img
                       src={
-                        isFormValid
+                        isEmailValid
                           ? "/arrow-right-active.png"
                           : "/arrow-right.svg"
                       }

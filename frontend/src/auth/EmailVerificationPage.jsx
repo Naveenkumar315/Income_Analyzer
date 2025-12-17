@@ -59,7 +59,7 @@ const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {
             setResendLoading(true);
             // start cooldown immediately (optimistic UX)
             setResendCooldown(RESEND_COOLDOWN_SECONDS);
-            toast("Resending OTP...", { icon: 'ℹ️' });
+            toast.info("Resending OTP...");
 
             // call API — wait to confirm success/failure
             await authApi.sendVerificationCode(email);

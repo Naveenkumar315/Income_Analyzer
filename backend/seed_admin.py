@@ -1,18 +1,21 @@
+from app.utils.security import hash_password
+from app.db import db
+from datetime import datetime
+import asyncio
 import sys
 import os
 sys.path.append(os.getcwd())
-import asyncio
-from datetime import datetime
 print("Importing app modules...", flush=True)
-from app.db import db
-from app.utils.security import hash_password
+
 
 async def seed_admin():
     print("Seeding admin user...")
-    
+
     email = "lsaravanan@loandna.com".lower().strip()
     password = "Test@123"
-    
+    firstName = "Naveen"
+    lastName = "M"
+    username = f"{firstName} {lastName}"
     # Check if user exists
     existing_user = await db["users"].find_one({"email": email})
     if existing_user:
@@ -27,12 +30,12 @@ async def seed_admin():
         "password": hashed_password,
         "role": "admin",
         "type": "individual",
-        "status": "active", # Admins should probably be active by default? Or pending? User didn't specify, but usually seed scripts create active users. Let's stick to what's implied or standard. The prompt didn't say active, but "seed admin" usually implies ready to use.
+        "status": "active",  # Admins should probably be active by default? Or pending? User didn't specify, but usually seed scripts create active users. Let's stick to what's implied or standard. The prompt didn't say active, but "seed admin" usually implies ready to use.
         "is_first_time_user": False,
-        "username": "Lokesh Saravanan",  # Full name as username
+        "username": username,  # Full name as username
         "individualInfo": {
-            "firstName": "lokesh",
-            "lastName": "saravanan",
+            "firstName": firstName,
+            "lastName": lastName,
             "phone": "123456789",
             "email": email
         },
