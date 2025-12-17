@@ -87,6 +87,10 @@ export default function ForgotPasswordPage() {
           toast.error("Please complete the sign-up process first.")
           return
         }
+        if (response?.status === "rejected"){
+          toast.error("Your signup request has been rejected")
+          return
+        }
         if (response?.exists && response?.status === "pending") {
           toast.error("Your account is pending admin approval. You’ll be notified once it’s approved.")
           return
