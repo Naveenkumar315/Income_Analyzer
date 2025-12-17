@@ -219,7 +219,7 @@ export default function LoginPage() {
                     />
 
                     {/* Forgot password */}
-                    <div className="text-Colors-Text-Primary-primary text-sm font-medium font-creato leading-4 cursor-pointer mb-6" onClick={handleNavigateForgot}>
+                    <div className="text-Colors-Text-Primary-primary inline-block text-sm font-medium font-creato leading-4 cursor-pointer mb-6" onClick={handleNavigateForgot}>
                         Forgot password?
                     </div>
 
