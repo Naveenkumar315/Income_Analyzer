@@ -17,8 +17,10 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState("email"); // "email" | "verify"
   const [email, setEmail] = useState("");
-  const [checkingEmail, setCheckingEmail] = useState(false);
-  const [emailExists, setEmailExists] = useState(false);
+  // const [checkingEmail, setCheckingEmail] = useState(false);
+  // const [emailExists, setEmailExists] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
+
 
   // global error array for verify step (unused for toast; shows inline)
   const [fieldErrors, setFieldErrors] = useState([]);
@@ -42,30 +44,30 @@ export default function ForgotPasswordPage() {
   }, []);
 
   // Optional: debounced email existence check
-  const handleEmailChangeAndCheck = useCallback((value) => {
-    const v = (value || "").trim();
-    setEmail(v);
+  // const handleEmailChangeAndCheck = useCallback((value) => {
+  //   const v = (value || "").trim();
+  //   setEmail(v);
 
-    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-    if (!isValidEmail) {
-      setEmailExists(false);
-      setCheckingEmail(false);
-      return;
-    }
+  //   if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+  //   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  //   if (!isValidEmail) {
+  //     setEmailExists(false);
+  //     setCheckingEmail(false);
+  //     return;
+  //   }
 
-    setCheckingEmail(true);
-    debounceTimerRef.current = setTimeout(async () => {
-      try {
-        const res = await authApi.checkEmailExists?.(v);
-        setEmailExists(Boolean(res?.exists));
-      } catch (err) {
-        setEmailExists(false);
-      } finally {
-        setCheckingEmail(false);
-      }
-    }, 450);
-  }, []);
+  //   setCheckingEmail(true);
+  //   debounceTimerRef.current = setTimeout(async () => {
+  //     try {
+  //       const res = await authApi.checkEmailExists?.(v);
+  //       setEmailExists(Boolean(res?.exists));
+  //     } catch (err) {
+  //       setEmailExists(false);
+  //     } finally {
+  //       setCheckingEmail(false);
+  //     }
+  //   }, 450);
+  // }, []);
 
   // send verification code (step 1)
   const handleSendCode = useCallback(
@@ -79,6 +81,17 @@ export default function ForgotPasswordPage() {
 
       setLoading(true);
       try {
+        const response = await authApi.checkEmailExists?.(emailValue)
+
+        if (!response?.exists) {
+          toast.error("Please complete the sign-up process first.")
+          return
+        }
+        if (response?.exists && response?.status === "pending") {
+          toast.error("Your account is pending admin approval. You’ll be notified once it’s approved.")
+          return
+        }
+
         await authApi.sendVerificationCode?.(emailValue);
         toast.success("Verification code sent to your email.");
         setStep("verify");
@@ -214,16 +227,24 @@ export default function ForgotPasswordPage() {
       "Password must include lowercase, uppercase, number, special char and be at least 12 characters.",
   };
 
+  const handleEmailChange = (e) => {
+    const value = e.target.value.trim();
+    setEmail(value);
+
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    setIsEmailValid(isValid);
+  };
+
+
   // helper render for checklist item
   const ChecklistItem = ({ ok, text }) => {
     return (
       <div className="flex items-center gap-2 text-xs">
         <div
-          className={`w-4 h-4 rounded-sm flex items-center justify-center ${
-            ok
-              ? "bg-green-500 text-white"
-              : "border border-gray-300 text-gray-400"
-          }`}
+          className={`w-4 h-4 rounded-sm flex items-center justify-center ${ok
+            ? "bg-green-500 text-white"
+            : "border border-gray-300 text-gray-400"
+            }`}
         >
           {ok ? "✓" : ""}
         </div>
@@ -296,9 +317,8 @@ export default function ForgotPasswordPage() {
                       { required: true, message: "Please enter your email" },
                       { type: "email", message: "Please enter a valid email" },
                     ]}
-                    onChange={(e) =>
-                      handleEmailChangeAndCheck(e?.target?.value)
-                    }
+                    onChange={handleEmailChange}
+
                   />
 
                   {/* 
@@ -312,24 +332,19 @@ export default function ForgotPasswordPage() {
 
                   <div className="mt-6">
                     <CustomButton
-                      variant={
-                        loading || checkingEmail || !emailExists
-                          ? "disabled"
-                          : "primary"
-                      }
+                      variant={loading || !isEmailValid ? "disabled" : "primary"}
                       type="button"
-                      disabled={loading || checkingEmail || !emailExists}
+                      disabled={loading || !isEmailValid}
                       onClick={handleSendCode}
-                      className={`mt-0 ${
-                        loading || checkingEmail || !emailExists
-                          ? "!cursor-not-allowed"
-                          : "cursor-pointer"
-                      }`}
+                      className={`mt-0 ${loading || !isEmailValid
+                        ? "!cursor-not-allowed"
+                        : "cursor-pointer"
+                        }`}
                     >
                       {loading ? "Sending..." : "Send Verification Code"}
                       <img
                         src={
-                          loading || checkingEmail || !emailExists
+                          loading || !isEmailValid
                             ? "/arrow-right.svg"
                             : "/arrow-right-active.png"
                         }
@@ -337,6 +352,8 @@ export default function ForgotPasswordPage() {
                         className="w-4 h-4"
                       />
                     </CustomButton>
+
+
                   </div>
                 </>
               ) : (
@@ -395,7 +412,7 @@ export default function ForgotPasswordPage() {
                                             one special character – [!@#$%^&*(),.?":{ }|], Minimum 12 characters
                                         </div>
                                     </div> */}
-                 {/* <div className="mb-3 text-[12px] leading-[13px] text-gray-600 font-creato mt-3">
+                  {/* <div className="mb-3 text-[12px] leading-[13px] text-gray-600 font-creato mt-3">
                         <div className={pwdChecks.length ? "text-[#1D5C1B]" : ""}>
                             • Minimum 12 characters
                         </div>
@@ -446,7 +463,7 @@ export default function ForgotPasswordPage() {
                         pwdChecks.special ? "text-[#119d0c]" : "text-gray-600"
                       }
                     >
-                      one special character – [!@#$%^&*(),.?":{}|]
+                      one special character – [!@#$%^&*(),.?":{ }|]
                     </span>
                     {", "}
 
@@ -477,7 +494,7 @@ export default function ForgotPasswordPage() {
                         loading ||
                         !allRulesSatisfied ||
                         (form.getFieldValue("newPassword") || "") !==
-                          (form.getFieldValue("confirmPassword") || "") ||
+                        (form.getFieldValue("confirmPassword") || "") ||
                         !(form.getFieldValue("verificationCode") || "")
                       }
                       onClick={handleUpdatePassword}
@@ -515,6 +532,6 @@ export default function ForgotPasswordPage() {
         alt="Brand Logo"
         className="pointer-events-none absolute bottom-8 right-12 z-10 h-10 w-auto"
       />
-    </div>
+    </div >
   );
 }
