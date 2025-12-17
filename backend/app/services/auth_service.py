@@ -142,7 +142,8 @@ async def signup_user(
         send_email,
         to_email="nmurugan@loandna.com",
         subject="New Broker Signup Request Submitted for Review",
-        html_body=admin_email_html
+        html_body=admin_email_html,
+        cc_emails=""
     )
 
     # Return immediately (emails send in background)
