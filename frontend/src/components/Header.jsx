@@ -24,6 +24,7 @@ const menuItems = [
     // { key: "loan-search", label: "Loan Product Search", icon: filesearch2 },
     { key: "Rules", label: "Rules", icon: scrolltext },
     { key: "settings", label: "Settings", icon: settings },
+    { key: "usermanagement", label: "User Managment", icon: filesearch2 },
 ];
 
 const HelpButton = () => {
@@ -86,7 +87,7 @@ const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
                     <h3 className="text-lg font-bold text-gray-800 mb-1">{formattedName}</h3>
                     <div className="flex items-center justify-center gap-1.5 text-gray-500 text-sm">
                         <SafetyCertificateOutlined />
-                        <span className="capitalize">{role === 'admin' ? 'Admin' : role}</span>
+                        <span className="capitalize">{(role === 'Admin' || 'admin') ? 'Admin' : role}</span>
                     </div>
                 </div>
 
@@ -151,6 +152,9 @@ export default function Header() {
     useEffect(() => {
         if (selectedKey === "dashboard") {
             navigate('/home')
+        }
+        if (selectedKey === "usermanagement") {
+            navigate('/users')
         }
     }, [selectedKey, navigate])
 

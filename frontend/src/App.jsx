@@ -12,34 +12,39 @@ import ProtectedRoute from './components/ProtectedRoute';
 import UpdatePasswordPage from './auth/UpdatePasswordPage';
 import SSOCallback from './auth/SSOCallback';
 import AdminTable_ from './custom_components/dashboard/AdminTable_';
+import AppInitializer from './AppInitializer';
 
 function App() {
+
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public routes (no header) */}
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path='/forgot-password' element={<ForgotPasswordPage />} />
-        <Route path='/update-password' element={<UpdatePasswordPage />} />
-        <Route path="/sso" element={<SSOCallback />} />
+    <AppInitializer>
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes (no header) */}
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path='/forgot-password' element={<ForgotPasswordPage />} />
+          <Route path='/update-password' element={<UpdatePasswordPage />} />
+          <Route path="/sso" element={<SSOCallback />} />
 
-        {/* Protected routes with MainLayout */}
-        <Route element={
-          <ProtectedRoute>
-            <MainLayout />
-          </ProtectedRoute>
-        }>
-          <Route path="/home" element={<AdminTable_ />} />
-          {/* <Route path="/admin" element={<AdminTable />} /> */}
-          {/* add other protected / shared-header routes here */}
-        </Route>
+          {/* Protected routes with MainLayout */}
+          <Route element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="/home" element={<AdminTable_ />} />
+            <Route path="/users" element={<AdminTable_ />} />
+            {/* <Route path="/admin" element={<AdminTable />} /> */}
+            {/* add other protected / shared-header routes here */}
+          </Route>
 
-        {/* optional: 404 or other routes */}
-      </Routes>
+          {/* optional: 404 or other routes */}
+        </Routes>
 
-      <ToastProvider />
-    </BrowserRouter>
+        <ToastProvider />
+      </BrowserRouter>
+    </AppInitializer>
   );
 }
 

@@ -78,16 +78,19 @@ export default function LoginPage() {
             navigate("/home");
         } catch (error) {
             console.error("Login error:", error);
+            const errorDetail = error.response?.data?.detail || error.detail || error.message;
 
-            // Show toast message for wrong credentials / not registered email
-            // Prefer server-provided message if available.
-            const serverMsg = error?.response?.data?.detail;
-            if (serverMsg) {
-                toast.error(serverMsg);
+            if (error.response?.status === 403) {
+                // Status-related errors (pending, inactive, not approved)
+                toast.error(errorDetail || "Access denied");
+            } else if (error.response?.status === 400) {
+                // Invalid credentials or password not set
+                toast.error(errorDetail || "Invalid email or password");
             } else {
-                // fallback message
-                toast.error("Invalid email or password");
+                // Generic error
+                toast.error(errorDetail || "Login failed. Please try again.");
             }
+
         } finally {
             setLoading(false);
         }

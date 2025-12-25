@@ -31,7 +31,7 @@ class Token(BaseModel):
     email: Optional[EmailStr] = None
     status: Optional[str] = None  # "pending", "active", "inactive"
     user_id: Optional[str] = None
-    role: Optional[str] = None  # "user", "admin"
+    role: Optional[str] = None  # "User", "Admin"
     is_first_time_user: bool
 
 
@@ -88,7 +88,8 @@ class SignupRequest(BaseModel):
     companyAddress: Optional[CompanyAddress] = None
     primaryContact: Optional[PrimaryContact] = None
     individualInfo: Optional[IndividualInfo] = None
-    username: Optional[str] = None  # Optional, will be auto-generated from first/last name
+    # Optional, will be auto-generated from first/last name
+    username: Optional[str] = None
 
 
 class UpdatePasswordRequest(BaseModel):
@@ -96,3 +97,20 @@ class UpdatePasswordRequest(BaseModel):
     password: str
     verificationCode: str
     verifycode: bool
+
+
+class CreateCompanyUserRequest(BaseModel):
+    company_admin_id: str
+    email: EmailStr
+    firstName: str
+    lastName: str
+    role: str  # Admin / User
+    phone: str | None = None
+
+
+class UpdateRoleRequest(BaseModel):
+    role: str
+
+
+class GetUserRequest(BaseModel):
+    email: str

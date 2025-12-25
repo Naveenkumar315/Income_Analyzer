@@ -1,6 +1,8 @@
 from fastapi import APIRouter, BackgroundTasks
-from app.services.admin_service import get_all_users, update_user_status, delete_user, fetch_user_by_email
+from app.services.admin_service import get_all_users, update_user_status, delete_user, fetch_user_by_email, update_user_role
 from pydantic import BaseModel
+from app.models.user import CreateCompanyUserRequest, UpdateRoleRequest
+from app.services.create_company_user import create_company_user
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -44,3 +46,13 @@ async def delete_user_endpoint(user_id: str):
     Permanently delete a user from the database.
     """
     return await delete_user(user_id)
+
+
+@router.post("/inser-company-user")
+async def insertcompanyuser(payload: CreateCompanyUserRequest):
+    return await create_company_user(payload)
+
+
+@router.patch("/update-user-role/{user_id}")
+async def updateuser_role(user_id: str, payload: UpdateRoleRequest):
+    return await update_user_role(user_id, payload)

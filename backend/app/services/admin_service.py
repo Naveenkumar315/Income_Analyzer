@@ -10,6 +10,7 @@ import asyncio
 import traceback
 import re
 from pydantic import BaseModel
+from app.models.user import GetUserRequest, UpdateRoleRequest
 EMAIL_REGEX = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 
 
@@ -84,7 +85,7 @@ async def update_user_status(
     await users.update_one({"_id": object_id}, {"$set": update_data})
 
     # ------------------------------------------------
-    # 🔥 EMAILS — FIRE & FORGET (NO AWAIT ANYWHERE)
+    # EMAILS — FIRE & FORGET (NO AWAIT ANYWHERE)
     # ------------------------------------------------
     if new_status == "active":
         background_tasks.add_task(
@@ -102,7 +103,7 @@ async def update_user_status(
             html_body=get_rejection_email_html(full_name, reason="")
         )
 
-    # 🚀 RETURN IMMEDIATELY (NO WAIT)
+    #  RETURN IMMEDIATELY (NO WAIT)
     return {
         "message": f"User status updated to {new_status}",
         "status": new_status
@@ -138,10 +139,6 @@ async def delete_user(user_id: str):
     }
 
 
-class GetUserRequest(BaseModel):
-    email: str
-
-
 def serialize_user(user: dict) -> dict:
     user["_id"] = str(user["_id"])
     user.pop("password", None)  # never expose password
@@ -162,3 +159,39 @@ async def fetch_user_by_email(payload: GetUserRequest):
             status_code=500,
             detail="Error fetching user details"
         )
+
+
+async def update_user_role(
+    user_id: str,
+    payload: UpdateRoleRequest,
+):
+    # allowed roles
+    allowed_roles = ["Admin", "User"]
+
+    if payload.role not in allowed_roles:
+        raise HTTPException(status_code=400, detail="Invalid role")
+
+    # check user exists
+    user = await db["users"].find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # update role
+    result = await db["users"].update_one(
+        {"_id": ObjectId(user_id)},
+        {
+            "$set": {
+                "role": payload.role,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="Role not changed")
+
+    return {
+        "message": "Role updated successfully",
+        "user_id": user_id,
+        "new_role": payload.role
+    }

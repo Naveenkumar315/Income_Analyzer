@@ -35,6 +35,29 @@ async def login_user(user: UserLogin):
     if not db_user:
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
+    user_status = db_user.get("status", "pending")
+
+    # If user is pending approval (no password set yet)
+    if user_status == "pending":
+        raise HTTPException(
+            status_code=403,
+            detail="Your account is pending approval. Please wait for admin approval."
+        )
+
+    # If user is inactive/rejected
+    if user_status == "inactive":
+        raise HTTPException(
+            status_code=403,
+            detail="Your account has been deactivated. Please contact support."
+        )
+
+    # If status is not active
+    if user_status != "active":
+        raise HTTPException(
+            status_code=403,
+            detail="Unable to login. Please contact support."
+        )
+
     if not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
@@ -80,7 +103,7 @@ async def signup_user(
         raise HTTPException(status_code=400, detail="Email already registered")
 
     now = datetime.utcnow()
-    role = "user"
+    role = "User"
     isCompanyAdmin = False
 
     # Build username from first and last names based on user type
@@ -92,7 +115,7 @@ async def signup_user(
     else:  # individual
         info = signup_data.individualInfo
         full_name = f"{info.firstName} {info.lastName}".strip()
-        role = "user"
+        role = "User"
         isCompanyAdmin = False
 
     user_document = {

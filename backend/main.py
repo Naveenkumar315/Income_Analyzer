@@ -880,7 +880,7 @@ async def sso_exchange(payload: SSOVerifyModel):
         "access_token": access_token,
         "refresh_token": refresh_token,
         "email": data["email"],
-        "role": "user",
+        "role": "User",
         "status": "active",
         "is_first_time_user": False
     }

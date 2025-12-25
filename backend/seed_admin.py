@@ -28,7 +28,7 @@ async def seed_admin():
     admin_user = {
         "email": email,
         "password": hashed_password,
-        "role": "admin",
+        "role": "Admin",
         "type": "individual",
         "status": "active",  # Admins should probably be active by default? Or pending? User didn't specify, but usually seed scripts create active users. Let's stick to what's implied or standard. The prompt didn't say active, but "seed admin" usually implies ready to use.
         "is_first_time_user": False,

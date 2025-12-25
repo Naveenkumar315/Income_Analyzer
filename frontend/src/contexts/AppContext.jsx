@@ -3,7 +3,7 @@ import React, { createContext, useContext, useMemo, useState } from "react";
 const AppContext = createContext(null);
 
 export const AppProvider = ({ children }) => {
-    const [user, setUser] = useState({ email: "" });
+    const [user, setUser] = useState(null);
 
     const value = useMemo(
         () => ({
