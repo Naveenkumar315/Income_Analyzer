@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Modal, Button, Form } from "antd";
 import FormField from "../components/FormField";
+import { useApp } from "../contexts/AppContext";
+import authApi from "../api/authApi";
+import toast from "../utils/ToastService";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -9,9 +12,12 @@ const CreateCompanyUserModal = ({
     onCancel,
     onCreate,
     confirmLoading = false,
+    onSuccess,
 }) => {
     const [form] = Form.useForm();
     const [isEmailValid, setIsEmailValid] = useState(false);
+    const { user } = useApp()
+
 
     // ================= EMAIL VALIDATION (Same as Signup) =================
     const handleEmailChange = (e) => {
@@ -42,6 +48,53 @@ const CreateCompanyUserModal = ({
         form.setFieldsValue({ phone: formatted });
     };
 
+    const getCompanyLimit = (sizeText) => {
+        if (!sizeText) return 10;
+
+        const value = sizeText.trim().replace(/\s/g, "").toLowerCase();
+
+        // handle like 1-10
+        if (value.includes("-")) {
+            try {
+                return parseInt(value.split("-")[1]);
+            } catch {
+                return 10;
+            }
+        }
+
+        // handle like 500+
+        if (value.endsWith("+")) {
+            return parseInt(value.slice(0, -1));
+        }
+
+        return 10;
+    };
+
+
+    const handleSubmit = async () => {
+        try {
+            const values = await form.validateFields();
+
+            const payload = {
+                company_admin_id: user._id,
+                email: values.email.trim().toLowerCase(),
+                firstName: values.firstName,
+                lastName: values.lastName,
+                role: values.role,
+                phone: values.phone
+            };
+
+            const response = await authApi.createCompanyUser(payload);
+            toast.success("User created successfully");
+            onCancel();
+            onSuccess()
+        } catch (err) {
+            console.error(err);
+            toast.error(err?.detail || "Failed to create user");
+        }
+    };
+
+
     return (
         <Modal
             title="Create Company User"
@@ -53,7 +106,7 @@ const CreateCompanyUserModal = ({
             }}
             width={640}
             centered
-            destroyOnClose
+            destroyOnHidden
             maskClosable={false}
             footer={[
                 <Button key="cancel" onClick={onCancel}>
@@ -64,7 +117,7 @@ const CreateCompanyUserModal = ({
                     type="primary"
                     loading={confirmLoading}
                     disabled={!isEmailValid || confirmLoading}
-                    onClick={() => form.submit()}
+                    onClick={() => handleSubmit()}
                 >
                     Create User
                 </Button>,

@@ -1,6 +1,4 @@
-// AdminTableExample.jsx - Using the Reusable Component
 import React, { useState, useEffect, useMemo } from "react";
-import { Modal } from "antd";
 import ReusableDataTable from "../ReusableDataTable";
 import authApi from "../../api/authApi";
 import toast from "../../utils/ToastService";
@@ -8,18 +6,47 @@ import circleCheck from "../../assets/icons/circle-check.svg";
 import circleClose from "../../assets/icons/circle-close.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
 import CreateCompanyUserModal from "../../modals/CreateCompanyUserModal";
-
-
-
+import { useApp } from "../../contexts/AppContext";
+import { Modal, Select } from "antd";
+import useRefreshUser from "../../hooks/useRefreshUser";
 
 export default function AdminTable_() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [actionInProgress, setActionInProgress] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const { user } = useApp();
+    const { refreshUser } = useRefreshUser();
 
+    //  Single useEffect to ensure user is loaded before fetching users
+    useEffect(() => {
+        const initializeData = async () => {
+            const email = sessionStorage.getItem('user_email');
 
-    // Transform user data
+            if (!email) {
+                setLoading(false);
+                return;
+            }
+
+            //  Wait for user to be loaded first
+            if (!user) {
+                await refreshUser(email);
+            }
+
+            //  Now fetch users (user state will be available)
+            fetchUsers();
+        };
+
+        initializeData();
+    }, []); //  Run only once on mount
+
+    //  Separate effect to re-fetch users when user changes
+    useEffect(() => {
+        if (user) {
+            fetchUsers();
+        }
+    }, [user?._id]); //  Only when user ID changes
+
     const transformUserData = (usersArray) => {
         try {
             if (!Array.isArray(usersArray)) return [];
@@ -31,7 +58,7 @@ export default function AdminTable_() {
                     name = `${info.firstName || ""} ${info.lastName || ""}`.trim();
                     email = info.email || user.email;
                     phone = info.phone || "";
-                    companyType = "Broker";
+                    companyType = "Individual";
                     companySize = "1";
                 } else if (user.type === "company") {
                     const companyInfo = user.companyInfo || {};
@@ -39,8 +66,8 @@ export default function AdminTable_() {
                     name = `${primaryContact.firstName || ""} ${primaryContact.lastName || ""}`.trim();
                     if (!name) name = companyInfo.companyName || "";
                     email = primaryContact.email || user.email || companyInfo.companyEmail;
-                    phone = companyInfo.companyPhone || "";
-                    companyType = "Broker Company";
+                    phone = primaryContact.phone || "";
+                    companyType = "Company";
                     companySize = companyInfo.companySize || "-";
                 } else {
                     name = user.username || "-";
@@ -50,10 +77,13 @@ export default function AdminTable_() {
                     companySize = "-";
                 }
 
+                const approvedOrCreatedDate = user.approvedOn || user.created_at;
+
                 return {
                     id: user._id,
                     name,
                     email,
+                    role: user.role,
                     phone,
                     submittedOn: user.created_at
                         ? new Date(user.created_at).toLocaleString("en-US", {
@@ -65,8 +95,8 @@ export default function AdminTable_() {
                             hour12: true,
                         })
                         : "-",
-                    approvedOn: user.approvedOn
-                        ? new Date(user.approvedOn).toLocaleString("en-US", {
+                    approvedOn: approvedOrCreatedDate
+                        ? new Date(approvedOrCreatedDate).toLocaleString("en-US", {
                             year: "numeric",
                             month: "2-digit",
                             day: "2-digit",
@@ -87,12 +117,25 @@ export default function AdminTable_() {
         }
     };
 
-    // Fetch users
+    //  Removed setTimeout and added safety check
     const fetchUsers = async () => {
+        if (!user?.email) {
+            console.warn("fetchUsers called without user email");
+            return;
+        }
+
         setLoading(true);
         try {
             const response = await authApi.getAllUsers();
-            const rawUsers = response && response.users ? response.users : [];
+            let rawUsers = response?.users || [];
+
+            if (user?.isCompanyAdmin) {
+                rawUsers = rawUsers.filter(u =>
+                    u._id === user._id ||
+                    u.company_id === user._id
+                );
+            }
+
             const transformedData = transformUserData(rawUsers);
             setUsers(transformedData);
         } catch (error) {
@@ -104,11 +147,6 @@ export default function AdminTable_() {
         }
     };
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    // Confirmation modal helper
     const showCustomConfirm = ({ title, content, icon, onOk, okText = "Yes", cancelText = "No", okButtonProps = {} }) => {
         Modal.confirm({
             className: "custom-confirm-modal",
@@ -132,7 +170,6 @@ export default function AdminTable_() {
         });
     };
 
-    // Action handlers
     const handleApprove = (userId) => {
         if (!userId) return;
         showCustomConfirm({
@@ -232,7 +269,6 @@ export default function AdminTable_() {
         });
     };
 
-    // Cell click handler
     const handleCellClick = (event) => {
         const rawTarget = event.event.target;
         const findButton = (className) => {
@@ -357,7 +393,6 @@ export default function AdminTable_() {
                     opacity: isPending ? 0.6 : 1,
                 }}
             >
-                {/* Toggle */}
                 <label
                     style={{
                         position: "relative",
@@ -403,7 +438,6 @@ export default function AdminTable_() {
                     </span>
                 </label>
 
-                {/* Text */}
                 <span
                     className="font-creato"
                     style={{ fontSize: "13px", color: "#64748b" }}
@@ -414,8 +448,56 @@ export default function AdminTable_() {
         );
     };
 
+    // ✅ Added safety check for user
+    const RoleCell = ({ data }) => {
+        const handleChange = (newRole) => {
+            // ✅ Guard against null user
+            if (!user?._id) {
+                toast.error("User session not loaded. Please refresh the page.");
+                return;
+            }
 
-    // Column definitions
+            const isSelf = data.id === user._id;
+            if (newRole === data.role) return;
+
+            if (isSelf) {
+                toast.error("You cannot change your own role");
+                return;
+            }
+
+            Modal.confirm({
+                title: "Change Role",
+                content: `Are you sure you want to change role to "${newRole}"?`,
+                okText: "Yes",
+                cancelText: "No",
+                centered: true,
+                onOk: async () => {
+                    try {
+                        await authApi.updateUserRole(data.id, newRole);
+                        toast.success("Role updated successfully");
+                        fetchUsers();
+                    } catch (err) {
+                        console.error(err);
+                        toast.error("Failed to update role");
+                    }
+                }
+            });
+        };
+
+        return (
+            <Select
+                value={data.role}
+                style={{ width: 120 }}
+                onChange={handleChange}
+                disabled={data.status === "pending"}
+                options={[
+                    { value: "Admin", label: "Admin" },
+                    { value: "User", label: "User" }
+                ]}
+            />
+        );
+    };
+
     const columnDefs = useMemo(() => [
         {
             field: "name",
@@ -434,6 +516,14 @@ export default function AdminTable_() {
             filter: false,
             sortable: true,
             resizable: false,
+        },
+        {
+            field: "role",
+            headerName: "Role",
+            width: 140,
+            sortable: false,
+            resizable: false,
+            cellRenderer: RoleCell,
         },
         {
             field: "phone",
@@ -474,7 +564,7 @@ export default function AdminTable_() {
         },
         {
             field: "companyType",
-            headerName: "Company Type",
+            headerName: "Type",
             width: 140,
             filter: false,
             sortable: true,
@@ -509,36 +599,38 @@ export default function AdminTable_() {
                 paddingLeft: "8px",
             },
         },
-    ], []);
+    ], [user]);
 
     const handleCreateUser = () => {
-        debugger
-        console.log('sdfdsf');
-        setIsCreateOpen(true)
-    }
+        setIsCreateOpen(true);
+    };
 
-    return (<>
-        <ReusableDataTable
-            title="User Management"
-            columnDefs={columnDefs}
-            data={users}
-            fetchData={fetchUsers}
-            loading={loading}
-            handleCreateUser={handleCreateUser}
-            searchPlaceholder="Search loan, borrower etc."
-            onCellClicked={handleCellClick}
-            showFilter={true}
-            onFilter={() => console.log("Filter clicked")}
-            defaultPageSize={10}
-            pageSizeOptions={[10, 20, 50]}
-
-        />
-        {
-            isCreateOpen && <CreateCompanyUserModal
-                open={isCreateOpen}
-                // confirmLoading={creatingUser}
-                onCancel={() => setIsCreateOpen(false)}
+    return (
+        <>
+            <ReusableDataTable
+                title="User Management"
+                columnDefs={columnDefs}
+                data={users}
+                fetchData={fetchUsers}
+                loading={loading}
+                handleCreateUser={handleCreateUser}
+                searchPlaceholder="Search loan, borrower etc."
+                onCellClicked={handleCellClick}
+                showFilter={true}
+                onFilter={() => console.log("Filter clicked")}
+                defaultPageSize={10}
+                pageSizeOptions={[10, 20, 50]}
             />
-        }
-    </>);
+            {isCreateOpen && (
+                <CreateCompanyUserModal
+                    open={isCreateOpen}
+                    onCancel={() => setIsCreateOpen(false)}
+                    onSuccess={() => {
+                        setIsCreateOpen(false);
+                        fetchUsers();
+                    }}
+                />
+            )}
+        </>
+    );
 }
