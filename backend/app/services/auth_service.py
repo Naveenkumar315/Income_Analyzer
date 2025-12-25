@@ -80,23 +80,30 @@ async def signup_user(
         raise HTTPException(status_code=400, detail="Email already registered")
 
     now = datetime.utcnow()
+    role = "user"
+    isCompanyAdmin = False
 
     # Build username from first and last names based on user type
     if signup_data.type == "company":
         primary = signup_data.primaryContact
         full_name = f"{primary.firstName} {primary.lastName}".strip()
+        role = "Admin"
+        isCompanyAdmin = True
     else:  # individual
         info = signup_data.individualInfo
         full_name = f"{info.firstName} {info.lastName}".strip()
+        role = "user"
+        isCompanyAdmin = False
 
     user_document = {
         "email": signup_data.email,
-        "role": "user",
+        "role": role,
         "type": signup_data.type,
         "status": "pending",
         "created_at": now,
         "updated_at": now,
         "username": full_name,  # Set username to full name
+        "isCompanyAdmin": isCompanyAdmin,
     }
 
     # Add type-specific information

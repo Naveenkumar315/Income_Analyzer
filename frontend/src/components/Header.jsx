@@ -21,7 +21,7 @@ import scrolltext from "../assets/scroll-text.svg"
 
 const menuItems = [
     { key: "dashboard", label: "Dashboard", icon: layoutdashboard },
-    { key: "loan-search", label: "Loan Product Search", icon: filesearch2 },
+    // { key: "loan-search", label: "Loan Product Search", icon: filesearch2 },
     { key: "Rules", label: "Rules", icon: scrolltext },
     { key: "settings", label: "Settings", icon: settings },
 ];
@@ -47,7 +47,6 @@ const HelpButton = () => {
 };
 
 const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
-    debugger
     // Derive display name/initials
     const username = userData?.username || "";
     const email = userData?.email || "";
@@ -58,7 +57,7 @@ const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
     const formattedName = displayName.replace(/\./g, " ").replace(/\b\w/g, l => l.toUpperCase());
 
     return (
-        <div className="w-[260px] bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] overflow-hidden font-creato">
+        <div className="w-[260px] bg-white mt-1.5 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] overflow-hidden font-creato">
             {/* Decorative Header Background */}
             <div className="h-24 bg-gradient-to-r from-[#e6f7ff] to-[#f0f5ff] relative overflow-hidden">
                 <img
@@ -150,7 +149,6 @@ export default function Header() {
     };
 
     useEffect(() => {
-        console.log("===================>", selectedKey)
         if (selectedKey === "dashboard") {
             navigate('/home')
         }
@@ -247,7 +245,7 @@ export default function Header() {
                             open={dropdownOpen}
                             onOpenChange={dropdownOpenToggle}
                             arrow={false}
-                            dropdownRender={() => overlay}
+                            popupRender={() => overlay}
                         >
                             <div aria-haspopup="true" aria-expanded={dropdownOpen} role="button" tabIndex={0}>
                                 <Avatar size={28} icon={<UserOutlined />} className="cursor-pointer" />

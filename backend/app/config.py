@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     tenant_id: str
     sso_reply_url: str
+    frontend_url: str
 
     class Config:
         env_file = ".env"

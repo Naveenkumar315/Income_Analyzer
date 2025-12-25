@@ -1,0 +1,544 @@
+// AdminTableExample.jsx - Using the Reusable Component
+import React, { useState, useEffect, useMemo } from "react";
+import { Modal } from "antd";
+import ReusableDataTable from "../ReusableDataTable";
+import authApi from "../../api/authApi";
+import toast from "../../utils/ToastService";
+import circleCheck from "../../assets/icons/circle-check.svg";
+import circleClose from "../../assets/icons/circle-close.svg";
+import deleteIcon from "../../assets/icons/delete.svg";
+import CreateCompanyUserModal from "../../modals/CreateCompanyUserModal";
+
+
+
+
+export default function AdminTable_() {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [actionInProgress, setActionInProgress] = useState(false);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+
+    // Transform user data
+    const transformUserData = (usersArray) => {
+        try {
+            if (!Array.isArray(usersArray)) return [];
+            return usersArray.map((user) => {
+                let name, email, phone, companyType, companySize;
+
+                if (user.type === "individual") {
+                    const info = user.individualInfo || {};
+                    name = `${info.firstName || ""} ${info.lastName || ""}`.trim();
+                    email = info.email || user.email;
+                    phone = info.phone || "";
+                    companyType = "Broker";
+                    companySize = "1";
+                } else if (user.type === "company") {
+                    const companyInfo = user.companyInfo || {};
+                    const primaryContact = user.primaryContact || {};
+                    name = `${primaryContact.firstName || ""} ${primaryContact.lastName || ""}`.trim();
+                    if (!name) name = companyInfo.companyName || "";
+                    email = primaryContact.email || user.email || companyInfo.companyEmail;
+                    phone = companyInfo.companyPhone || "";
+                    companyType = "Broker Company";
+                    companySize = companyInfo.companySize || "-";
+                } else {
+                    name = user.username || "-";
+                    email = user.email;
+                    phone = "-";
+                    companyType = "-";
+                    companySize = "-";
+                }
+
+                return {
+                    id: user._id,
+                    name,
+                    email,
+                    phone,
+                    submittedOn: user.created_at
+                        ? new Date(user.created_at).toLocaleString("en-US", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                        })
+                        : "-",
+                    approvedOn: user.approvedOn
+                        ? new Date(user.approvedOn).toLocaleString("en-US", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                        })
+                        : "-",
+                    companyType,
+                    companySize,
+                    status: user.status || "pending",
+                    isActive: user.status === "active",
+                };
+            });
+        } catch (err) {
+            console.error("transformUserData error:", err);
+            return [];
+        }
+    };
+
+    // Fetch users
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            const response = await authApi.getAllUsers();
+            const rawUsers = response && response.users ? response.users : [];
+            const transformedData = transformUserData(rawUsers);
+            setUsers(transformedData);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+            toast.error("Failed to load users");
+            setUsers([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    // Confirmation modal helper
+    const showCustomConfirm = ({ title, content, icon, onOk, okText = "Yes", cancelText = "No", okButtonProps = {} }) => {
+        Modal.confirm({
+            className: "custom-confirm-modal",
+            icon: null,
+            content: (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", textAlign: "center", width: "100%" }}>
+                    {icon && <img src={icon} alt="icon" style={{ width: "48px", height: "48px" }} />}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <span style={{ fontSize: "16px", fontWeight: 600, color: "#18181B" }} className="font-creato">{title}</span>
+                        <span style={{ fontSize: "14px", fontWeight: 400, color: "#71717A" }} className="font-creato">{content}</span>
+                    </div>
+                </div>
+            ),
+            okText,
+            cancelText,
+            centered: true,
+            width: 360,
+            okButtonProps,
+            cancelButtonProps: { style: { height: "32px", borderRadius: "6px", flex: 1, border: "1px solid #E0E0E0" } },
+            onOk,
+        });
+    };
+
+    // Action handlers
+    const handleApprove = (userId) => {
+        if (!userId) return;
+        showCustomConfirm({
+            title: "Approve User",
+            content: "Are you sure you want to approve this user?",
+            icon: circleCheck,
+            okText: "Approve",
+            onOk: async () => {
+                setActionInProgress(true);
+                try {
+                    await authApi.updateUserStatus(userId, "active");
+                    toast.success("User approved successfully");
+                    await fetchUsers();
+                } catch (error) {
+                    console.error("Error approving user:", error);
+                    toast.error("Failed to approve user");
+                } finally {
+                    setActionInProgress(false);
+                }
+            }
+        });
+    };
+
+    const handleReject = (userId) => {
+        if (!userId) return;
+        showCustomConfirm({
+            title: "Reject User",
+            content: "Are you sure you want to reject this user?",
+            icon: circleClose,
+            okText: "Reject",
+            okButtonProps: { danger: true },
+            onOk: async () => {
+                setActionInProgress(true);
+                try {
+                    await authApi.updateUserStatus(userId, "inactive");
+                    toast.success("User rejected successfully");
+                    await fetchUsers();
+                } catch (error) {
+                    console.error("Error rejecting user:", error);
+                    toast.error("Failed to reject user");
+                } finally {
+                    setActionInProgress(false);
+                }
+            }
+        });
+    };
+
+    const handleDelete = (userId) => {
+        if (!userId) return;
+        showCustomConfirm({
+            title: "Delete User",
+            content: "Are you sure you want to permanently delete this user? This action cannot be undone.",
+            icon: deleteIcon,
+            okText: "Yes",
+            okButtonProps: { danger: true, style: { background: "#dc2626", borderColor: "#dc2626", color: "white" } },
+            onOk: async () => {
+                setActionInProgress(true);
+                try {
+                    await authApi.deleteUser(userId);
+                    toast.success("User deleted successfully");
+                    await fetchUsers();
+                } catch (error) {
+                    console.error("Error deleting user:", error);
+                    toast.error("Failed to delete user");
+                } finally {
+                    setActionInProgress(false);
+                }
+            }
+        });
+    };
+
+    const handleStatusToggle = (userId, newStatus) => {
+        if (!userId) return;
+        const actionText = newStatus === "active" ? "activate" : "deactivate";
+        const titleText = newStatus === "active" ? "Activate User" : "Deactivate User";
+        const icon = newStatus === "active" ? circleCheck : circleClose;
+
+        showCustomConfirm({
+            title: titleText,
+            content: `Are you sure you want to ${actionText} this user?`,
+            icon: icon,
+            okText: "Yes",
+            okType: newStatus === "active" ? "primary" : "danger",
+            onOk: async () => {
+                setActionInProgress(true);
+                try {
+                    await authApi.updateUserStatus(userId, newStatus);
+                    toast.success(`User status updated to ${newStatus}`);
+                    await fetchUsers();
+                } catch (error) {
+                    console.error("Error updating user status:", error);
+                    toast.error("Failed to update user status");
+                } finally {
+                    setActionInProgress(false);
+                }
+            }
+        });
+    };
+
+    // Cell click handler
+    const handleCellClick = (event) => {
+        const rawTarget = event.event.target;
+        const findButton = (className) => {
+            if (!rawTarget) return null;
+            return rawTarget.closest ? rawTarget.closest(`.${className}`) :
+                rawTarget.classList && rawTarget.classList.contains(className) ? rawTarget : null;
+        };
+
+        const approveBtn = findButton("approve-btn");
+        if (approveBtn) {
+            event.event.preventDefault();
+            handleApprove(approveBtn.dataset.id);
+            return;
+        }
+
+        const rejectBtn = findButton("reject-btn");
+        if (rejectBtn) {
+            event.event.preventDefault();
+            handleReject(rejectBtn.dataset.id);
+            return;
+        }
+
+        const deleteBtn = findButton("delete-btn");
+        if (deleteBtn) {
+            event.event.preventDefault();
+            handleDelete(deleteBtn.dataset.id);
+            return;
+        }
+
+        if (rawTarget.classList && rawTarget.classList.contains("status-toggle")) {
+            const id = rawTarget.dataset.id;
+            const user = event.data;
+            if (user) {
+                event.event.preventDefault();
+                if (user.status !== "pending") {
+                    const newStatus = user.isActive ? "inactive" : "active";
+                    handleStatusToggle(id, newStatus);
+                }
+            }
+        }
+    };
+
+    const ActionCell = ({ data }) => {
+        const isPending = data.status === "pending";
+
+        if (isPending) {
+            return (
+                <div style={{ display: "flex", gap: "12px", padding: "4px 0" }}>
+                    <button
+                        className="approve-btn font-creato"
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: 13,
+                            color: "#16a34a",
+                        }}
+                        onClick={() => handleApprove(data.id)}
+                    >
+                        <img src={circleCheck} alt="Approve" width={14} />
+                        <span>Approve</span>
+                    </button>
+
+                    <button
+                        className="reject-btn font-creato"
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: 13,
+                            color: "#dc2626",
+                        }}
+                        onClick={() => handleReject(data.id)}
+                    >
+                        <img src={circleClose} alt="Reject" width={14} />
+                        <span>Reject</span>
+                    </button>
+                </div>
+            );
+        }
+
+        return (
+            <div style={{ padding: "4px 0" }}>
+                <button
+                    className="delete-btn font-creato"
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: 13,
+                        color: "#dc2626",
+                    }}
+                    onClick={() => handleDelete(data.id)}
+                >
+                    <img src={deleteIcon} alt="Delete" width={14} />
+                    <span style={{ color: "#4D4D4D" }}>Delete User</span>
+                </button>
+            </div>
+        );
+    };
+
+    const StatusToggleCell = ({ data }) => {
+        const isActive = data.isActive;
+        const isPending = data.status === "pending";
+
+        return (
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    paddingLeft: "8px",
+                    opacity: isPending ? 0.6 : 1,
+                }}
+            >
+                {/* Toggle */}
+                <label
+                    style={{
+                        position: "relative",
+                        width: "26px",
+                        height: "16px",
+                        cursor: isPending ? "not-allowed" : "pointer",
+                    }}
+                >
+                    <input
+                        type="checkbox"
+                        checked={isActive}
+                        disabled={isPending}
+                        onChange={() => {
+                            if (!isPending) {
+                                const newStatus = isActive ? "inactive" : "active";
+                                handleStatusToggle(data.id, newStatus);
+                            }
+                        }}
+                        style={{ display: "none" }}
+                    />
+
+                    <span
+                        style={{
+                            position: "absolute",
+                            inset: 0,
+                            backgroundColor: isActive ? "#3b82f6" : "#cbd5e1",
+                            borderRadius: "999px",
+                            transition: "0.3s",
+                        }}
+                    >
+                        <span
+                            style={{
+                                position: "absolute",
+                                width: "12px",
+                                height: "12px",
+                                left: isActive ? "12px" : "2px",
+                                bottom: "2px",
+                                background: "#fff",
+                                borderRadius: "50%",
+                                transition: "0.3s",
+                            }}
+                        />
+                    </span>
+                </label>
+
+                {/* Text */}
+                <span
+                    className="font-creato"
+                    style={{ fontSize: "13px", color: "#64748b" }}
+                >
+                    {isActive ? "Active" : "Inactive"}
+                </span>
+            </div>
+        );
+    };
+
+
+    // Column definitions
+    const columnDefs = useMemo(() => [
+        {
+            field: "name",
+            headerName: "Full Name",
+            minWidth: 120,
+            flex: 1,
+            filter: false,
+            sortable: true,
+            resizable: false,
+        },
+        {
+            field: "email",
+            headerName: "Email",
+            minWidth: 220,
+            flex: 1,
+            filter: false,
+            sortable: true,
+            resizable: false,
+        },
+        {
+            field: "phone",
+            headerName: "Phone Number",
+            width: 140,
+            filter: false,
+            sortable: true,
+            resizable: false,
+            suppressSizeToFit: true,
+        },
+        {
+            field: "status",
+            headerName: "Status",
+            width: 140,
+            sortable: false,
+            resizable: false,
+            suppressSizeToFit: true,
+            cellRenderer: StatusToggleCell,
+            cellStyle: { display: "flex", alignItems: "center" },
+        },
+        {
+            field: "submittedOn",
+            headerName: "Submitted On",
+            width: 180,
+            filter: false,
+            sortable: true,
+            resizable: false,
+            suppressSizeToFit: true,
+        },
+        {
+            field: "approvedOn",
+            headerName: "Approved / Rejected On",
+            width: 180,
+            filter: false,
+            sortable: true,
+            resizable: false,
+            suppressSizeToFit: true,
+        },
+        {
+            field: "companyType",
+            headerName: "Company Type",
+            width: 140,
+            filter: false,
+            sortable: true,
+            resizable: false,
+            suppressSizeToFit: true,
+        },
+        {
+            field: "companySize",
+            headerName: "Company Size",
+            width: 140,
+            filter: false,
+            sortable: true,
+            resizable: false,
+            suppressSizeToFit: true,
+            cellStyle: { textAlign: "center" },
+        },
+        {
+            field: "actions",
+            headerName: "Actions",
+            width: 220,
+            pinned: "right",
+            resizable: false,
+            suppressMovable: true,
+            lockPosition: true,
+            lockPinned: true,
+            suppressSizeToFit: true,
+            cellRenderer: ActionCell,
+            cellStyle: {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                paddingLeft: "8px",
+            },
+        },
+    ], []);
+
+    const handleCreateUser = () => {
+        debugger
+        console.log('sdfdsf');
+        setIsCreateOpen(true)
+    }
+
+    return (<>
+        <ReusableDataTable
+            title="User Management"
+            columnDefs={columnDefs}
+            data={users}
+            fetchData={fetchUsers}
+            loading={loading}
+            handleCreateUser={handleCreateUser}
+            searchPlaceholder="Search loan, borrower etc."
+            onCellClicked={handleCellClick}
+            showFilter={true}
+            onFilter={() => console.log("Filter clicked")}
+            defaultPageSize={10}
+            pageSizeOptions={[10, 20, 50]}
+
+        />
+        {
+            isCreateOpen && <CreateCompanyUserModal
+                open={isCreateOpen}
+                // confirmLoading={creatingUser}
+                onCancel={() => setIsCreateOpen(false)}
+            />
+        }
+    </>);
+}

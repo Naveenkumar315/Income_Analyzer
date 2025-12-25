@@ -9,6 +9,7 @@ import toast from "../utils/ToastService";
 import { setTokens } from "../utils/authService";
 import { useApp } from "../contexts/AppContext";
 import microsoft from "../assets/Microsoft icon.svg"
+import useRefreshUser from "../hooks/useRefreshUser";
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
@@ -19,6 +20,7 @@ export default function LoginPage() {
     const [checkingEmail, setCheckingEmail] = useState(false);
     const debounceTimerRef = useRef(null);
     const { user, setUser } = useApp();
+    const { refreshUser } = useRefreshUser()
 
     const onFinish = useCallback(async (values) => {
         setLoading(true);
@@ -69,6 +71,8 @@ export default function LoginPage() {
                 user_id: response.user_id,
                 username: response.username
             });
+
+            refreshUser(values.email)
 
             toast.success("Login successful!");
             navigate("/home");

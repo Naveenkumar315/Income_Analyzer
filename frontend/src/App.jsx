@@ -6,12 +6,12 @@ import LoginPage from './auth/LoginPage';
 import SignupPage from './auth/SignupPage';
 import ToastProvider from './utils/ToastProvider';
 import Home from './Home';
-import AdminTable from './custom_components/dashboard/AdminTable';
 import MainLayout from './layouts/MainLayout';
 import ForgotPasswordPage from './auth/ForgotPasswordPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import UpdatePasswordPage from './auth/UpdatePasswordPage';
 import SSOCallback from './auth/SSOCallback';
+import AdminTable_ from './custom_components/dashboard/AdminTable_';
 
 function App() {
   return (
@@ -30,8 +30,8 @@ function App() {
             <MainLayout />
           </ProtectedRoute>
         }>
-          <Route path="/home" element={<Home />} />
-          <Route path="/admin" element={<AdminTable />} />
+          <Route path="/home" element={<AdminTable_ />} />
+          {/* <Route path="/admin" element={<AdminTable />} /> */}
           {/* add other protected / shared-header routes here */}
         </Route>
 

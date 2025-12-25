@@ -9,6 +9,7 @@ from app.utils.security import generate_secure_password, hash_password
 import asyncio
 import traceback
 import re
+from pydantic import BaseModel
 EMAIL_REGEX = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 
 
@@ -98,7 +99,7 @@ async def update_user_status(
             send_email,
             to_email=user_email,
             subject="Income Analyzer — Account Request Update",
-            html_body=get_rejection_email_html(full_name, reason = "")
+            html_body=get_rejection_email_html(full_name, reason="")
         )
 
     # 🚀 RETURN IMMEDIATELY (NO WAIT)
@@ -135,3 +136,29 @@ async def delete_user(user_id: str):
         "message": "User deleted successfully",
         "user_id": user_id
     }
+
+
+class GetUserRequest(BaseModel):
+    email: str
+
+
+def serialize_user(user: dict) -> dict:
+    user["_id"] = str(user["_id"])
+    user.pop("password", None)  # never expose password
+    return user
+
+
+async def fetch_user_by_email(payload: GetUserRequest):
+    try:
+        email = payload.email.lower().strip()
+        user = await db["users"].find_one({"email": email})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return serialize_user(user)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Error fetching user details"
+        )

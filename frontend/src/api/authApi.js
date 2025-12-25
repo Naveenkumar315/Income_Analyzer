@@ -24,6 +24,8 @@ const authApi = {
         axiosClient.put(`/admin/users/${userId}/status`, { status }),
     deleteUser: (userId) =>
         axiosClient.delete(`/admin/users/${userId}`),
+
+    getUserByEmail: (userId) => axiosClient.post(`/admin/get-user`, userId)
 };
 
 export default authApi;

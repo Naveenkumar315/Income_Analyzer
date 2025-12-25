@@ -65,6 +65,19 @@ body {
 }
 
 
+.ag-theme-alpine .ag-header {
+    background-color: #0369a1 !important;
+}
+
+.ag-theme-alpine .ag-header-cell {
+    background-color: #0369a1 !important;
+    color: white !important;
+    font-weight: 500;
+}
+
+.ag-theme-alpine .ag-header-cell-text {
+    color: white !important;
+}
 
 
 /* =======================================

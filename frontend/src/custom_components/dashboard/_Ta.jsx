@@ -31,7 +31,7 @@ export default function AdminTable() {
                     name = `${info.firstName || ""} ${info.lastName || ""}`.trim();
                     email = info.email || user.email;
                     phone = info.phone || "";
-                    companyType = "Broker";
+                    companyType = "individual";
                     companySize = "1";
                 } else if (user.type === "company") {
                     const companyInfo = user.companyInfo || {};
@@ -42,7 +42,7 @@ export default function AdminTable() {
 
                     email = primaryContact.email || user.email || companyInfo.companyEmail;
                     phone = companyInfo.companyPhone || "";
-                    companyType = "Broker Company";
+                    companyType = "Company";
                     companySize = companyInfo.companySize || "-";
                 } else {
                     name = user.username || "-";
@@ -313,7 +313,12 @@ export default function AdminTable() {
                 width: 140,
                 sortable: true,
                 resizable: false,
+                // sort: 'asc',
+                // sortingOrder: ["asc", "desc"],
                 suppressSizeToFit: true,
+                // valueFormatter: (params) => {
+                //     return params.data.status
+                // },
                 cellRenderer: (params) => {
                     const isActive = params.data.isActive;
                     const isPending = params.data.status === "pending";
@@ -446,7 +451,10 @@ export default function AdminTable() {
                 defaultColDef: {
                     resizable: false,
                     suppressMenu: true,
+                    sortable: true,
+                    // unSortIcon: true,
                 },
+                accentedSort: true,
                 pagination: true,
                 paginationPageSize: pageSize,
                 suppressPaginationPanel: true,

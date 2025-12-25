@@ -68,7 +68,9 @@ app.include_router(admin.router)
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "http://localhost:5173",  # frontend
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -735,17 +737,14 @@ async def SSOReplyURI(req: Request):
     form = await req.form()
     saml_response = form.get("SAMLResponse")
 
+    load_dotenv()
+
     if not saml_response:
         raise HTTPException(status_code=400, detail="Missing SAMLResponse")
 
     decoded_xml = base64.b64decode(saml_response).decode("utf-8")
 
     # Debug: Print the decoded XML to see the structure
-    print("=" * 50)
-    print("Decoded SAML XML:")
-    print(decoded_xml)
-    print("=" * 50)
-
     parsed = xmltodict.parse(decoded_xml)
 
     # Try different possible response keys
@@ -837,7 +836,9 @@ async def SSOReplyURI(req: Request):
         "expires": datetime.utcnow() + timedelta(seconds=SSO_TOKEN_TTL)
     }
 
-    frontend_url = f"http://localhost:5173/sso?token={temp_token}"
+    # frontend_url = f"http://localhost:5173/sso?token={temp_token}"
+    FRONTEND_URL = os.environ['FRONTEND_URL']
+    frontend_url = f"{FRONTEND_URL}/sso?token={temp_token}"
 
     html_content = f"""
     <!DOCTYPE html>
