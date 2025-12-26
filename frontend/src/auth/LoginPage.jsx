@@ -8,8 +8,8 @@ import authApi from "../api/authApi";
 import toast from "../utils/ToastService";
 import { setTokens } from "../utils/authService";
 import { useApp } from "../contexts/AppContext";
-import microsoft from "../assets/Microsoft icon.svg"
 import useRefreshUser from "../hooks/useRefreshUser";
+import { Icons } from "../utils/icons";
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
@@ -75,7 +75,7 @@ export default function LoginPage() {
             refreshUser(values.email)
 
             toast.success("Login successful!");
-            navigate("/home");
+            navigate("/dashboard");
         } catch (error) {
             console.error("Login error:", error);
             const errorDetail = error.response?.data?.detail || error.detail || error.message;
@@ -275,7 +275,7 @@ export default function LoginPage() {
                         "
                     >
                         <img
-                            src={microsoft}
+                            src={Icons.login.microsoft}
                             alt="Microsoft"
                             className="w-5 h-5"
                         />

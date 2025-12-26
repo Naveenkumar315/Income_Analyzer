@@ -14,7 +14,7 @@ const Home = () => {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <main className="p-6">
+            <main className="">
                 <h1 className="text-2xl font-semibold">Dashboard</h1>
             </main>
         </div>

@@ -78,7 +78,6 @@ const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {
 
     // VERIFY FUNCTION
     const handleVerifyCode = async () => {
-        debugger
         const code = form.getFieldValue("verificationCode")?.trim();
 
         if (!code) {

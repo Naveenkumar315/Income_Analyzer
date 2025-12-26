@@ -13,6 +13,8 @@ import UpdatePasswordPage from './auth/UpdatePasswordPage';
 import SSOCallback from './auth/SSOCallback';
 import AdminTable_ from './custom_components/dashboard/AdminTable_';
 import AppInitializer from './AppInitializer';
+import IncomeAnalyzerHome from './income_analyzer/IncomeAnalyzerHome.jsx';
+import Rule from './rules/Rule.jsx';
 
 function App() {
 
@@ -33,7 +35,9 @@ function App() {
               <MainLayout />
             </ProtectedRoute>
           }>
-            <Route path="/home" element={<AdminTable_ />} />
+            <Route path="/dashboard" element={<Home />} />
+            <Route path="/income-analyzer" element={<IncomeAnalyzerHome />} />
+            <Route path="/rules" element={<Rule />} />
             <Route path="/users" element={<AdminTable_ />} />
             {/* <Route path="/admin" element={<AdminTable />} /> */}
             {/* add other protected / shared-header routes here */}

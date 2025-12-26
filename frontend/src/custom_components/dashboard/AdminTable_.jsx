@@ -2,13 +2,11 @@ import React, { useState, useEffect, useMemo } from "react";
 import ReusableDataTable from "../ReusableDataTable";
 import authApi from "../../api/authApi";
 import toast from "../../utils/ToastService";
-import circleCheck from "../../assets/icons/circle-check.svg";
-import circleClose from "../../assets/icons/circle-close.svg";
-import deleteIcon from "../../assets/icons/delete.svg";
 import CreateCompanyUserModal from "../../modals/CreateCompanyUserModal";
 import { useApp } from "../../contexts/AppContext";
 import { Modal, Select } from "antd";
 import useRefreshUser from "../../hooks/useRefreshUser";
+import { Icons } from "../../utils/icons";
 
 export default function AdminTable_() {
     const [users, setUsers] = useState([]);
@@ -175,7 +173,7 @@ export default function AdminTable_() {
         showCustomConfirm({
             title: "Approve User",
             content: "Are you sure you want to approve this user?",
-            icon: circleCheck,
+            icon: Icons.adminTable.circleCheck,
             okText: "Approve",
             onOk: async () => {
                 setActionInProgress(true);
@@ -198,7 +196,7 @@ export default function AdminTable_() {
         showCustomConfirm({
             title: "Reject User",
             content: "Are you sure you want to reject this user?",
-            icon: circleClose,
+            icon: Icons.adminTable.circleClose,
             okText: "Reject",
             okButtonProps: { danger: true },
             onOk: async () => {
@@ -222,7 +220,7 @@ export default function AdminTable_() {
         showCustomConfirm({
             title: "Delete User",
             content: "Are you sure you want to permanently delete this user? This action cannot be undone.",
-            icon: deleteIcon,
+            icon: Icons.adminTable.deleteIcon,
             okText: "Yes",
             okButtonProps: { danger: true, style: { background: "#dc2626", borderColor: "#dc2626", color: "white" } },
             onOk: async () => {
@@ -245,7 +243,7 @@ export default function AdminTable_() {
         if (!userId) return;
         const actionText = newStatus === "active" ? "activate" : "deactivate";
         const titleText = newStatus === "active" ? "Activate User" : "Deactivate User";
-        const icon = newStatus === "active" ? circleCheck : circleClose;
+        const icon = newStatus === "active" ? Icons.adminTable.circleCheck : Icons.adminTable.circleClose;
 
         showCustomConfirm({
             title: titleText,
@@ -331,7 +329,7 @@ export default function AdminTable_() {
                         }}
                         onClick={() => handleApprove(data.id)}
                     >
-                        <img src={circleCheck} alt="Approve" width={14} />
+                        <img src={Icons.adminTable.circleCheck} alt="Approve" width={14} />
                         <span>Approve</span>
                     </button>
 
@@ -349,7 +347,7 @@ export default function AdminTable_() {
                         }}
                         onClick={() => handleReject(data.id)}
                     >
-                        <img src={circleClose} alt="Reject" width={14} />
+                        <img src={Icons.adminTable.circleClose} alt="Reject" width={14} />
                         <span>Reject</span>
                     </button>
                 </div>
@@ -372,7 +370,7 @@ export default function AdminTable_() {
                     }}
                     onClick={() => handleDelete(data.id)}
                 >
-                    <img src={deleteIcon} alt="Delete" width={14} />
+                    <img src={Icons.adminTable.deleteIcon} alt="Delete" width={14} />
                     <span style={{ color: "#4D4D4D" }}>Delete User</span>
                 </button>
             </div>

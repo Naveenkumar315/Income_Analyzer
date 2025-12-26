@@ -37,7 +37,7 @@ export default function SSOCallback() {
                 });
 
                 setStatus("Redirecting...");
-                navigate("/home", { replace: true });
+                navigate("/dashboard", { replace: true });
             })
             .catch((err) => {
                 console.error("SSO exchange failed:", err);
