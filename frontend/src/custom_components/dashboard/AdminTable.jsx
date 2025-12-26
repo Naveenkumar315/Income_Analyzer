@@ -8,7 +8,7 @@ import { Modal, Select } from "antd";
 import useRefreshUser from "../../hooks/useRefreshUser";
 import { Icons } from "../../utils/icons";
 
-export default function AdminTable_() {
+export default function AdminTable() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [actionInProgress, setActionInProgress] = useState(false);
