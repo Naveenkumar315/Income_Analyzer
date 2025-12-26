@@ -19,11 +19,11 @@ import settings from "../assets/settings.svg"
 import filesearch2 from "../assets/file-search-2.svg"
 import scrolltext from "../assets/scroll-text.svg"
 
-const menuItems = [
+let menuItems = [
     { key: "dashboard", label: "Dashboard", icon: layoutdashboard },
     // { key: "loan-search", label: "Loan Product Search", icon: filesearch2 },
     { key: "Rules", label: "Rules", icon: scrolltext },
-    { key: "settings", label: "Settings", icon: settings },
+    // { key: "settings", label: "Settings", icon: settings },
     { key: "usermanagement", label: "User Managment", icon: filesearch2 },
 ];
 
@@ -127,7 +127,19 @@ export default function Header() {
 
     // Get user role from session storage
     const userData = getUserData();
-    const isAdmin = userData.role === "admin";
+    const isAdmin = userData.role === "Admin";
+    debugger
+    useEffect(() => {
+        if (isAdmin) {
+            setSelectedKey("usermanagement")
+        } else {
+
+        }
+    }, [isAdmin])
+
+    useEffect(() => {
+        console.log('selectedKey', selectedKey);
+    }, [selectedKey])
 
     const handleLogout = () => {
         console.log("logout clicked");
@@ -221,7 +233,6 @@ export default function Header() {
                                         className={`
                         h-12 px-1 
                         inline-flex items-center  
-                        border-b-2
                         ${selectedKey === it.key ? "border-[#24A1DD]" : "border-transparent"}
                       `}
                                     >

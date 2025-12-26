@@ -13,7 +13,7 @@ export default function CustomButton({
     w-full h-10 
     inline-flex items-center justify-center
     rounded-lg
-    font-creato text-base leading-4
+    !font-creato custom-font-creato text-base leading-4
     transition-all duration-150 cursor-pointer
   `;
 
@@ -57,7 +57,7 @@ export default function CustomButton({
             {...props}
         >
             {/* children now render FULLY, including icons */}
-            <div className="flex items-center gap-2 px-2">
+            <div className="flex items-center gap-2 px-2 text-[13px] ">
                 {children}
 
                 {/* OPTIONAL right icon square (Figma) */}

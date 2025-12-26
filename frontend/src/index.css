@@ -6,20 +6,22 @@ body {
     overflow: hidden;
 }
 
-
 /* =======================================
-   Custom Global Font
+   Custom Global Font - Apply globally
 ======================================= */
+* {
+    font-family: "Creato Display", sans-serif !important;
+}
+
 .custom-font-jura {
-    font-family: "Jura", sans-serif;
+    font-family: "Jura", sans-serif !important;
     font-weight: 700;
 }
 
 .custom-font-creato {
-    font-family: "Creato Display", sans-serif;
+    font-family: "Creato Display", sans-serif !important;
     font-weight: 700;
 }
-
 
 /* ===== Custom Fonts ===== */
 
@@ -64,7 +66,7 @@ body {
     font-display: swap;
 }
 
-
+/* AG Grid Styling */
 .ag-theme-alpine .ag-header {
     background-color: #0369a1 !important;
 }
@@ -79,14 +81,13 @@ body {
     color: white !important;
 }
 
-
 /* =======================================
    Figma Design Tokens (SAFE)
    Wrapped inside @layer utilities
 ======================================= */
 @layer utilities {
     .font-creato {
-        font-family: "Creato Display", sans-serif;
+        font-family: "Creato Display", sans-serif !important;
     }
 
     /* rest is fine */
@@ -142,17 +143,3 @@ body {
         outline-color: #FFFFFF;
     }
 }
-
-/* Reduce MUI Table Header Height */
-/* .MuiTableCell-head {
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
-    height: 38px !important;
-    min-height: 38px !important;
-    line-height: 18px !important;
-}
-
-.MuiTableCell-body {
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
-} */

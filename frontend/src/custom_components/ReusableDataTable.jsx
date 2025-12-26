@@ -64,99 +64,80 @@ export default function ReusableDataTable({
 
     return (
         <div
-            style={{
-                background: "#f8fafc",
-                minHeight: "calc(100dvh - 48px)",
-                display: "flex",
-                flexDirection: "column",
-            }}
+            className="bg-[#f8fafc] min-h-[calc(100dvh-48px)] flex flex-col font-creato"
         >
             {/* ================= HEADER ================= */}
-            <div style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 24 }}>
-                <h2 style={{ fontSize: 20, fontWeight: 700 }}>{title}</h2>
+            <div className="flex gap-6 items-center mb-6 font-creato"
+            >
+                <h2 className="text-xl font-bold">{title}</h2>
 
                 <div
-                    style={{
-                        width: 60,
-                        height: 32,
-                        borderRadius: 999,
-                        background: "#E0E0E0",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                    }}
+                    className="w-[60px] h-8 rounded-full bg-[#E0E0E0] flex items-center justify-center"
                 >
                     {filteredData.length}
                 </div>
 
                 {/* Search */}
-                <div style={{ position: "relative", width: 360 }}>
+                <div className="relative w-[360px]">
                     <SearchOutlined
-                        style={{
-                            position: "absolute",
-                            left: 14,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                        }}
+                        className="absolute left-[14px] top-1/2 -translate-y-1/2"
                     />
                     <input
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
                         placeholder={searchPlaceholder}
-                        style={{
-                            width: "100%",
-                            padding: "10px 14px 10px 42px",
-                            borderRadius: 8,
-                            border: "1px solid #E0E0E0",
-                        }}
+                        className="
+                            w-full
+                            rounded-lg
+                            border
+                            border-[#E0E0E0]
+                            pt-[10px]
+                            pr-[14px]
+                            pb-[10px]
+                            pl-[42px]
+                        "
                     />
                 </div>
 
                 {showFilter && (
                     <div>
                         <CustomButton
-                            className={`mt-0 cursor-pointer`}
+                            className={`mt-0 cursor-pointer `}
                             variant={"primary"}
                             type="button"
                             onClick={handleCreateUser}
                         >
                             Create New User
-                            {/* <img
-                                              src={
-                                                isEmailValid
-                                                  ? "/arrow-right-active.png"
-                                                  : "/arrow-right.svg"
-                                              }
-                                              alt=""
-                                              className="w-4 h-4"
-                                            /> */}
                         </CustomButton>
                     </div>
                 )}
             </div>
             <div
-                style={{
-                    background: "white",
-                    borderRadius: 8,
-                    border: "1px solid #eee",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-                    overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
-                }}
+                className="
+                bg-white
+                rounded-lg
+                border
+                border-[#eee]
+                shadow
+                overflow-hidden
+                flex
+                flex-col
+                "
             >
                 <div
-                    className="ag-theme-alpine"
+                    className="
+                    ag-theme-alpine
+                    w-full
+                    max-h-[calc(100vh-280px)]
+                    min-h-[150px]
+                    transition-[height]
+                    duration-200
+                "
                     style={{
-                        width: "100%",
-                        height:
-                            `${Math.max(
-                                1,
-                                Math.min(pageSize, filteredData.length - (currentPage - 1) * pageSize)
-                            ) * 48 + 50}px`,
-                        maxHeight: "calc(100vh - 280px)",
-                        transition: "height 0.2s",
-                        minHeight: 150,
+                        height: `${Math.max(
+                            1,
+                            Math.min(pageSize, filteredData.length - (currentPage - 1) * pageSize)
+                        ) * 48 + 50}px`,
                     }}
                 >
                     <AgGridReact
@@ -182,19 +163,11 @@ export default function ReusableDataTable({
 
                 {/* ================= OLD CUSTOM FOOTER (UNCHANGED UI) ================= */}
                 {filteredData.length > 0 && (
-                    <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            padding: "12px 16px",
-                            borderTop: "1px solid #e5e7eb",
-                            background: "white",
-                        }}
-                    >
+                    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-white">
                         {/* Left */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            <span style={{ fontSize: 14 }}>Items per page:</span>
+                        <div className="flex items-center gap-3">
+
+                            <span className="text-sm">Items per page:</span>
 
                             <select
                                 value={pageSize}
@@ -207,13 +180,14 @@ export default function ReusableDataTable({
                                         gridApi.paginationGoToPage(0);
                                     }
                                 }}
+                                className="border rounded-md px-2 py-1"
                             >
                                 {pageSizeOptions.map((s) => (
                                     <option key={s} value={s}>{s}</option>
                                 ))}
                             </select>
 
-                            <span style={{ fontSize: 14, color: "#9ca3af" }}>
+                            <span className="text-sm text-gray-400">
                                 {Math.min((currentPage - 1) * pageSize + 1, filteredData.length)}
                                 {" - "}
                                 {Math.min(currentPage * pageSize, filteredData.length)}
@@ -223,7 +197,7 @@ export default function ReusableDataTable({
                         </div>
 
                         {/* Right */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <div className="flex items-center gap-1">
                             {Array.from(
                                 { length: Math.ceil(filteredData.length / pageSize) },
                                 (_, i) => i + 1
@@ -234,15 +208,11 @@ export default function ReusableDataTable({
                                         setCurrentPage(p);
                                         gridApi?.paginationGoToPage(p - 1);
                                     }}
-                                    style={{
-                                        minWidth: 36,
-                                        height: 36,
-                                        border: "none",
-                                        borderRadius: 6,
-                                        background: currentPage === p ? "#3b82f6" : "transparent",
-                                        color: currentPage === p ? "white" : "#374151",
-                                        cursor: "pointer",
-                                    }}
+                                    className={`min-w-9 h-9 rounded-md
+                                        ${currentPage === p
+                                            ? "bg-blue-500 text-white"
+                                            : "text-gray-700 bg-transparent"
+                                        }`}
                                 >
                                     {p}
                                 </button>

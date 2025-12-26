@@ -1,5 +1,4 @@
 from fastapi import HTTPException, BackgroundTasks
-from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from bson import ObjectId
 from app.models.user import CreateCompanyUserRequest
@@ -63,7 +62,7 @@ async def create_company_user(user_data: CreateCompanyUserRequest):
         "username": f"{user_data.firstName} {user_data.lastName}",
         "role": user_data.role,
         "type": "company",
-        "status": "active",
+        "status": "pending",
 
         "isCompanyAdmin": user_data.role == "Admin",
 
