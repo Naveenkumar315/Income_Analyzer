@@ -4,6 +4,7 @@ import FormField from "../components/FormField";
 import { useApp } from "../contexts/AppContext";
 import authApi from "../api/authApi";
 import toast from "../utils/ToastService";
+import { phoneValidation, emailValidation, nameValidation } from "../utils/validation";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -31,21 +32,46 @@ const CreateCompanyUserModal = ({
         });
     };
 
+    const formatPhone = (value) => {
+          const digits = value.replace(/\D/g, "").slice(0, 10);
+        if (digits.length <= 3) return digits;
+        if (digits.length <= 6)
+            return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    };
+
+    const handlePhoneBlur = (fieldName) => {
+        const value = form.getFieldValue(fieldName);
+        const formatted = formatPhone(value);
+
+        form.setFieldsValue({
+            [fieldName]: formatted,
+        });
+    };
+
     // ================= PHONE FORMATTER =================
-    const handlePhoneNumberChange = (e) => {
-        const input = e.target.value;
-        const cleaned = input.replace(/\D/g, "").substring(0, 10);
+    // const handlePhoneNumberChange = (e) => {
+    //     const input = e.target.value;
+    //     const cleaned = input.replace(/\D/g, "").substring(0, 10);
 
-        let formatted = "";
-        if (cleaned.length <= 3) {
-            formatted = cleaned ? `(${cleaned}` : "";
-        } else if (cleaned.length <= 6) {
-            formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
-        } else {
-            formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-        }
+    //     let formatted = "";
+    //     if (cleaned.length <= 3) {
+    //         formatted = cleaned ? `(${cleaned}` : "";
+    //     } else if (cleaned.length <= 6) {
+    //         formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    //     } else {
+    //         formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    //     }
 
-        form.setFieldsValue({ phone: formatted });
+    //     form.setFieldsValue({ phone: formatted });
+    // };
+
+    const handlePhoneNumberChange = (fieldName) => (e) => {
+    const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
+
+    form.setFieldsValue({
+    [fieldName]: digitsOnly,
+    });
     };
 
     const handleSubmit = async () => {
@@ -59,7 +85,7 @@ const CreateCompanyUserModal = ({
                 firstName: values.firstName,
                 lastName: values.lastName,
                 role: values.role,
-                phone: values.phone
+                phone: values.phone.replace(/\D/g,"")
             };
 
             const response = await authApi.createCompanyUser(payload);
@@ -131,7 +157,7 @@ const CreateCompanyUserModal = ({
                                 }
                                 name="firstName"
                                 placeholder="Enter First Name"
-                                rules={[{ required: true, message: "Please enter a First Name" }]}
+                                rules={nameValidation("First Name")}
                             />
                             <FormField
                                 type="text"
@@ -142,7 +168,7 @@ const CreateCompanyUserModal = ({
                                 }
                                 name="lastName"
                                 placeholder="Enter Last Name"
-                                rules={[{ required: true, message: "Please enter a Last Name" }]}
+                                rules={nameValidation("Last Name")}
                             />
                             <FormField
                                 type="text"
@@ -154,10 +180,7 @@ const CreateCompanyUserModal = ({
                                 name="email"
                                 placeholder="Enter Email"
                                 onChange={handleEmailChange}
-                                rules={[
-                                    { required: true, message: "Please enter an Email" },
-                                    { type: "email", message: "Invalid email format" },
-                                ]}
+                                rules={emailValidation}
                             />
                             <FormField
                                 type="text"
@@ -168,8 +191,9 @@ const CreateCompanyUserModal = ({
                                 }
                                 name="phone"
                                 placeholder="Enter Phone Number"
-                                onChange={handlePhoneNumberChange}
-                                rules={[{ required: true, message: "Please enter a Phone Number" }]}
+                                rules={phoneValidation}
+                                onChange={handlePhoneNumberChange("phone")}
+                                onBlur={() => handlePhoneBlur("phone")}
                             />
                         </div>
 
@@ -214,8 +238,8 @@ const CreateCompanyUserModal = ({
                         style={{ color: 'white' }}
                         type="submit"
                         onClick={() => form.submit()}
-                        disabled={!isEmailValid || loading}
-                        className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={loading}
+                        className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors cursor-pointer"
                     >
                         {loading ? "Creating..." : "Create User"}
                     </button>

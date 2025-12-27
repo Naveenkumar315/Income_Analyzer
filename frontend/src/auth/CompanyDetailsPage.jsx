@@ -401,7 +401,11 @@ const handlePhoneBlur = (fieldName) => {
                   />
                         <FormField
         type="text"
-        label="Phone Number"
+        label={
+            <span>
+                Phone Number <span className="text-red-500">*</span>
+            </span>
+        }
         name="companyPhone"
         placeholder="Enter Phone Number"
         rules={phoneValidation}
@@ -413,7 +417,11 @@ const handlePhoneBlur = (fieldName) => {
 
                   <FormField
   type="text"
-  label="Company Email"
+  label={
+    <span>
+      Company Email <span className="text-red-500">*</span>
+    </span>
+  }
   name="companyEmail"
   placeholder="Enter Company Email"
   rules={emailValidation}
@@ -522,7 +530,11 @@ const handlePhoneBlur = (fieldName) => {
                   />
                       <FormField
   type="text"
-  label="Phone Number"
+  label={
+                      <span>
+                        Phone Number <span className="text-red-500">*</span>
+                      </span>
+                    }
   name="primaryPhone"
   placeholder="Enter Phone Number"
   rules={phoneValidation}
@@ -541,10 +553,7 @@ const handlePhoneBlur = (fieldName) => {
                     name="primaryEmail"
                     placeholder="Enter Email"
                     disabled={true}
-                    rules={[
-                      { required: true, message: "Please enter an Email" },
-                      { type: "email", message: "Invalid email format" },
-                    ]}
+                    rules={emailValidation}
                   />
                 </div>
 
@@ -697,7 +706,11 @@ const handlePhoneBlur = (fieldName) => {
                   /> */}
                         <FormField
                         type="text"
-                        label="Phone Number"
+                        label={
+                            <span>
+                                Phone Number <span className="text-red-500">*</span>
+                            </span>
+                        }
                         name="phone"
                         placeholder="Enter Phone Number"
                         rules={phoneValidation}

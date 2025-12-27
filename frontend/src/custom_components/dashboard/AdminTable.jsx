@@ -245,6 +245,13 @@ export default function AdminTable() {
 
     const handleStatusToggle = (userId, newStatus) => {
         if (!userId) return;
+        const targetUser = users.find(u => u.id === userId);
+
+    if (targetUser?.role === "Admin" && newStatus === "inactive") {
+        toast.error("Admin users cannot be deactivated");
+        return;
+    }
+
         const actionText = newStatus === "active" ? "activate" : "deactivate";
         const titleText = newStatus === "active" ? "Activate User" : "Deactivate User";
         const icon = newStatus === "active" ? Icons.adminTable.circleCheck : Icons.adminTable.circleClose;

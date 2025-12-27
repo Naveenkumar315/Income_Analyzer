@@ -163,7 +163,7 @@ export default function ReusableDataTable({
 
                 {/* ================= OLD CUSTOM FOOTER (UNCHANGED UI) ================= */}
                 {filteredData.length > 0 && (
-                    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-white">
+                    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 rounded-b-lg bg-white">
                         {/* Left */}
                         <div className="flex items-center gap-3">
 
@@ -208,10 +208,10 @@ export default function ReusableDataTable({
                                         setCurrentPage(p);
                                         gridApi?.paginationGoToPage(p - 1);
                                     }}
-                                    className={`min-w-9 h-9 rounded-md
+                                    className={`min-w-9 h-9 rounded-md border cursor-pointer
                                         ${currentPage === p
-                                            ? "bg-blue-500 text-white"
-                                            : "text-gray-700 bg-transparent"
+                                            ? "bg-white text-gray-900 border-black font-medium"
+                                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                                         }`}
                                 >
                                     {p}
