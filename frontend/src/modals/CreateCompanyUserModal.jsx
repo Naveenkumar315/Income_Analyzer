@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Button, Form } from "antd";
+import { Modal, Form } from "antd";
 import FormField from "../components/FormField";
 import { useApp } from "../contexts/AppContext";
 import authApi from "../api/authApi";
@@ -16,10 +16,10 @@ const CreateCompanyUserModal = ({
 }) => {
     const [form] = Form.useForm();
     const [isEmailValid, setIsEmailValid] = useState(false);
-    const { user } = useApp()
+    const [loading, setLoading] = useState(false);
+    const { user } = useApp();
 
-
-    // ================= EMAIL VALIDATION (Same as Signup) =================
+    // ================= EMAIL VALIDATION =================
     const handleEmailChange = (e) => {
         const value = e.target.value.trim();
         const isValid = EMAIL_REGEX.test(value);
@@ -48,31 +48,9 @@ const CreateCompanyUserModal = ({
         form.setFieldsValue({ phone: formatted });
     };
 
-    const getCompanyLimit = (sizeText) => {
-        if (!sizeText) return 10;
-
-        const value = sizeText.trim().replace(/\s/g, "").toLowerCase();
-
-        // handle like 1-10
-        if (value.includes("-")) {
-            try {
-                return parseInt(value.split("-")[1]);
-            } catch {
-                return 10;
-            }
-        }
-
-        // handle like 500+
-        if (value.endsWith("+")) {
-            return parseInt(value.slice(0, -1));
-        }
-
-        return 10;
-    };
-
-
     const handleSubmit = async () => {
         try {
+            setLoading(true);
             const values = await form.validateFields();
 
             const payload = {
@@ -86,130 +64,163 @@ const CreateCompanyUserModal = ({
 
             const response = await authApi.createCompanyUser(payload);
             toast.success("User created successfully");
+            form.resetFields();
+            setIsEmailValid(false);
             onCancel();
-            onSuccess()
+            onSuccess();
         } catch (err) {
             console.error(err);
             toast.error(err?.detail || "Failed to create user");
+        } finally {
+            setLoading(false);
         }
     };
 
-
     return (
         <Modal
-            title="Create Company User"
+            title={null}
             open={open}
             onCancel={() => {
                 form.resetFields();
                 setIsEmailValid(false);
                 onCancel();
             }}
-            width={640}
+            width={720}
             centered
             destroyOnHidden
             maskClosable={false}
-            footer={[
-                <Button key="cancel" onClick={onCancel}>
-                    Cancel
-                </Button>,
-                <Button
-                    key="submit"
-                    type="primary"
-                    loading={confirmLoading}
-                    disabled={!isEmailValid || confirmLoading}
-                    onClick={() => handleSubmit()}
-                >
-                    Create User
-                </Button>,
-            ]}
+            footer={null}
+            wrapClassName="custom-company-user-modal"
+            styles={{
+                body: {
+                    padding: 0,
+                },
+                content: {
+                    borderRadius: '15px',
+                    overflow: 'hidden',
+                }
+            }}
         >
-            <Form
-                form={form}
-                layout="vertical"
-                requiredMark={false}
-                onFinish={(values) => {
-                    const payload = {
-                        email: values.email.trim().toLowerCase(),
-                        username: `${values.firstName} ${values.lastName}`,
-                        role: values.role,
-                        type: "company",
-                        isCompanyAdmin: values.role === "Admin",
-                        primaryContact: {
-                            firstName: values.firstName,
-                            lastName: values.lastName,
-                            phone: values.phone,
-                            email: values.email.trim().toLowerCase(),
-                        },
-                    };
-
-                    onCreate(payload);
-                    form.resetFields();
-                    setIsEmailValid(false);
-                }}
-            >
-                {/* ================= PRIMARY CONTACT ================= */}
-                <div className="mb-4 text-[#22B4E6] text-base font-creato">
-                    Primary Contact
+            <div className="flex flex-col max-h-[80vh] -mx-6">
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-slate-200 px-8 py-5 mx-6">
+                    <div className="text-lg font-creato font-normal text-[#3D4551]">
+                        Create Company User
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <FormField
-                        type="text"
-                        label="First Name *"
-                        name="firstName"
-                        placeholder="Enter First Name"
-                        rules={[{ required: true, message: "First name is required" }]}
-                    />
+                {/* Body (scrollable) */}
+                <div className="flex-1 overflow-y-auto px-8 py-6 mx-6">
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        onFinish={handleSubmit}
+                        requiredMark={false}
+                    >
+                        {/* Primary Contact */}
+                        <div className="mb-4 text-[#22B4E6] text-base font-creato font-normal">
+                            Primary Contact
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
+                            <FormField
+                                type="text"
+                                label={
+                                    <span>
+                                        First Name <span className="text-red-500">*</span>
+                                    </span>
+                                }
+                                name="firstName"
+                                placeholder="Enter First Name"
+                                rules={[{ required: true, message: "Please enter a First Name" }]}
+                            />
+                            <FormField
+                                type="text"
+                                label={
+                                    <span>
+                                        Last Name <span className="text-red-500">*</span>
+                                    </span>
+                                }
+                                name="lastName"
+                                placeholder="Enter Last Name"
+                                rules={[{ required: true, message: "Please enter a Last Name" }]}
+                            />
+                            <FormField
+                                type="text"
+                                label={
+                                    <span>
+                                        Email <span className="text-red-500">*</span>
+                                    </span>
+                                }
+                                name="email"
+                                placeholder="Enter Email"
+                                onChange={handleEmailChange}
+                                rules={[
+                                    { required: true, message: "Please enter an Email" },
+                                    { type: "email", message: "Invalid email format" },
+                                ]}
+                            />
+                            <FormField
+                                type="text"
+                                label={
+                                    <span>
+                                        Phone Number <span className="text-red-500">*</span>
+                                    </span>
+                                }
+                                name="phone"
+                                placeholder="Enter Phone Number"
+                                onChange={handlePhoneNumberChange}
+                                rules={[{ required: true, message: "Please enter a Phone Number" }]}
+                            />
+                        </div>
 
-                    <FormField
-                        type="text"
-                        label="Last Name *"
-                        name="lastName"
-                        placeholder="Enter Last Name"
-                        rules={[{ required: true, message: "Last name is required" }]}
-                    />
-
-                    <FormField
-                        type="text"
-                        label="Email *"
-                        name="email"
-                        placeholder="Enter Email"
-                        onChange={handleEmailChange}
-                        rules={[
-                            { required: true, message: "Email is required" },
-                            { type: "email", message: "Invalid email format" },
-                        ]}
-                    />
-
-                    <FormField
-                        type="text"
-                        label="Phone Number *"
-                        name="phone"
-                        placeholder="Enter Phone Number"
-                        onChange={handlePhoneNumberChange}
-                        rules={[{ required: true, message: "Phone number is required" }]}
-                    />
+                        {/* Role */}
+                        <div className="mb-4 text-[#22B4E6] text-base font-creato font-normal">
+                            Role
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <FormField
+                                type="dropdown"
+                                label={
+                                    <span>
+                                        User Role <span className="text-red-500">*</span>
+                                    </span>
+                                }
+                                name="role"
+                                placeholder="Select Role"
+                                options={[
+                                    { label: "Admin", value: "Admin" },
+                                    { label: "User", value: "User" },
+                                ]}
+                                rules={[{ required: true, message: "Please select a role" }]}
+                            />
+                        </div>
+                    </Form>
                 </div>
 
-                {/* ================= ROLE ================= */}
-                <div className="mt-6 mb-4 text-[#22B4E6] text-base font-creato">
-                    Role
+                {/* Fixed footer bar */}
+                <div className="border-t border-[#E5E7EB] px-8 py-4 flex justify-end gap-3 bg-white rounded-b-xl mx-6">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            form.resetFields();
+                            setIsEmailValid(false);
+                            onCancel();
+                        }}
+                        className="px-8 py-2.5 rounded-lg border border-[#D1D5DB] bg-white text-[#3D4551] text-sm font-creato font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        style={{ color: 'white' }}
+                        type="submit"
+                        onClick={() => form.submit()}
+                        disabled={!isEmailValid || loading}
+                        className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {loading ? "Creating..." : "Create User"}
+                    </button>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <FormField
-                        type="dropdown"
-                        label="User Role *"
-                        name="role"
-                        placeholder="Select Role"
-                        options={[
-                            { label: "Admin", value: "Admin" },
-                            { label: "User", value: "User" },
-                        ]}
-                        rules={[{ required: true, message: "Role is required" }]}
-                    />
-                </div>
-            </Form>
+            </div>
         </Modal>
     );
 };

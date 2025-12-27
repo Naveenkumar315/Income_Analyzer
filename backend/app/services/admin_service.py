@@ -4,7 +4,7 @@ from fastapi import HTTPException, BackgroundTasks
 from bson import ObjectId
 from datetime import datetime
 from app.services.email_service import send_email
-from app.utils.email_template import get_welcome_email_html, get_rejection_email_html
+from app.utils.email_template import get_welcome_email_html, get_rejection_email_html, get_inactive_email_html
 from app.utils.security import generate_secure_password, hash_password
 import asyncio
 import traceback
@@ -37,7 +37,7 @@ async def update_user_status(
     new_status: str,
     background_tasks: BackgroundTasks
 ):
-    valid_statuses = ["pending", "active", "inactive"]
+    valid_statuses = ["pending", "active", "inactive", "Reject"]
     if new_status not in valid_statuses:
         raise HTTPException(
             status_code=400,
@@ -64,6 +64,33 @@ async def update_user_status(
     if not user_email or not EMAIL_REGEX.match(user_email):
         raise HTTPException(status_code=400, detail="User has no valid email")
 
+    # ------------------------------------------------
+    # HANDLE REJECT STATUS - DELETE USER
+    # ------------------------------------------------
+    if new_status == "Reject":
+        # Send rejection email before deleting
+        background_tasks.add_task(
+            send_email,
+            to_email=user_email,
+            subject="Income Analyzer — Account Request Update",
+            html_body=get_rejection_email_html(full_name, reason="")
+        )
+
+        # Delete the user from database
+        delete_result = await users.delete_one({"_id": object_id})
+
+        if delete_result.deleted_count == 0:
+            raise HTTPException(
+                status_code=500, detail="Failed to delete user")
+
+        return {
+            "message": f"User rejected and deleted successfully",
+            "status": "deleted"
+        }
+
+    # ------------------------------------------------
+    # HANDLE OTHER STATUSES (active, inactive, pending)
+    # ------------------------------------------------
     update_data = {
         "status": new_status,
         "updated_at": datetime.utcnow(),
@@ -100,10 +127,10 @@ async def update_user_status(
             send_email,
             to_email=user_email,
             subject="Income Analyzer — Account Request Update",
-            html_body=get_rejection_email_html(full_name, reason="")
+            html_body=get_inactive_email_html(full_name)
         )
 
-    #  RETURN IMMEDIATELY (NO WAIT)
+    # RETURN IMMEDIATELY (NO WAIT)
     return {
         "message": f"User status updated to {new_status}",
         "status": new_status

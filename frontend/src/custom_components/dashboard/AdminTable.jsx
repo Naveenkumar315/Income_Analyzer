@@ -202,7 +202,7 @@ export default function AdminTable() {
             onOk: async () => {
                 setActionInProgress(true);
                 try {
-                    await authApi.updateUserStatus(userId, "inactive");
+                    await authApi.updateUserStatus(userId, "Reject");
                     toast.success("User rejected successfully");
                     await fetchUsers();
                 } catch (error) {

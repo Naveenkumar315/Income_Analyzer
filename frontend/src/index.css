@@ -81,6 +81,10 @@ body {
     color: white !important;
 }
 
+.custom-company-user-modal .ant-modal-container {
+    padding: 0 !important;
+}
+
 /* =======================================
    Figma Design Tokens (SAFE)
    Wrapped inside @layer utilities
