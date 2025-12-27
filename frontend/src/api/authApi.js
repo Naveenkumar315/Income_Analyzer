@@ -11,6 +11,9 @@ const authApi = {
     checkEmailExists: (email) =>
         axiosClient.post("/auth/check-email", { email }),
 
+    checkCompanyEmailExists: (email) =>
+        axiosClient.post("/auth/check-company-email", { email }),
+
     updatePassword: (data) =>
         axiosClient.post('/auth/update-password', data),
 

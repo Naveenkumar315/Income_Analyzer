@@ -202,3 +202,20 @@ async def check_email_exists(email: str):
         "email": email,
         "status": existing.get("status"),
     }
+
+
+async def check_company_email_exists(email: str):
+    email = email.lower().strip()
+    # Check if any user has this email in their companyInfo
+    existing = await db["users"].find_one({"companyInfo.companyEmail": email})
+
+    if existing:
+        return {
+            "exists": True,
+            "email": email,
+        }
+
+    return {
+        "exists": False,
+        "email": email,
+    }
