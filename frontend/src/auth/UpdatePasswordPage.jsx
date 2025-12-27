@@ -135,7 +135,25 @@ const UpdatePasswordPage = () => {
                         name="confirmPassword"
                         placeholder="Confirm your password"
                         prefix={<LockOutlined />}
-                        rules={[{ required: true, message: "Please confirm password" }]}
+                         rules={[
+                      {
+                        required: true,
+                        message: "Please confirm new password",
+                      },
+                      ({ getFieldValue }) => ({
+                        validator(_, value) {
+                          if (
+                            !value ||
+                            getFieldValue("newPassword") === value
+                          ) {
+                            return Promise.resolve();
+                          }
+                          return Promise.reject(
+                            new Error("Passwords do not match")
+                          );
+                        },
+                      }),
+                    ]}
                     />
 
                     {/* 🔥 EXACT UI STYLE from Forgot Password */}

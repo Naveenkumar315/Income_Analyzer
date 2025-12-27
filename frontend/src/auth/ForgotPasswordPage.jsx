@@ -369,6 +369,16 @@ export default function ForgotPasswordPage() {
                     name="verificationCode"
                     placeholder="Enter Verification Code"
                     maxLength={6}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter verification code",
+                      },
+                      {
+                        pattern: /^[0-9]{6}$/,
+                        message: "Verification code must be exactly 6 digits",
+                      },
+                    ]}
                     // rules={[{ required: true, message: "Please enter verification code" }]}
                     className="!mb-2"
                   />
@@ -400,6 +410,25 @@ export default function ForgotPasswordPage() {
                     //         },
                     //     }),
                     // ]}
+                     rules={[
+                      {
+                        required: true,
+                        message: "Please confirm new password",
+                      },
+                      ({ getFieldValue }) => ({
+                        validator(_, value) {
+                          if (
+                            !value ||
+                            getFieldValue("newPassword") === value
+                          ) {
+                            return Promise.resolve();
+                          }
+                          return Promise.reject(
+                            new Error("Passwords do not match")
+                          );
+                        },
+                      }),
+                    ]}
                     prefix={<LockOutlined />}
                     className="!mb-2"
                   />
@@ -481,13 +510,13 @@ export default function ForgotPasswordPage() {
                   </div>
 
                   {/* global error block - shows all errors here (no toast for validation except mismatch/server) */}
-                  {fieldErrors.length > 0 && (
+                  {/* {fieldErrors.length > 0 && (
                     <div className="text-red-500 text-xs mb-3 space-y-1">
                       {fieldErrors.map((err, i) => (
                         <div key={i}>{err}</div>
                       ))}
                     </div>
-                  )}
+                  )} */}
 
                   <div className="mt-2">
                     <CustomButton

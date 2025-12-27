@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
 from app.models.user import UserCreate, UserLogin, Token, SendCodeRequest, VerifyCodeRequest, SignupRequest, CheckEmailRequest, RefreshTokenRequest, UpdatePasswordRequest
-from app.services.auth_service import register_user, login_user, signup_user, check_email_exists
+from app.services.auth_service import register_user, login_user, signup_user, check_email_exists, check_company_email_exists
+
 from app.services.send_code import send_verification_code, verify_otp_code
 from app.services.update_password import update_password
 from app.utils.deps import get_current_user
@@ -54,6 +55,15 @@ async def check_email(request: CheckEmailRequest):
     Returns exists: true/false
     """
     return await check_email_exists(request.email)
+
+
+@router.post('/check-company-email')
+async def check_company_email(request: CheckEmailRequest):
+    """
+    Check if company email already exists in the database.
+    Returns exists: true/false
+    """
+    return await check_company_email_exists(request.email)
 
 
 @router.post('/signup')

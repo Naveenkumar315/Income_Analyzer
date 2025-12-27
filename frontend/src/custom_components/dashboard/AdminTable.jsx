@@ -7,6 +7,7 @@ import { useApp } from "../../contexts/AppContext";
 import { Modal, Select } from "antd";
 import useRefreshUser from "../../hooks/useRefreshUser";
 import { Icons } from "../../utils/icons";
+import { formatPhoneNumber } from "../../utils/validation";
 
 export default function AdminTable() {
     const [users, setUsers] = useState([]);
@@ -66,7 +67,7 @@ export default function AdminTable() {
                     email = primaryContact.email || user.email || companyInfo.companyEmail;
                     phone = primaryContact.phone || "";
                     companyType = "Company";
-                    companySize = companyInfo.companySize || "-";
+                    companySize = user.companyInfo?.companySize || user.company?.companySize || "-";
                 } else {
                     name = user.username || "-";
                     email = user.email;
@@ -114,6 +115,9 @@ export default function AdminTable() {
             return [];
         }
     };
+
+  
+
 
     //  Removed setTimeout and added safety check
     const fetchUsers = async () => {
@@ -531,6 +535,7 @@ export default function AdminTable() {
             sortable: true,
             resizable: false,
             suppressSizeToFit: true,
+            cellRenderer: (params) => formatPhoneNumber(params.value),
         },
         {
             field: "status",

@@ -177,13 +177,15 @@ function SignupPage() {
             {/* form */}
             <div className="mt-4">
               <Form
-                form={form}
-                layout="vertical"
-                onFinish={onFinish}
-                onChange={handleEmailChange}
-                requiredMark={false}
-                className="mt-5"
-              >
+                  form={form}
+                  layout="vertical"
+                  onValuesChange={(changedValues) => {
+                    const email = changedValues.email?.trim() || "";
+                    setUserEmail(email);
+                    setIsEmailValid(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+                  }}
+                  requiredMark={false}
+                >
                 <FormField
                   type="text"
                   label="Email Address"
