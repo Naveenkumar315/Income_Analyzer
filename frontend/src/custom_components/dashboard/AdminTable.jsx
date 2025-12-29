@@ -224,8 +224,14 @@ export default function AdminTable() {
         });
     };
 
-    const handleDelete = (userId) => {
-        if (!userId) return;
+    const handleDelete = (data) => {
+        if (!data?.id) return;
+
+        if (data?.isActive && data?.role === "Admin") {
+            toast.error("You cannot delete your own user account.")
+            return
+        }
+
         showCustomConfirm({
             title: "Delete User",
             content: "Are you sure you want to permanently delete this user? This action cannot be undone.",
@@ -235,7 +241,7 @@ export default function AdminTable() {
             onOk: async () => {
                 setActionInProgress(true);
                 try {
-                    await authApi.deleteUser(userId);
+                    await authApi.deleteUser(data?.id);
                     toast.success("User deleted successfully");
                     await fetchUsers();
                 } catch (error) {
@@ -308,7 +314,7 @@ export default function AdminTable() {
         const deleteBtn = findButton("delete-btn");
         if (deleteBtn) {
             event.event.preventDefault();
-            handleDelete(deleteBtn.dataset.id);
+            handleDelete(deleteBtn.dataset);
             return;
         }
 
@@ -384,7 +390,7 @@ export default function AdminTable() {
                         fontSize: 13,
                         color: "#dc2626",
                     }}
-                    onClick={() => handleDelete(data.id)}
+                    onClick={() => handleDelete(data)}
                 >
                     <img src={Icons.adminTable.deleteIcon} alt="Delete" width={14} />
                     <span style={{ color: "#4D4D4D" }}>Delete User</span>
