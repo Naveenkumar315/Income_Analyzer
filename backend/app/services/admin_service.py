@@ -4,7 +4,7 @@ from fastapi import HTTPException, BackgroundTasks
 from bson import ObjectId
 from datetime import datetime
 from app.services.email_service import send_email
-from app.utils.email_template import get_welcome_email_html, get_rejection_email_html, get_inactive_email_html
+from app.utils.email_template import get_welcome_email_html, get_rejection_email_html, get_inactive_email_html,get_delete_email_html
 from app.utils.security import generate_secure_password, hash_password
 import asyncio
 import traceback
@@ -137,7 +137,7 @@ async def update_user_status(
     }
 
 
-async def delete_user(user_id: str):
+async def delete_user(user_id: str,background_tasks: BackgroundTasks):
     """
     Permanently delete a user from the database.
     """
@@ -151,6 +151,18 @@ async def delete_user(user_id: str):
     user = await db["users"].find_one({"_id": object_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    info = user.get("primaryContact") or {}
+    first = info.get("firstName") or ""
+    last = info.get("lastName") or ""
+    full_name = (first + " " + last).strip() or user.get("email")
+
+    background_tasks.add_task(
+            send_email,
+            to_email=user.get("email"),
+            subject="Income Analyzer — Account Request Update",
+            html_body=get_delete_email_html(full_name)
+        )
 
     # Delete user
     result = await db["users"].delete_one({"_id": object_id})

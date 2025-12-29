@@ -41,11 +41,11 @@ async def update_status(user_id: str, request: UpdateStatusRequest, background_t
 
 
 @router.delete("/users/{user_id}")
-async def delete_user_endpoint(user_id: str):
+async def delete_user_endpoint(user_id: str,background_tasks: BackgroundTasks):
     """
     Permanently delete a user from the database.
     """
-    return await delete_user(user_id)
+    return await delete_user(user_id,background_tasks)
 
 
 @router.post("/inser-company-user")
