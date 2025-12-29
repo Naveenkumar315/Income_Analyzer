@@ -168,13 +168,27 @@ async def signup_user(
     )
 
     # Email to admin
-    background_tasks.add_task(
-        send_email,
-        to_email="nmurugan@loandna.com",
-        subject="New Broker Signup Request Submitted for Review",
-        html_body=admin_email_html,
-        cc_emails=""
-    )
+    # Fetch all global admins
+    global_admins_cursor = db["users"].find({
+        "type": "global_admin",
+        "status": "active"
+    })
+
+    global_admins = await global_admins_cursor.to_list(length=None)
+    admin_emails = [admin.get("email")
+                    for admin in global_admins if admin.get("email")]
+
+    if admin_emails:
+        # Send to all admins (comma-separated)
+        all_admin_emails = ", ".join(admin_emails)
+
+        background_tasks.add_task(
+            send_email,
+            to_email=all_admin_emails,
+            subject="New Broker Signup Request Submitted for Review",
+            html_body=admin_email_html,
+            cc_emails="nmurugan@loandna.com"
+        )
 
     # Return immediately (emails send in background)
     return {
