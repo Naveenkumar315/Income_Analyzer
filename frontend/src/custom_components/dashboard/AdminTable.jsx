@@ -71,8 +71,8 @@ export default function AdminTable() {
                 } else {
                     name = user.username || "-";
                     email = user.email;
-                    phone = "-";
-                    companyType = "-";
+                    phone = user?.individualInfo?.phone;
+                    companyType = "Global";
                     companySize = "-";
                 }
 
@@ -116,7 +116,7 @@ export default function AdminTable() {
         }
     };
 
-  
+
 
 
     //  Removed setTimeout and added safety check
@@ -247,10 +247,10 @@ export default function AdminTable() {
         if (!userId) return;
         const targetUser = users.find(u => u.id === userId);
 
-    if (targetUser?.role === "Admin" && newStatus === "inactive") {
-        toast.error("Admin users cannot be deactivated");
-        return;
-    }
+        if (targetUser?.role === "Admin" && newStatus === "inactive") {
+            toast.error("Admin users cannot be deactivated");
+            return;
+        }
 
         const actionText = newStatus === "active" ? "activate" : "deactivate";
         const titleText = newStatus === "active" ? "Activate User" : "Deactivate User";
@@ -391,6 +391,7 @@ export default function AdminTable() {
     const StatusToggleCell = ({ data }) => {
         const isActive = data.isActive;
         const isPending = data.status === "pending";
+        const isAdmin = data.role === "Admin";
 
         return (
             <div
@@ -416,6 +417,10 @@ export default function AdminTable() {
                         disabled={isPending}
                         onChange={() => {
                             if (!isPending) {
+                                if (isAdmin && isActive) {
+                                    toast.error("Admin users cannot be deactivated");
+                                    return;
+                                }
                                 const newStatus = isActive ? "inactive" : "active";
                                 handleStatusToggle(data.id, newStatus);
                             }
@@ -457,10 +462,10 @@ export default function AdminTable() {
         );
     };
 
-    // ✅ Added safety check for user
+    // Added safety check for user
     const RoleCell = ({ data }) => {
         const handleChange = (newRole) => {
-            // ✅ Guard against null user
+            // Guard against null user
             if (!user?._id) {
                 toast.error("User session not loaded. Please refresh the page.");
                 return;
@@ -609,7 +614,7 @@ export default function AdminTable() {
                 paddingLeft: "8px",
             },
         },
-    ], [user]);
+    ], [user, users]);
 
     const handleCreateUser = () => {
         setIsCreateOpen(true);
@@ -626,7 +631,7 @@ export default function AdminTable() {
                 handleCreateUser={handleCreateUser}
                 searchPlaceholder="Search loan, borrower etc."
                 onCellClicked={handleCellClick}
-                showFilter={true}
+                showFilter={user?.isCompanyAdmin}
                 onFilter={() => console.log("Filter clicked")}
                 defaultPageSize={10}
                 pageSizeOptions={[10, 20, 50]}
