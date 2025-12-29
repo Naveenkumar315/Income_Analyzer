@@ -48,6 +48,8 @@ export default function AdminTable() {
 
     const transformUserData = (usersArray) => {
         try {
+            let totalUser = []
+            totalUser = [...usersArray]
             if (!Array.isArray(usersArray)) return [];
             return usersArray.map((user) => {
                 let name, email, phone, companyType, companySize;
@@ -67,7 +69,10 @@ export default function AdminTable() {
                     email = primaryContact.email || user.email || companyInfo.companyEmail;
                     phone = primaryContact.phone || "";
                     companyType = "Company";
-                    companySize = user.companyInfo?.companySize || user.company?.companySize || "-";
+                    const size = totalUser.find(d => d._id === user?.company_id)
+                        ?.companyInfo?.companySize;
+
+                    companySize = user.companyInfo?.companySize || user.company?.companySize || size || "-";
                 } else {
                     name = user.username || "-";
                     email = user.email;
