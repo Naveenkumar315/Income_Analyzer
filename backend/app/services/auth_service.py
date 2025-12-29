@@ -233,3 +233,24 @@ async def check_company_email_exists(email: str):
         "exists": False,
         "email": email,
     }
+
+async def check_company_name_exists(name: str):
+    name = name.strip().lower()
+
+    existing = await db["users"].find_one({
+        "companyInfo.companyName": {
+            "$regex": f"^{name}$",
+            "$options": "i"   # case-insensitive
+        }
+    })
+
+    if existing:
+        return {
+            "exists": True,
+            "name": name,
+        }
+
+    return {
+        "exists": False,
+        "name": name,
+    }
