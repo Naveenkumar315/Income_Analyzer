@@ -1196,3 +1196,59 @@ Thank you,<br><strong>The Income Analyzer Team</strong>
 </body>
 </html>
 """
+
+
+def get_delete_email_html(full_name: str) -> str:
+    """
+    HTML body for account deletion email (Income Analyzer).
+    Uses common EMAIL_STYLES with proper inner spacing.
+    """
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Income Analyzer — Account Deleted</title>
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+</head>
+
+<body style="{EMAIL_STYLES['body']}">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+<td align="center" style="{EMAIL_STYLES['outer']}">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="{EMAIL_STYLES['container']}">
+<tr>
+<td style="{EMAIL_STYLES['inner']}">
+
+<div style="{EMAIL_STYLES['title']}">
+Income Analyzer — Account Status Update
+</div>
+
+<div style="{EMAIL_STYLES['text_large']}">
+Hello <strong>{full_name}</strong>,<br><br>
+Your Income Analyzer account has been deleted by the administrator.
+<br><br>
+You will no longer have access to the platform. If you believe this was done in error
+or would like to request reactivation, please contact the administrator or support team.
+<br><br>
+If you have any questions or concerns, please don't hesitate to reach out.
+</div>
+
+<div style="{EMAIL_STYLES['text_large']}">
+Thank you,<br>
+<strong>The Income Analyzer Team</strong>
+</div>
+
+</td>
+</tr>
+</table>
+
+</td>
+</tr>
+</table>
+</body>
+</html>
+"""
+
