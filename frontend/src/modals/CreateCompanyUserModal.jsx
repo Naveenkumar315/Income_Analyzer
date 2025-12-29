@@ -40,14 +40,20 @@ const CreateCompanyUserModal = ({
         return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
     };
 
-    const handlePhoneBlur = (fieldName) => {
-        const value = form.getFieldValue(fieldName);
-        const formatted = formatPhone(value);
+    const handlePhoneBlur = () => {
+        const value = form.getFieldValue("phone");
+        if (!value) return;
 
-        form.setFieldsValue({
-            [fieldName]: formatted,
-        });
+        const digits = value.replace(/\D/g, "");
+
+        if (digits.length === 10) {
+            const formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+            form.setFieldsValue({ phone: formatted });
+        }
+
+        form.validateFields(["phone"]);
     };
+
 
     // ================= PHONE FORMATTER =================
     // const handlePhoneNumberChange = (e) => {
@@ -206,6 +212,7 @@ const CreateCompanyUserModal = ({
                                 name="phone"
                                 placeholder="Enter Phone Number"
                                 rules={phoneValidation}
+                                validateTrigger={["onChange", "onBlur"]}
                                 onChange={handlePhoneNumberChange("phone")}
                                 onBlur={() => handlePhoneBlur("phone")}
                             />
