@@ -97,7 +97,21 @@ const CreateCompanyUserModal = ({
         } catch (err) {
             console.error(err);
             toast.error(err?.detail || "Failed to create user");
-        } finally {
+            if (err?.detail === "Email already registered") {
+                form.setFields([
+                    {
+                        name: 'email',
+                        errors: [' '], 
+                    },
+                ]);
+                form.setFields([
+                    {
+                        name: 'email',
+                        errors: [' '], 
+                    },
+                ]);
+            }
+        }finally {
             setLoading(false);
         }
     };

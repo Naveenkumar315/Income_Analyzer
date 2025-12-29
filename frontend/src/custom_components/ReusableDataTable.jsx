@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { SearchOutlined } from "@ant-design/icons";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
@@ -53,6 +53,18 @@ export default function ReusableDataTable({
             setCurrentPage(params.api.paginationGetCurrentPage() + 1);
         });
     };
+
+    // Add this useEffect to your component
+    useEffect(() => {
+    if (gridApi && !loading) {
+        // Ensure the page exists (in case you deleted the last item on the last page)
+        const maxPage = Math.ceil(filteredData.length / pageSize);
+        const targetPage = Math.min(currentPage, maxPage || 1);
+        
+        // Use -1 because AG Grid is 0-indexed
+        gridApi.paginationGoToPage(targetPage - 1);
+    }
+    }, [filteredData, gridApi, pageSize]);
 
     if (loading) {
         return (
@@ -144,6 +156,7 @@ export default function ReusableDataTable({
                         ref={gridRef}
                         columnDefs={columnDefs}
                         rowData={filteredData}
+                        getRowId={(params) => params.data.id}
                         defaultColDef={{
                             sortable: true,
                             filter: false,

@@ -95,6 +95,12 @@ const handleDragOver = (e) => {
       const res = await authApi.checkCompanyEmailExists(values.companyEmail);
       if (res?.exists) {
         toast.error("Company email already exists");
+        form.setFields([
+          {
+            name: "companyEmail",
+            errors: [''],
+          },
+        ]);
         return;
       }
           const username = `${values.primaryFirstName || ""} ${

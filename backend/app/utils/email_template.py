@@ -731,7 +731,61 @@ def get_inactive_email_html(full_name: str) -> str:
             <td style="font-size:14px;line-height:1.6;">
               Hello <strong>{full_name}</strong>,
               <br><br>
-              Your Income Analyzer account has been deactivated by the administrator.
+              Your Income Analyzer account has been deleted by the administrator.
+              <br><br>
+              You will no longer have access to the platform. If you believe this was done in error 
+              or would like to request reactivation, please contact the administrator or support team.
+              <br><br>
+              If you have any questions or concerns, please don't hesitate to reach out.
+            </td>
+          </tr>
+
+          <tr>
+            <td style="font-size:14px;padding-top:18px;">
+              Thank you,<br>
+              <strong>The Income Analyzer Team</strong>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+"""
+
+
+def get_delete_email_html(full_name: str) -> str:
+    """
+    HTML body for inactive/deactivation email (Income Analyzer).
+    System-default styling (no forced light or dark mode).
+    """
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Income Analyzer — Account Deleted</title>
+</head>
+
+<body style="margin:0;padding:0;font-family:Arial, sans-serif;color:#222222;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:30px 0;">
+    <tr>
+      <td align="center">
+        <table width="620" cellpadding="0" cellspacing="0"
+               style="padding:28px;border:1px solid #e5e5e5;border-radius:8px;">
+          
+          <tr>
+            <td style="font-size:20px;font-weight:700;padding-bottom:12px;">
+              Income Analyzer — Account Status Update
+            </td>
+          </tr>
+
+          <tr>
+            <td style="font-size:14px;line-height:1.6;">
+              Hello <strong>{full_name}</strong>,
+              <br><br>
+              Your Income Analyzer account has been deleted by the administrator.
               <br><br>
               You will no longer have access to the platform. If you believe this was done in error 
               or would like to request reactivation, please contact the administrator or support team.

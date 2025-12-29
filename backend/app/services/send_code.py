@@ -14,7 +14,7 @@ from app.utils.email_template import get_verification_code_email
 from app.services.email_service import send_email
 
 OTP_TTL_SECONDS = 600        # 10 minutes
-MAX_ATTEMPTS = 5
+MAX_ATTEMPTS = 15
 
 # Optional Celery toggle
 USE_CELERY = os.getenv("USE_CELERY", "0") in ("1", "true", "True")
