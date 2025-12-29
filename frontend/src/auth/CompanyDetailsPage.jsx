@@ -49,30 +49,30 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
   const ALLOWED_LOGO_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 
   const handleDrop = (e) => {
-  e.preventDefault();
-  e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
-  const file = e.dataTransfer.files?.[0];
-  if (!file) return;
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
 
-  if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
-    toast.error("Only PNG and JPEG images are allowed");
-    return;
-  }
+    if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
+      toast.error("Only PNG and JPEG images are allowed");
+      return;
+    }
 
-  if (file.size > MAX_LOGO_SIZE_BYTES) {
-    toast.error("Company logo must be less than 2MB");
-    return;
-  }
+    if (file.size > MAX_LOGO_SIZE_BYTES) {
+      toast.error("Company logo must be less than 2MB");
+      return;
+    }
 
-  setFileList([file]);
-};
+    setFileList([file]);
+  };
 
 
-const handleDragOver = (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-};
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
 
   const handleFinish = useCallback(
@@ -91,21 +91,31 @@ const handleDragOver = (e) => {
           type: activeTab, // "company" or "individual"
         };
 
-    if (activeTab === "company") {
-      const res = await authApi.checkCompanyEmailExists(values.companyEmail);
-      if (res?.exists) {
-        toast.error("Company email already exists");
-        form.setFields([
-          {
-            name: "companyEmail",
-            errors: [''],
-          },
-        ]);
-        return;
-      }
-          const username = `${values.primaryFirstName || ""} ${
-            values.primaryLastName || ""
-          }`.trim();
+        if (activeTab === "company") {
+          const res = await authApi.checkCompanyEmailExists(values.companyEmail);
+          const nameRes = await authApi.checkCompanyNameExists(values.companyName);
+          if (res?.exists) {
+            toast.error("Company email already exists");
+            form.setFields([
+              {
+                name: "companyEmail",
+                errors: [''],
+              },
+            ]);
+            return;
+          }
+          if (nameRes?.exists) {
+            toast.error("Company name already exists");
+            form.setFields([
+              {
+                name: "companyName",
+                errors: [''],
+              },
+            ]);
+            return;
+          }
+          const username = `${values.primaryFirstName || ""} ${values.primaryLastName || ""
+            }`.trim();
 
           signupData.username = username; //
           // Structure company data
@@ -128,9 +138,8 @@ const handleDragOver = (e) => {
             email: values.primaryEmail,
           };
         } else if (activeTab === "individual") {
-          const username = `${values.firstName || ""} ${
-            values.lastName || ""
-          }`.trim();
+          const username = `${values.firstName || ""} ${values.lastName || ""
+            }`.trim();
 
           signupData.username = username;
           // Structure individual data
@@ -156,7 +165,7 @@ const handleDragOver = (e) => {
         console.error("Signup error:", error);
         toast.error(
           error.response?.data?.detail ||
-            "Registration failed. Please try again."
+          "Registration failed. Please try again."
         );
       } finally {
         setLoading(false);
@@ -236,71 +245,71 @@ const handleDragOver = (e) => {
   };
 
   // Handle phone number input - format as US phone number (XXX) XXX-XXXX
-//   const handlePhoneNumberChange = (e) => {
-//     const input = e.target.value;
+  //   const handlePhoneNumberChange = (e) => {
+  //     const input = e.target.value;
 
-//     // Remove all non-numeric characters
-//     const cleaned = input.replace(/\D/g, "");
+  //     // Remove all non-numeric characters
+  //     const cleaned = input.replace(/\D/g, "");
 
-//     // Limit to 10 digits
-//     const limited = cleaned.substring(0, 10);
+  //     // Limit to 10 digits
+  //     const limited = cleaned.substring(0, 10);
 
-//     // Format as (XXX) XXX-XXXX
-//     // let formatted = "";
-//     // if (limited.length > 0) {
-//     //   if (limited.length <= 3) {
-//     //     formatted = `(${limited}`;
-//     //   } else if (limited.length <= 6) {
-//     //     formatted = `(${limited.slice(0, 3)}) ${limited.slice(3)}`;
-//     //   } else {
-//     //     formatted = `(${limited.slice(0, 3)}) ${limited.slice(
-//     //       3,
-//     //       6
-//     //     )}-${limited.slice(6)}`;
-//     //   }
-//     // }
+  //     // Format as (XXX) XXX-XXXX
+  //     // let formatted = "";
+  //     // if (limited.length > 0) {
+  //     //   if (limited.length <= 3) {
+  //     //     formatted = `(${limited}`;
+  //     //   } else if (limited.length <= 6) {
+  //     //     formatted = `(${limited.slice(0, 3)}) ${limited.slice(3)}`;
+  //     //   } else {
+  //     //     formatted = `(${limited.slice(0, 3)}) ${limited.slice(
+  //     //       3,
+  //     //       6
+  //     //     )}-${limited.slice(6)}`;
+  //     //   }
+  //     // }
 
-//     // Update the form field value
-//     const fieldName = e.target.id?.replace(/.*_/, ""); // Extract field name from Ant Design ID
-//     if (fieldName) {
-//       form.setFieldsValue({
-//         [fieldName]: formatted,
-//       });
-//     }
-//   };
+  //     // Update the form field value
+  //     const fieldName = e.target.id?.replace(/.*_/, ""); // Extract field name from Ant Design ID
+  //     if (fieldName) {
+  //       form.setFieldsValue({
+  //         [fieldName]: formatted,
+  //       });
+  //     }
+  //   };
 
-const handlePhoneNumberChange = (fieldName) => (e) => {
-  const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
+  const handlePhoneNumberChange = (fieldName) => (e) => {
+    const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
 
-  form.setFieldsValue({
-    [fieldName]: digitsOnly,
-  });
-};
-// Format for display
-const formatPhone = (value) => {
-  const digits = value.replace(/\D/g, "").slice(0, 10);
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 6)
-    return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-};
+    form.setFieldsValue({
+      [fieldName]: digitsOnly,
+    });
+  };
+  // Format for display
+  const formatPhone = (value) => {
+    const digits = value.replace(/\D/g, "").slice(0, 10);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6)
+      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
 
-// Extract clean number for backend
-const getDigitsOnly = (value) => value.replace(/\D/g, "");
+  // Extract clean number for backend
+  const getDigitsOnly = (value) => value.replace(/\D/g, "");
 
-const handlePhoneBlur = () => {
-        const value = form.getFieldValue("phone");
-        if (!value) return;
+  const handlePhoneBlur = () => {
+    const value = form.getFieldValue("phone");
+    if (!value) return;
 
-        const digits = value.replace(/\D/g, "");
+    const digits = value.replace(/\D/g, "");
 
-        if (digits.length === 10) {
-            const formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-            form.setFieldsValue({ phone: formatted });
-        }
+    if (digits.length === 10) {
+      const formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+      form.setFieldsValue({ phone: formatted });
+    }
 
-        form.validateFields(["phone"]);
-    };
+    form.validateFields(["phone"]);
+  };
 
   // FormSubmit
   const handleFormSumbit = () => {
@@ -343,22 +352,20 @@ const handlePhoneBlur = () => {
             <button
               type="button"
               onClick={() => handleTabChange("company")}
-              className={`h-10 px-6 text-sm font-creato transition-all ${
-                activeTab === "company"
+              className={`h-10 px-6 text-sm font-creato transition-all ${activeTab === "company"
                   ? "bg-[#9AD4EF] text-white"
                   : "bg-white text-[#3D4551] hover:bg-gray-50"
-              }`}
+                }`}
             >
               Company
             </button>
             <button
               type="button"
               onClick={() => handleTabChange("individual")}
-              className={`h-10 px-6 text-sm font-creato transition-all border-l border-[#E5E7EB] ${
-                activeTab === "individual"
+              className={`h-10 px-6 text-sm font-creato transition-all border-l border-[#E5E7EB] ${activeTab === "individual"
                   ? "bg-[#9AD4EF] text-white"
                   : "bg-white text-[#3D4551] hover:bg-gray-50"
-              }`}
+                }`}
             >
               Individual
             </button>
@@ -410,33 +417,75 @@ const handlePhoneBlur = () => {
                     ]}
                     rules={[{ required: true }]}
                   />
-                        <FormField
-        type="text"
-        label={
-            <span>
-                Phone Number <span className="text-red-500">*</span>
-            </span>
-        }
-        name="companyPhone"
-        placeholder="Enter Phone Number"
-        rules={phoneValidation}
-        validateTrigger={["onChange", "onBlur"]}
-        onChange={handlePhoneNumberChange("companyPhone")}
-        onBlur={() => handlePhoneBlur("companyPhone")}
-        />
+
+                  <FormField
+                    type="text"
+                    label={
+                      <span>
+                        Phone Number <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    name="companyPhone"
+                    placeholder="Enter Phone Number"
+                    rules={[
+                      { required: true, message: "Phone number is required" },
+                      {
+                        pattern: /^\(\d{3}\) \d{3}-\d{4}$/,
+                        message: "Enter a valid 10-digit phone number",
+                      },
+                    ]}
+                    onKeyDown={(e) => {
+                      // Allow backspace, delete, arrows, tab
+                      const allowedKeys = [
+                        "Backspace",
+                        "Delete",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Tab",
+                      ];
+
+                      if (allowedKeys.includes(e.key)) return;
+
+                      // Block non-numeric characters
+                      if (!/^\d$/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      // Allow typing numbers only (max 10)
+                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      form.setFieldsValue({ companyPhone: digits });
+                    }}
+                    onBlur={() => {
+                      const value = form.getFieldValue("companyPhone");
+                      if (!value) return;
+
+                      const digits = value.replace(/\D/g, "");
+
+                      if (digits.length === 10) {
+                        const formatted = `(${digits.slice(0, 3)}) ${digits.slice(
+                          3,
+                          6
+                        )}-${digits.slice(6)}`;
+
+                        form.setFieldsValue({ companyPhone: formatted });
+                      }
+                    }}
+                  />
+
 
 
                   <FormField
-  type="text"
-  label={
-    <span>
-      Company Email <span className="text-red-500">*</span>
-    </span>
-  }
-  name="companyEmail"
-  placeholder="Enter Company Email"
-  rules={emailValidation}
-/>
+                    type="text"
+                    label={
+                      <span>
+                        Company Email <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    name="companyEmail"
+                    placeholder="Enter Company Email"
+                    rules={emailValidation}
+                  />
 
                 </div>
 
@@ -539,20 +588,60 @@ const handlePhoneBlur = () => {
                     placeholder="Enter Last Name"
                     rules={nameValidation("Last Name")}
                   />
-                      <FormField
-  type="text"
-  label={
+                  <FormField
+                    type="text"
+                    label={
                       <span>
                         Phone Number <span className="text-red-500">*</span>
                       </span>
                     }
-  name="primaryPhone"
-  placeholder="Enter Phone Number"
-  rules={phoneValidation}
-  validateTrigger={["onChange", "onBlur"]}
-  onChange={handlePhoneNumberChange("primaryPhone")}
-  onBlur={() => handlePhoneBlur("primaryPhone")}
-/>
+                    name="primaryPhone"
+                    placeholder="Enter a Primary Phone Number"
+                    rules={[
+                      { required: true, message: "Phone number is required" },
+                      {
+                        pattern: /^\(\d{3}\) \d{3}-\d{4}$/,
+                        message: "Enter a valid 10-digit phone number",
+                      },
+                    ]}
+                    onKeyDown={(e) => {
+                      // Allow backspace, delete, arrows, tab
+                      const allowedKeys = [
+                        "Backspace",
+                        "Delete",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Tab",
+                      ];
+
+                      if (allowedKeys.includes(e.key)) return;
+
+                      // Block non-numeric characters
+                      if (!/^\d$/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      // Allow typing numbers only (max 10)
+                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      form.setFieldsValue({ primaryPhone: digits });
+                    }}
+                    onBlur={() => {
+                      const value = form.getFieldValue("primaryPhone");
+                      if (!value) return;
+
+                      const digits = value.replace(/\D/g, "");
+
+                      if (digits.length === 10) {
+                        const formatted = `(${digits.slice(0, 3)}) ${digits.slice(
+                          3,
+                          6
+                        )}-${digits.slice(6)}`;
+
+                        form.setFieldsValue({ primaryPhone: formatted });
+                      }
+                    }}
+                  />
 
                   <FormField
                     type="text"
@@ -715,7 +804,7 @@ const handlePhoneBlur = () => {
                     
                     rules={phoneValidation}
                   /> */}
-                        <FormField
+                  {/* <FormField
                         type="text"
                         label={
                             <span>
@@ -728,7 +817,62 @@ const handlePhoneBlur = () => {
                         validateTrigger={["onChange", "onBlur"]}
                         onChange={handlePhoneNumberChange("phone")}
                         onBlur={() => handlePhoneBlur("phone")}
-                        />
+                        /> */}
+
+                  <FormField
+                    type="text"
+                    label={
+                      <span>
+                        Phone Number <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    name="phone"
+                    placeholder="Enter Phone Number"
+                    rules={[
+                      { required: true, message: "Phone number is required" },
+                      {
+                        pattern: /^\(\d{3}\) \d{3}-\d{4}$/,
+                        message: "Enter a valid 10-digit phone number",
+                      },
+                    ]}
+                    onKeyDown={(e) => {
+                      // Allow backspace, delete, arrows, tab
+                      const allowedKeys = [
+                        "Backspace",
+                        "Delete",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Tab"
+                      ];
+
+                      if (allowedKeys.includes(e.key)) return;
+
+                      // Block non-numeric characters
+                      if (!/^\d$/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      // Allow typing numbers only (max 10)
+                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      form.setFieldsValue({ phone: digits });
+                    }}
+                    onBlur={() => {
+                      const value = form.getFieldValue("phone");
+                      if (!value) return;
+
+                      const digits = value.replace(/\D/g, "");
+
+                      if (digits.length === 10) {
+                        const formatted = `(${digits.slice(0, 3)}) ${digits.slice(
+                          3,
+                          6
+                        )}-${digits.slice(6)}`;
+
+                        form.setFieldsValue({ phone: formatted });
+                      }
+                    }}
+                  />
                   <FormField
                     type="text"
                     label={
@@ -766,7 +910,7 @@ const handlePhoneBlur = () => {
             className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors cursor-pointer"
             disabled={loading}
             onClick={() => form.submit()}
-            // className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          // className="px-8 py-2.5 rounded-lg bg-[#22B4E6] text-white text-sm font-creato font-medium hover:bg-[#1DA1D1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Submitting..." : "Submit"}
           </button>

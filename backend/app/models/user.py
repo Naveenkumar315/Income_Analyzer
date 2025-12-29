@@ -51,6 +51,8 @@ class VerifyCodeRequest(BaseModel):
 class CheckEmailRequest(BaseModel):
     email: EmailStr
 
+class CheckNameRequest(BaseModel):
+    name: str
 
 # Signup Models
 class CompanyInfo(BaseModel):
