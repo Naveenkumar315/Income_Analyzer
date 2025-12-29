@@ -106,7 +106,12 @@ const EmailVerificationPage = ({ email, onVerify, setStep, SIGNUP_STEPS }) => {
 
             const message =
                 error?.response?.data?.detail || "Invalid or expired OTP. Please try again.";
-
+            form.setFields([
+                {
+                    name: "verificationCode",
+                    errors: [''],
+                },
+            ]);
             toast.error(message);
         } finally {
             setLoading(false);

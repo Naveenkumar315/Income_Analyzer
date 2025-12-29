@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
           toast.error("Please complete the sign-up process first.")
           return
         }
-        if (response?.status === "rejected"){
+        if (response?.status === "rejected") {
           toast.error("Your signup request has been rejected")
           return
         }
@@ -185,6 +185,12 @@ export default function ForgotPasswordPage() {
       } catch (err) {
         console.error("update password error", err);
         debugger;
+        form.setFields([
+          {
+            name: "verificationCode",
+            errors: [""],
+          },
+        ])
         // API error (e.g., wrong code) — show toast
         if (err?.detail) {
           return toast.error(err.detail);
@@ -368,6 +374,7 @@ export default function ForgotPasswordPage() {
                     label="Verification Code"
                     name="verificationCode"
                     placeholder="Enter Verification Code"
+                    validateStatus="error"
                     maxLength={6}
                     rules={[
                       {
@@ -410,7 +417,7 @@ export default function ForgotPasswordPage() {
                     //         },
                     //     }),
                     // ]}
-                     rules={[
+                    rules={[
                       {
                         required: true,
                         message: "Please confirm new password",

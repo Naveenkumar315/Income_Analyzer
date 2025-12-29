@@ -99,8 +99,14 @@ function SignupPage() {
       const response = await authApi.checkEmailExists(email_);
 
       if (response.exists) {
-        toast.error("This email is already registered");
-        setEmailExists(true);
+        form.setFields([
+          {
+            name: "email",
+            errors: [''],
+          },
+        ]);
+
+        toast.error("Email already registered");
         return;
       }
 
