@@ -15,6 +15,7 @@ import AdminTable from './custom_components/dashboard/AdminTable';
 import AppInitializer from './AppInitializer';
 import IncomeAnalyzerHome from './income_analyzer/IncomeAnalyzerHome.jsx';
 import Rule from './rules/Rule.jsx';
+import NotFound from './auth/NotFound.jsx';
 
 function App() {
 
@@ -42,6 +43,7 @@ function App() {
           </Route>
 
           {/* optional: 404 or other routes */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
 
         <ToastProvider />
