@@ -227,9 +227,11 @@ export default function AdminTable() {
     const handleDelete = (data) => {
         if (!data?.id) return;
 
-        if (data?.isActive && data?.role === "Admin") {
-            toast.error("You cannot delete your own user account.")
-            return
+        if (data?.id === user._id) {
+            if (data?.isActive && data?.role === "Admin") {
+                toast.error("You cannot delete your own user account.")
+                return
+            }
         }
 
         showCustomConfirm({
@@ -258,9 +260,11 @@ export default function AdminTable() {
         if (!userId) return;
         const targetUser = users.find(u => u.id === userId);
 
-        if (targetUser?.role === "Admin" && newStatus === "inactive") {
-            toast.error("Admin users cannot be deactivated");
-            return;
+        if (targetUser.id === user._id) {
+            if (targetUser?.role === "Admin" && newStatus === "inactive") {
+                toast.error("Admin users cannot be deactivated");
+                return;
+            }
         }
 
         const actionText = newStatus === "active" ? "activate" : "deactivate";
@@ -402,7 +406,12 @@ export default function AdminTable() {
     const StatusToggleCell = ({ data }) => {
         const isActive = data.isActive;
         const isPending = data.status === "pending";
-        const isAdmin = data.role === "Admin";
+        let isAdmin = data.role === "Admin";
+        if (user._id === data.id) {
+            isAdmin = true
+        } else {
+            isAdmin = false
+        }
 
         return (
             <div
