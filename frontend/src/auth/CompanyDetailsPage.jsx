@@ -92,28 +92,50 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
         };
 
         if (activeTab === "company") {
-          const res = await authApi.checkCompanyEmailExists(values.companyEmail);
-          const nameRes = await authApi.checkCompanyNameExists(values.companyName);
-          if (res?.exists) {
+          // const res = await authApi.checkCompanyEmailExists(values.companyEmail);
+          // const nameRes = await authApi.checkCompanyNameExists(values.companyName);
+          // if (res?.exists) {
+          //   toast.error("Company email already exists");
+          //   form.setFields([
+          //     {
+          //       name: "companyEmail",
+          //       errors: [''],
+          //     },
+          //   ]);
+          //   return;
+          // }
+          // if (nameRes?.exists) {
+          //   toast.error("Company name already exists");
+          //   form.setFields([
+          //     {
+          //       name: "companyName",
+          //       errors: [''],
+          //     },
+          //   ]);
+          //   return;
+          // }
+
+          const checkResponse = await authApi.checkCompanyExists({
+            email: values.companyEmail,
+            name: values.companyName,
+          });
+
+          if (checkResponse?.emailExists) {
             toast.error("Company email already exists");
             form.setFields([
-              {
-                name: "companyEmail",
-                errors: [''],
-              },
+              { name: "companyEmail", errors: [""] },
             ]);
             return;
           }
-          if (nameRes?.exists) {
+
+          if (checkResponse?.nameExists) {
             toast.error("Company name already exists");
             form.setFields([
-              {
-                name: "companyName",
-                errors: [''],
-              },
+              { name: "companyName", errors: [""] },
             ]);
             return;
           }
+
           const username = `${values.primaryFirstName || ""} ${values.primaryLastName || ""
             }`.trim();
 
@@ -353,8 +375,8 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
               type="button"
               onClick={() => handleTabChange("company")}
               className={`h-10 px-6 text-sm font-creato transition-all ${activeTab === "company"
-                  ? "bg-[#9AD4EF] text-white"
-                  : "bg-white text-[#3D4551] hover:bg-gray-50"
+                ? "bg-[#9AD4EF] text-white"
+                : "bg-white text-[#3D4551] hover:bg-gray-50"
                 }`}
             >
               Company
@@ -363,8 +385,8 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
               type="button"
               onClick={() => handleTabChange("individual")}
               className={`h-10 px-6 text-sm font-creato transition-all border-l border-[#E5E7EB] ${activeTab === "individual"
-                  ? "bg-[#9AD4EF] text-white"
-                  : "bg-white text-[#3D4551] hover:bg-gray-50"
+                ? "bg-[#9AD4EF] text-white"
+                : "bg-white text-[#3D4551] hover:bg-gray-50"
                 }`}
             >
               Individual

@@ -11,11 +11,11 @@ const authApi = {
     checkEmailExists: (email) =>
         axiosClient.post("/auth/check-email", { email }),
 
-    checkCompanyEmailExists: (email) =>
-        axiosClient.post("/auth/check-company-email", { email }),
-
-    checkCompanyNameExists: (name) =>
-        axiosClient.post("/auth/check-company-name", { name }),
+    checkCompanyExists: (data) =>
+        axiosClient.post("/auth/check-company", {   
+            email: data.email,
+            name: data.name,
+        }),
 
     updatePassword: (data) =>
         axiosClient.post('/auth/update-password', data),

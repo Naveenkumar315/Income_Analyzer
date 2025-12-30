@@ -54,6 +54,10 @@ class CheckEmailRequest(BaseModel):
 class CheckNameRequest(BaseModel):
     name: str
 
+class CheckCompanyRequest(BaseModel):
+    email: EmailStr
+    name: str
+
 # Signup Models
 class CompanyInfo(BaseModel):
     companyName: str

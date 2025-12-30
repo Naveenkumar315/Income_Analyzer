@@ -1,6 +1,6 @@
 from app.db import db
 from app.utils.security import hash_password, verify_password, create_access_token, create_refresh_token
-from app.models.user import UserCreate, UserLogin, SignupRequest
+from app.models.user import UserCreate, UserLogin, SignupRequest, CheckCompanyRequest
 from datetime import datetime
 from fastapi import HTTPException, BackgroundTasks
 from app.utils.email_template import get_admin_new_broker_signup_email_html, get_signup_submitted_email_html
@@ -218,39 +218,76 @@ async def check_email_exists(email: str):
     }
 
 
-async def check_company_email_exists(email: str):
-    email = email.lower().strip()
-    # Check if any user has this email in their companyInfo
-    existing = await db["users"].find_one({"companyInfo.companyEmail": email})
+# async def check_company_email_exists(email: str):
+#     email = email.lower().strip()
+#     # Check if any user has this email in their companyInfo
+#     existing = await db["users"].find_one({"companyInfo.companyEmail": email})
 
-    if existing:
+#     if existing:
+#         return {
+#             "exists": True,
+#             "email": email,
+#         }
+
+#     return {
+#         "exists": False,
+#         "email": email,
+#     }
+
+# async def check_company_name_exists(name: str):
+#     name = name.strip().lower()
+
+#     existing = await db["users"].find_one({
+#         "companyInfo.companyName": {
+#             "$regex": f"^{name}$",
+#             "$options": "i"   # case-insensitive
+#         }
+#     })
+
+#     if existing:
+#         return {
+#             "exists": True,
+#             "name": name,
+#         }
+
+#     return {
+#         "exists": False,
+#         "name": name,
+#     }
+
+async def check_company_exists(email: str = None, name: str = None):
+    query = []
+
+    if email:
+        query.append({"companyInfo.companyEmail": email.lower().strip()})
+
+    if name:
+        query.append({
+            "companyInfo.companyName": {
+                "$regex": f"^{name.strip()}$",
+                "$options": "i"
+            }
+        })
+
+    if not query:
         return {
-            "exists": True,
-            "email": email,
+            "exists": False,
+            "message": "No email or company name provided"
         }
-
-    return {
-        "exists": False,
-        "email": email,
-    }
-
-async def check_company_name_exists(name: str):
-    name = name.strip().lower()
 
     existing = await db["users"].find_one({
-        "companyInfo.companyName": {
-            "$regex": f"^{name}$",
-            "$options": "i"   # case-insensitive
-        }
+        "$or": query
     })
 
     if existing:
         return {
             "exists": True,
-            "name": name,
+            "emailExists": bool(email and existing.get("companyInfo", {}).get("companyEmail", "").lower() == email.lower()),
+            "nameExists": bool(name and existing.get("companyInfo", {}).get("companyName", "").lower() == name.lower())
         }
 
     return {
         "exists": False,
-        "name": name,
+        "emailExists": False,
+        "nameExists": False
     }

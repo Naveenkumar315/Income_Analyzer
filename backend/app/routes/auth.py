@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
-from app.models.user import UserCreate, UserLogin, Token, SendCodeRequest, VerifyCodeRequest, SignupRequest, CheckEmailRequest, RefreshTokenRequest, UpdatePasswordRequest, CheckNameRequest
-from app.services.auth_service import register_user, login_user, signup_user, check_email_exists, check_company_email_exists, check_company_name_exists
+from app.models.user import UserCreate, UserLogin, Token, SendCodeRequest, VerifyCodeRequest, SignupRequest, CheckEmailRequest, RefreshTokenRequest, UpdatePasswordRequest, CheckNameRequest, CheckCompanyRequest
+from app.services.auth_service import register_user, login_user, signup_user, check_email_exists, check_company_exists
 
 from app.services.send_code import send_verification_code, verify_otp_code
 from app.services.update_password import update_password
@@ -57,23 +57,30 @@ async def check_email(request: CheckEmailRequest):
     return await check_email_exists(request.email)
 
 
-@router.post('/check-company-email')
-async def check_company_email(request: CheckEmailRequest):
-    """
-    Check if company email already exists in the database.
-    Returns exists: true/false
-    """
-    return await check_company_email_exists(request.email)
+# @router.post('/check-company-email')
+# async def check_company_email(request: CheckEmailRequest):
+#     """
+#     Check if company email already exists in the database.
+#     Returns exists: true/false
+#     """
+#     return await check_company_email_exists(request.email)
 
 
-@router.post('/check-company-name')
-async def check_company_name(request: CheckNameRequest):
-    """
-    Check if company name already exists in the database.
-    Returns exists: true/false
-    """
-    return await check_company_name_exists(request.name)
+# @router.post('/check-company-name')
+# async def check_company_name(request: CheckNameRequest):
+#     """
+#     Check if company name already exists in the database.
+#     Returns exists: true/false
+#     """
+#     return await check_company_name_exists(request.name)
 
+
+@router.post("/check-company")
+async def check_company(request: CheckCompanyRequest):
+    return await check_company_exists(
+        email=request.email,
+        name=request.name
+    )
 
 @router.post('/signup')
 async def signup(signup_data: SignupRequest, background_tasks: BackgroundTasks):
