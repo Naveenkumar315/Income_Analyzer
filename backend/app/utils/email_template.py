@@ -864,7 +864,7 @@ EMAIL_STYLES = {
 
 }
 
-
+from .phone_formatters import format_us_phone
 # ============================================================
 # Verification Code Email
 # ============================================================
@@ -1076,6 +1076,7 @@ Thank you,<br><strong>The Income Analyzer Team</strong>
 # ============================================================
 
 def get_admin_new_broker_signup_email_html(name: str, email: str, phone: str) -> str:
+    formatted_phone = format_us_phone(phone)
     return f"""
 <!DOCTYPE html>
 <html>
@@ -1099,7 +1100,7 @@ A new broker signup request has been submitted. Below are the details:<br><br>
 <strong>Broker Details</strong><br><br>
 <strong>Name:</strong> {name}<br>
 <strong>Email:</strong> {email}<br>
-<strong>Phone:</strong> {phone}
+<strong>Phone:</strong> {formatted_phone}
 </div>
 
 <div style="{EMAIL_STYLES['text']}">

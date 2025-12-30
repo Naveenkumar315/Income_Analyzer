@@ -221,10 +221,10 @@ export default function ReusableDataTable({
                                         setCurrentPage(p);
                                         gridApi?.paginationGoToPage(p - 1);
                                     }}
-                                    className={`min-w-9 h-9 rounded-md border cursor-pointer
+                                    className={`min-w-9 h-9 rounded-md cursor-pointer
                                         ${currentPage === p
-                                            ? "bg-white text-gray-900 border-black font-medium"
-                                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                                            ? "bg-[#24A1DD] text-white font-medium border-transparent !text-white"
+                                            : "bg-white text-gray-700 hover:bg-gray-100"
                                         }`}
                                 >
                                     {p}
