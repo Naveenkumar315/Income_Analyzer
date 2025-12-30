@@ -85,14 +85,23 @@ export default function ForgotPasswordPage() {
 
         if (!response?.exists) {
           toast.error("Please complete the sign-up process first.")
+          form.setFields([
+              { name: "email", errors: [""] },
+            ]);
           return
         }
         if (response?.status === "rejected") {
           toast.error("Your signup request has been rejected")
+          form.setFields([
+              { name: "email", errors: [""] },
+            ]);
           return
         }
         if (response?.exists && response?.status === "pending") {
           toast.error("Your account is pending admin approval. You’ll be notified once it’s approved.")
+          form.setFields([
+              { name: "email", errors: [""] },
+            ]);
           return
         }
 
@@ -327,6 +336,7 @@ export default function ForgotPasswordPage() {
                       { required: true, message: "Please enter your email" },
                       { type: "email", message: "Please enter a valid email" },
                     ]}
+                    validateStatus="error"
                     onChange={handleEmailChange}
 
                   />
