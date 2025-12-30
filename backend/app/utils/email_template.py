@@ -787,7 +787,7 @@
 EMAIL_STYLES = {
     "body": "margin:0; padding:0; font-family:Arial, sans-serif;",
     "outer": "padding:38px 8px;",
-
+ 
     # Border only
     "container": (
         "max-width:600px;"
@@ -852,13 +852,16 @@ EMAIL_STYLES = {
         "font-weight:700;"
         "letter-spacing:6px;"
     ),
+
     "password_box": (
-        "width:300px;"
-        "height:56px;"
-        "font-size:18px;"
-        "font-weight:bold;"
-        "letter-spacing:1px;"
-    ),
+       "width:260px;"          # medium width (not too large)
+        "height:48px;"          # tighter height
+        "font-size:16px;"       # readable but balanced
+        "font-weight:600;"
+       "letter-spacing:1px;"
+       "line-height:1;"        # prevents vertical drift
+      ),
+
 }
 
 
