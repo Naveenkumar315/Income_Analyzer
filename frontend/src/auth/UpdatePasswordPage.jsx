@@ -176,28 +176,28 @@ const UpdatePasswordPage = () => {
                     </div> */}
 
                     <div className="mt-2 text-[12px] leading-[16px] font-creato">
-                        <span className={pwdChecks.lowercase ? "text-[#119d0c]" : "text-gray-600"}>
+                        <span className={pwdChecks.lowercase ? "text-[#119d0c]" : "text-red-600"}>
                             At least one lowercase
                         </span>
                         {", "}
 
-                        <span className={pwdChecks.uppercase ? "text-[#119d0c]" : "text-gray-600"}>
+                        <span className={pwdChecks.uppercase ? "text-[#119d0c]" : "text-red-600"}>
                             one uppercase
                         </span>
                         {", "}
 
-                        <span className={pwdChecks.number ? "text-[#119d0c]" : "text-gray-600"}>
+                        <span className={pwdChecks.number ? "text-[#119d0c]" : "text-red-600"}>
                             one number
                         </span>
                         {","}
                         <br />
 
-                        <span className={pwdChecks.special ? "text-[#119d0c]" : "text-gray-600"}>
+                        <span className={pwdChecks.special ? "text-[#119d0c]" : "text-red-600"}>
                             one special character – [!@#$%^&*(),.?":{ }|]
                         </span>
                         {", "}
 
-                        <span className={pwdChecks.length ? "text-[#119d0c]" : "text-gray-600"}>
+                        <span className={pwdChecks.length ? "text-[#119d0c]" : "text-red-600"}>
                             Minimum 12 characters
                         </span>
                         </div>

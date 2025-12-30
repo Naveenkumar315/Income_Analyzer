@@ -86,22 +86,22 @@ export default function ForgotPasswordPage() {
         if (!response?.exists) {
           toast.error("Please complete the sign-up process first.")
           form.setFields([
-              { name: "email", errors: [""] },
-            ]);
+            { name: "email", errors: [""] },
+          ]);
           return
         }
         if (response?.status === "rejected") {
           toast.error("Your signup request has been rejected")
           form.setFields([
-              { name: "email", errors: [""] },
-            ]);
+            { name: "email", errors: [""] },
+          ]);
           return
         }
         if (response?.exists && response?.status === "pending") {
           toast.error("Your account is pending admin approval. You’ll be notified once it’s approved.")
           form.setFields([
-              { name: "email", errors: [""] },
-            ]);
+            { name: "email", errors: [""] },
+          ]);
           return
         }
 
@@ -482,7 +482,7 @@ export default function ForgotPasswordPage() {
                   <div className="mt-2 text-[12px] leading-[16px] font-creato">
                     <span
                       className={
-                        pwdChecks.lowercase ? "text-[#119d0c]" : "text-gray-600"
+                        pwdChecks.lowercase ? "text-[#119d0c]" : "text-red-600"
                       }
                     >
                       At least one lowercase
@@ -491,7 +491,7 @@ export default function ForgotPasswordPage() {
 
                     <span
                       className={
-                        pwdChecks.uppercase ? "text-[#119d0c]" : "text-gray-600"
+                        pwdChecks.uppercase ? "text-[#119d0c]" : "text-red-600"
                       }
                     >
                       one uppercase
@@ -500,7 +500,7 @@ export default function ForgotPasswordPage() {
 
                     <span
                       className={
-                        pwdChecks.number ? "text-[#119d0c]" : "text-gray-600"
+                        pwdChecks.number ? "text-[#119d0c]" : "text-red-600"
                       }
                     >
                       one number
@@ -510,7 +510,7 @@ export default function ForgotPasswordPage() {
 
                     <span
                       className={
-                        pwdChecks.special ? "text-[#119d0c]" : "text-gray-600"
+                        pwdChecks.special ? "text-[#119d0c]" : "text-red-600"
                       }
                     >
                       one special character – [!@#$%^&*(),.?":{ }|]
@@ -519,7 +519,7 @@ export default function ForgotPasswordPage() {
 
                     <span
                       className={
-                        pwdChecks.length ? "text-[#119d0c]" : "text-gray-600"
+                        pwdChecks.length ? "text-[#119d0c]" : "text-red-600"
                       }
                     >
                       Minimum 12 characters
@@ -535,7 +535,7 @@ export default function ForgotPasswordPage() {
                     </div>
                   )} */}
 
-                  <div className="mt-2">
+                  {/* <div className="mt-2">
                     <CustomButton
                       variant="primary"
                       type="button"
@@ -553,6 +553,32 @@ export default function ForgotPasswordPage() {
                       {loading ? "Updating..." : "Update Password"}
                       <img
                         src="/arrow-right-active.png"
+                        alt=""
+                        className="w-4 h-4"
+                      />
+                    </CustomButton>
+                  </div> */}
+
+                  <div className="mt-3">
+                    <CustomButton
+                      variant={loading || !allRulesSatisfied || (form.getFieldValue("newPassword") || "") !==
+                        (form.getFieldValue("confirmPassword") || "") || !(form.getFieldValue("verificationCode") || "") ? "disabled" : "primary"} 
+                      type="button"
+                      disabled={loading || !allRulesSatisfied || (form.getFieldValue("newPassword") || "") !==
+                        (form.getFieldValue("confirmPassword") || "") || !(form.getFieldValue("verificationCode") || "")}
+                      onClick={handleUpdatePassword}
+                      // className="w-full rounded-lg py-3 flex items-center justify-center gap-3 text-white text-base font-medium disabled:opacity-60 disabled:cursor-not-allowed"'
+                      className={`mt-0 ${loading || !allRulesSatisfied || (form.getFieldValue("newPassword") || "") !==
+                        (form.getFieldValue("confirmPassword") || "") || !(form.getFieldValue("verificationCode") || "") ? "!cursor-not-allowed" : "cursor-pointer"}`}
+                    >
+                      {loading ? "Updating..." : "Update Password"}
+                      <img
+                        src={
+                          loading || !allRulesSatisfied || (form.getFieldValue("newPassword") || "") !==
+                        (form.getFieldValue("confirmPassword") || "") || !(form.getFieldValue("verificationCode") || "")
+                            ? "/arrow-right.svg"
+                            : "/arrow-right-active.png"
+                        }
                         alt=""
                         className="w-4 h-4"
                       />

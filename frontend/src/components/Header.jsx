@@ -101,7 +101,7 @@ const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
                         <button
                             type="button"
                             onClick={onAdmin}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg"
+                            className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg cursor-pointer"
                         >
                             <TeamOutlined className="text-lg" />
                             <span className="text-sm font-medium">Users Management</span>
@@ -111,7 +111,7 @@ const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
                     <button
                         type="button"
                         onClick={onLogout}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-[#ff4d4f] hover:bg-[#fff1f0] rounded-lg"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-[#ff4d4f] hover:bg-[#fff1f0] rounded-lg cursor-pointer"
                     >
                         <LogoutOutlined className="text-lg" />
                         <span className="text-sm font-medium">Logout</span>
