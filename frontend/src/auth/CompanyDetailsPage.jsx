@@ -300,38 +300,26 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
   //     }
   //   };
 
-  const handlePhoneNumberChange = (fieldName) => (e) => {
+  const handlePhoneChange = (fieldName) => (e) => {
     const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
-
     form.setFieldsValue({
-      [fieldName]: digitsOnly,
+    [fieldName]: digitsOnly,
     });
-  };
-  // Format for display
-  const formatPhone = (value) => {
-    const digits = value.replace(/\D/g, "").slice(0, 10);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6)
-      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  };
+    };
 
-  // Extract clean number for backend
-  const getDigitsOnly = (value) => value.replace(/\D/g, "");
+  const handlePhoneBlur = (fieldName) => (e) => {
+        const value = form.getFieldValue([fieldName]);
+        if (!value) return;
 
-  const handlePhoneBlur = () => {
-    const value = form.getFieldValue("phone");
-    if (!value) return;
+        const digits = value.replace(/\D/g, "");
 
-    const digits = value.replace(/\D/g, "");
+        if (digits.length === 10) {
+            const formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+            form.setFieldsValue({ [fieldName]: formatted });
+        }
 
-    if (digits.length === 10) {
-      const formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-      form.setFieldsValue({ phone: formatted });
-    }
-
-    form.validateFields(["phone"]);
-  };
+        form.validateFields([fieldName]);
+    };
 
   // FormSubmit
   const handleFormSumbit = () => {
@@ -444,58 +432,16 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                     type="text"
                     label={
                       <span>
-                        Phone Number <span className="text-red-500">*</span>
+                        Company Phone Number <span className="text-red-500">*</span>
                       </span>
                     }
                     name="companyPhone"
-                    placeholder="Enter Phone Number"
-                    rules={[
-                      { required: true, message: "Phone number is required" },
-                      {
-                        pattern: /^\(\d{3}\) \d{3}-\d{4}$/,
-                        message: "Enter a valid 10-digit phone number",
-                      },
-                    ]}
-                    onKeyDown={(e) => {
-                      // Allow backspace, delete, arrows, tab
-                      const allowedKeys = [
-                        "Backspace",
-                        "Delete",
-                        "ArrowLeft",
-                        "ArrowRight",
-                        "Tab",
-                      ];
-
-                      if (allowedKeys.includes(e.key)) return;
-
-                      // Block non-numeric characters
-                      if (!/^\d$/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
-                    onChange={(e) => {
-                      // Allow typing numbers only (max 10)
-                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-                      form.setFieldsValue({ companyPhone: digits });
-                    }}
-                    onBlur={() => {
-                      const value = form.getFieldValue("companyPhone");
-                      if (!value) return;
-
-                      const digits = value.replace(/\D/g, "");
-
-                      if (digits.length === 10) {
-                        const formatted = `(${digits.slice(0, 3)}) ${digits.slice(
-                          3,
-                          6
-                        )}-${digits.slice(6)}`;
-
-                        form.setFieldsValue({ companyPhone: formatted });
-                      }
-                    }}
+                    placeholder="Enter a Company Phone Number"
+                    rules={phoneValidation}
+                    validateTrigger={["onChange", "onBlur"]}
+                    onChange={handlePhoneChange("companyPhone")}
+                    onBlur={handlePhoneBlur("companyPhone")}
                   />
-
-
 
                   <FormField
                     type="text"
@@ -610,6 +556,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                     placeholder="Enter Last Name"
                     rules={nameValidation("Last Name")}
                   />
+                  
                   <FormField
                     type="text"
                     label={
@@ -619,50 +566,10 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                     }
                     name="primaryPhone"
                     placeholder="Enter a Primary Phone Number"
-                    rules={[
-                      { required: true, message: "Phone number is required" },
-                      {
-                        pattern: /^\(\d{3}\) \d{3}-\d{4}$/,
-                        message: "Enter a valid 10-digit phone number",
-                      },
-                    ]}
-                    onKeyDown={(e) => {
-                      // Allow backspace, delete, arrows, tab
-                      const allowedKeys = [
-                        "Backspace",
-                        "Delete",
-                        "ArrowLeft",
-                        "ArrowRight",
-                        "Tab",
-                      ];
-
-                      if (allowedKeys.includes(e.key)) return;
-
-                      // Block non-numeric characters
-                      if (!/^\d$/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
-                    onChange={(e) => {
-                      // Allow typing numbers only (max 10)
-                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-                      form.setFieldsValue({ primaryPhone: digits });
-                    }}
-                    onBlur={() => {
-                      const value = form.getFieldValue("primaryPhone");
-                      if (!value) return;
-
-                      const digits = value.replace(/\D/g, "");
-
-                      if (digits.length === 10) {
-                        const formatted = `(${digits.slice(0, 3)}) ${digits.slice(
-                          3,
-                          6
-                        )}-${digits.slice(6)}`;
-
-                        form.setFieldsValue({ primaryPhone: formatted });
-                      }
-                    }}
+                    rules={phoneValidation}
+                    validateTrigger={["onChange", "onBlur"]}
+                    onChange={handlePhoneChange("primaryPhone")}
+                    onBlur={handlePhoneBlur("primaryPhone")}
                   />
 
                   <FormField
@@ -826,21 +733,6 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                     
                     rules={phoneValidation}
                   /> */}
-                  {/* <FormField
-                        type="text"
-                        label={
-                            <span>
-                                Phone Number <span className="text-red-500">*</span>
-                            </span>
-                        }
-                        name="phone"
-                        placeholder="Enter Phone Number"
-                        rules={phoneValidation}
-                        validateTrigger={["onChange", "onBlur"]}
-                        onChange={handlePhoneNumberChange("phone")}
-                        onBlur={() => handlePhoneBlur("phone")}
-                        /> */}
-
                   <FormField
                     type="text"
                     label={
@@ -849,51 +741,11 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
                       </span>
                     }
                     name="phone"
-                    placeholder="Enter Phone Number"
-                    rules={[
-                      { required: true, message: "Phone number is required" },
-                      {
-                        pattern: /^\(\d{3}\) \d{3}-\d{4}$/,
-                        message: "Enter a valid 10-digit phone number",
-                      },
-                    ]}
-                    onKeyDown={(e) => {
-                      // Allow backspace, delete, arrows, tab
-                      const allowedKeys = [
-                        "Backspace",
-                        "Delete",
-                        "ArrowLeft",
-                        "ArrowRight",
-                        "Tab"
-                      ];
-
-                      if (allowedKeys.includes(e.key)) return;
-
-                      // Block non-numeric characters
-                      if (!/^\d$/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
-                    onChange={(e) => {
-                      // Allow typing numbers only (max 10)
-                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-                      form.setFieldsValue({ phone: digits });
-                    }}
-                    onBlur={() => {
-                      const value = form.getFieldValue("phone");
-                      if (!value) return;
-
-                      const digits = value.replace(/\D/g, "");
-
-                      if (digits.length === 10) {
-                        const formatted = `(${digits.slice(0, 3)}) ${digits.slice(
-                          3,
-                          6
-                        )}-${digits.slice(6)}`;
-
-                        form.setFieldsValue({ phone: formatted });
-                      }
-                    }}
+                    placeholder="Enter a Phone Number"
+                    rules={phoneValidation}
+                    validateTrigger={["onChange", "onBlur"]}
+                    onChange={handlePhoneChange("phone")}
+                    onBlur={handlePhoneBlur("phone")}
                   />
                   <FormField
                     type="text"
