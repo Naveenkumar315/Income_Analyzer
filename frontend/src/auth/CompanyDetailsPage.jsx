@@ -305,6 +305,7 @@ const CompanyDetailsPage = ({ onClose, onSubmit, userEmail }) => {
     form.setFieldsValue({
     [fieldName]: digitsOnly,
     });
+    form.validateFields([fieldName]);
     };
 
   const handlePhoneBlur = (fieldName) => (e) => {

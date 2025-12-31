@@ -78,6 +78,7 @@ const CreateCompanyUserModal = ({
     form.setFieldsValue({
     [fieldName]: digitsOnly,
     });
+    form.validateFields([fieldName]);
     };
 
     const handleSubmit = async () => {
