@@ -65,7 +65,7 @@ export default function CustomButton({
                     <div className="w-5 h-5 relative overflow-hidden">
                         <div
                             className={`w-3 h-3 left-[4.17px] top-[4.17px] absolute 
-                outline outline-2 outline-offset-[-1px] ${iconColorClass}`}
+                            outline outline-2 outline-offset-[-1px] ${iconColorClass}`}
                         />
                     </div>
                 )}

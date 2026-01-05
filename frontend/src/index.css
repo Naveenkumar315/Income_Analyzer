@@ -85,6 +85,10 @@ body {
     padding: 0 !important;
 }
 
+.custom-upload-file-modal .ant-modal-container {
+    padding: 0 !important;
+}
+
 /* AG Grid Sort Icons - SVG Alternative */
 .ag-theme-alpine .ag-icon-asc::before {
     content: "▲";
@@ -97,6 +101,113 @@ body {
     color: white;
     font-size: 10px;
 }
+
+/* ===== Left Tree Panel ===== */
+
+.loan-tree .ant-tree-treenode {
+    padding: 4px 0;
+}
+
+.loan-tree .ant-tree-node-content-wrapper {
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.loan-tree .ant-tree-node-content-wrapper:hover {
+    background-color: #f3f4f6;
+}
+
+/* remove default AntD blue highlight */
+.loan-tree .ant-tree-node-selected .ant-tree-node-content-wrapper,
+.loan-tree .ant-tree-treenode-selected .ant-tree-node-content-wrapper {
+    background-color: transparent !important;
+}
+
+
+/* ===== Pay Stub Tabs (top tab set) ===== */
+
+.pay-stub-tabs .ant-tabs-nav {
+    margin: 0;
+}
+
+.pay-stub-tabs .ant-tabs-tab {
+    padding: 8px 16px;
+    border-radius: 6px 6px 0 0;
+}
+
+
+/* ===== Inner Section Tabs (Summary / Earnings / etc) ===== */
+
+.inner-tabs .ant-tabs-nav {
+    margin-bottom: 0;
+}
+
+.inner-tabs .ant-tabs-tab {
+    padding: 12px 0;
+    margin-right: 32px;
+}
+
+.inner-tabs .ant-tabs-tab-active {
+    color: #24A1DD;
+}
+
+.inner-tabs .ant-tabs-ink-bar {
+    background: #24A1DD;
+}
+
+.pay-stub-tabs .ant-tabs-tab {
+    padding: 11px 10px !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-right: 1px solid #E5E7EB !important;
+    border-radius: 0 !important;
+    color: #030303 !important;
+    /* font-size: 18px !important; */
+    margin: 0 !important;
+    /* font-weight: 400 !important; */
+}
+
+
+/* Innter Tabs scrollable width adjustment style started here */
+
+/* scroll only if needed */
+.inner-tabs .ant-tabs-nav-wrap {
+    overflow-x: auto !important;
+    overflow-y: hidden;
+}
+
+/* keep tabs in one row */
+.inner-tabs .ant-tabs-nav-list {
+    flex-wrap: nowrap !important;
+}
+
+/* each tab constrained */
+.inner-tabs .ant-tabs-tab {
+    max-width: 200px;
+    /* your limit */
+    flex-shrink: 0 !important;
+    height: auto !important;
+}
+
+/* WRAP TAB TEXT */
+.inner-tabs .ant-tabs-tab-btn {
+    white-space: normal !important;
+    word-break: break-word;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* clamp visible lines and show full title on hover */
+.inner-tabs .ant-tabs-tab-btn {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    /* number of lines shown */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Innter Tabs scrollable width adjustment style ending here */
+
 
 /* =======================================
    Figma Design Tokens (SAFE)
@@ -111,6 +222,26 @@ body {
     .text-base-custom {
         color: #1A1A1A;
     }
+
+    .checkbox-primary {
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        border: 1px solid #24A1DD;
+        cursor: pointer;
+    }
+
+    .checkbox-primary:checked {
+        background-color: #24A1DD;
+        border-color: #24A1DD;
+
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='white' d='M6.2 11.3 3.3 8.4l1.4-1.4 1.6 1.6 4-4 1.4 1.4z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+
 
     .text-base-lightest-custom {
         color: #9BA1B0;
@@ -129,7 +260,7 @@ body {
     }
 
     .text-Colors-Text-Base-base {
-        color: #1A1A1A;
+        color: #303030 !important;
     }
 
     .bg-Colors-Surface-Action-action {

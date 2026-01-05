@@ -12,7 +12,7 @@ const authApi = {
         axiosClient.post("/auth/check-email", { email }),
 
     checkCompanyExists: (data) =>
-        axiosClient.post("/auth/check-company", {   
+        axiosClient.post("/auth/check-company", {
             email: data.email,
             name: data.name,
         }),
@@ -32,6 +32,10 @@ const authApi = {
     updateUserRole: (userId, role) => axiosClient.patch(`/admin/update-user-role/${userId}`, { role }),
     deleteUser: (userId) => axiosClient.delete(`/admin/users/${userId}`),
     createCompanyUser: (data) => axiosClient.post('/admin/inser-company-user', data),
+
+    cleanJson: (data) => axiosClient.post("/clean-json", data),
+    checkLoanId: (params) => axiosClient.get("/check-loanid", { params })
+
 };
 
 export default authApi;

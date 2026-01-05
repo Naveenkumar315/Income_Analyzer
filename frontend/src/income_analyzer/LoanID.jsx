@@ -1,14 +1,12 @@
 import { useState, useCallback } from "react";
 import { Form, Input } from "antd";
 import CustomButton from "../components/CustomButton";
-import { useNavigate } from "react-router-dom";
 import toast from "../utils/ToastService";
 
-export default function LoanIdPage() {
+export default function LoanIdPage({ onNext }) {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [isFormValid, setIsFormValid] = useState(false);
-    const navigate = useNavigate();
 
     const onFinish = useCallback(
         async (values) => {
@@ -18,33 +16,29 @@ export default function LoanIdPage() {
                 const loanId = values.loanId?.trim();
                 if (!loanId) return;
 
-                toast.success("Loan ID accepted");
+                // notify parent (IncomeAnalyzerHome)
+                onNext?.(loanId);
+
             } catch (err) {
                 toast.error("Invalid Loan ID");
             } finally {
                 setLoading(false);
             }
         },
-        [navigate]
+        [onNext]
     );
 
-    const handleFieldsChange = () => {
+    const handleFieldsChange = async () => {
         const value = form.getFieldValue("loanId")?.trim() || "";
+
+
         setIsFormValid(value.length > 0);
     };
 
     return (
-        <div
-            className="
-                flex min-h-screen w-full 
-                items-center justify-center 
-                bg-gray-50
-                -translate-y-20
-            "
-        >
-            <div className="relative z-10 w-[360px] rounded-xl  px-8 py-8 ">
+        <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 -translate-y-20">
+            <div className="relative z-10 w-[360px] rounded-xl px-8 py-8">
 
-                {/* heading */}
                 <div className="text-center mb-2">
                     <div className="text-2xl font-bold custom-font-jura leading-8">
                         Income Analyzer

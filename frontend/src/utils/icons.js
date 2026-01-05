@@ -14,6 +14,18 @@ import microsoft from "../assets/Microsoft icon.svg"
 import circleCheck from "../assets/icons/circle-check.svg";
 import circleClose from "../assets/icons/circle-close.svg";
 import deleteIcon from "../assets/icons/delete.svg";
+import upload from "../assets/icons/upload.png";
+import trash2 from "../assets/icons/trash-2.png";
+import file from "../assets/icons/file.png";
+import eye from "../assets/icons/eye.svg";
+import text_search from "../assets/icons/text-search.svg";
+import arrow_right from "../assets/icons/arrow-right.svg";
+import x_close from "../assets/icons/x.svg";
+import move from "../assets/icons/move.svg";
+import merge from "../assets/icons/merge.svg";
+import user_plus from "../assets/icons/user-plus.svg";
+import fileActive from "../assets/icons/file-text-active.svg";
+import fileInactive from "../assets/icons/file-text.svg";
 
 export const Icons = {
     dashboard: {
@@ -47,6 +59,22 @@ export const Icons = {
         circleCheck,
         circleClose,
         deleteIcon,
+    },
+    upload: {
+        trash2,
+        upload,
+        file
+    },
+    loanDocument: {
+        eye,
+        text_search,
+        arrow_right,
+        x_close,
+        move,
+        merge,
+        user_plus,
+        fileActive,
+        fileInactive
     }
 
 };

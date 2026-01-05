@@ -7,7 +7,7 @@ export default function MainLayout() {
     return (
         <div className="min-h-screen bg-slate-50">
             <Header />
-            <main style={{ padding: 24 }}>
+            <main style={{ padding: 14 }}>
                 <Outlet />
             </main>
         </div>
