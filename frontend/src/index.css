@@ -117,6 +117,7 @@ body {
     background-color: #f3f4f6;
 }
 
+
 /* remove default AntD blue highlight */
 .loan-tree .ant-tree-node-selected .ant-tree-node-content-wrapper,
 .loan-tree .ant-tree-treenode-selected .ant-tree-node-content-wrapper {
@@ -208,6 +209,17 @@ body {
 
 /* Innter Tabs scrollable width adjustment style ending here */
 
+.ant-breadcrumb li:last-child {
+    color: inherit !important;
+}
+
+.ant-breadcrumb li:last-child .ant-breadcrumb-link {
+    color: inherit !important;
+}
+
+.borrower-field .ant-form-item {
+    margin-bottom: 0 !important;
+}
 
 /* =======================================
    Figma Design Tokens (SAFE)
@@ -289,5 +301,13 @@ body {
 
     .outline-Colors-Icon-Static-white {
         outline-color: #FFFFFF;
+    }
+
+    .outer-Border {
+        border-color: #E0E0E0;
+    }
+
+    .tab-Border {
+        border-color: #BBBBBB;
     }
 }

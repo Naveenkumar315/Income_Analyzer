@@ -5,9 +5,8 @@ import {
     ArrowLeftOutlined,
     HomeOutlined,
 } from '@ant-design/icons';
-import { ChevronDown, ChevronUp, Folder, FileText, User, UserPlus, Plus, Upload, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Folder, FileText, User, Edit, Trash2, Edit2 } from 'lucide-react';
 import { Tooltip } from "antd";
-
 
 const { Sider, Content } = Layout;
 
@@ -15,9 +14,13 @@ import CustomButton from '../components/CustomButton';
 import { Icons } from '../utils/icons';
 import ReusableDataTable from '../custom_components/ReusableDataTable';
 import { MergeModal, MoveModal } from './SelectionModals';
-import { useLoanDataManagement } from './useLoanDataManagement';
+import { useLoanActions } from './useLoanDataManagement';
+import BorrowerModal from './BorrowerModal';
+import DeleteBorrowerModal from './DeleteBorrowerModal';
+import toast from "../utils/ToastService";
+import RestoreOriginalConfirmModal from './RestoreOriginalConfirmModal';
 
-export default function LoanDocumentScreen({ files }) {
+export default function LoanDocumentScreen({ files, currentStep, setCurrentStep, onStartAnalysis, analyzedData }) {
     const [activeDocumentTab, setActiveDocumentTab] = useState(null);
     const [activeInnerTab, setActiveInnerTab] = useState('summary');
     const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -25,30 +28,39 @@ export default function LoanDocumentScreen({ files }) {
     const [expandedBorrowers, setExpandedBorrowers] = useState([]);
     const [selectedDocument, setSelectedDocument] = useState(null);
     const [activeModal, setActiveModal] = useState(null);
-    const [selectionType, setSelectionType] = useState(null);
+    const [hasModifications, setHasModifications] = useState(false);
+    const [restoreModal, setRestoreModal] = useState(false);
+    const [activeTab, setActiveTab] = useState("modified");
+    const [originalData, setOriginalData] = useState(null);
+    const [borrowerModal, setBorrowerModal] = useState({
+        open: false,
+        mode: "add",
+        borrowerId: null,
+        name: ""
+    });
+    const [deleteModal, setDeleteModal] = useState({
+        open: false,
+        name: ""
+    });
 
-    const {
-        selectedBorrowers,
-        setSelectedBorrowers,
-        handleMerge,
-        selectedFiles,
-        setSelectedFiles,
-        handleMove
-    } = useLoanDataManagement();
+    // State to manage modified data
+    const [modifiedData, setModifiedData] = useState(() => files?.cleaned_data || {});
 
+    const { handleMove, handleMerge, handleAddBorrower, handleDeleteBorrower, handleRenameBorrower, handleViewOriginal, handleRestoreOriginal, isProcessing } = useLoanActions();
 
-
+    // Determine which data to display based on activeTab
+    const displayData = useMemo(() => {
+        return activeTab === "original" ? originalData : modifiedData;
+    }, [activeTab, originalData, modifiedData]);
 
     // Process the cleaned data into structured format
     const processedData = useMemo(() => {
-        if (!files?.cleaned_data) return { borrowers: [], allDocuments: {} };
+        if (!displayData) return { borrowers: [], allDocuments: {} };
 
-        const cleanedData = files.cleaned_data;
         const borrowersMap = {};
         const allDocumentsMap = {};
 
-        // Iterate through the cleaned data structure
-        Object.entries(cleanedData).forEach(([borrowerKey, borrowerData]) => {
+        Object.entries(displayData).forEach(([borrowerKey, borrowerData]) => {
             const borrowerName = borrowerKey;
             const borrowerId = borrowerKey.replace(/\s+/g, '-').toLowerCase();
 
@@ -60,12 +72,10 @@ export default function LoanDocumentScreen({ files }) {
                 };
             }
 
-            // Process document categories for this borrower
             Object.entries(borrowerData).forEach(([categoryKey, categoryData]) => {
                 const categoryName = categoryKey;
 
                 if (Array.isArray(categoryData) && categoryData.length > 0) {
-                    // Add document category to borrower
                     const docId = `${borrowerId}-${categoryKey}`;
                     borrowersMap[borrowerId].documents.push({
                         id: docId,
@@ -78,7 +88,6 @@ export default function LoanDocumentScreen({ files }) {
                         data: categoryData
                     });
 
-                    // Store documents data for rendering
                     categoryData.forEach((record, index) => {
                         const tabKey = `${docId}-${index}`;
                         allDocumentsMap[tabKey] = {
@@ -100,11 +109,11 @@ export default function LoanDocumentScreen({ files }) {
             borrowers: Object.values(borrowersMap),
             allDocuments: allDocumentsMap
         };
-    }, [files]);
+    }, [displayData]);
 
     const { borrowers, allDocuments } = processedData;
 
-    // Set initial states after data is processed
+    // Set initial states
     React.useEffect(() => {
         if (borrowers.length > 0 && !expandedBorrowers.length) {
             setExpandedBorrowers([borrowers[0].id]);
@@ -116,7 +125,7 @@ export default function LoanDocumentScreen({ files }) {
         }
     }, [borrowers, allDocuments]);
 
-    // Generate document tabs dynamically
+    // Document tabs
     const documentTabs = useMemo(() => {
         if (!selectedDocument || !selectedDocument.data) return [];
 
@@ -137,18 +146,17 @@ export default function LoanDocumentScreen({ files }) {
         }));
     }, [selectedDocument, activeDocumentTab]);
 
-    // Get current document data
+    // Current document data
     const currentDocumentData = useMemo(() => {
         if (!activeDocumentTab || !allDocuments[activeDocumentTab]) return null;
         return allDocuments[activeDocumentTab];
     }, [activeDocumentTab, allDocuments]);
 
-    // Helper function to check if value is an array
     const isArrayData = (value) => {
         return Array.isArray(value) && value.length > 0 && typeof value[0] === 'object';
     };
 
-    // Extract summary data (non-array fields) and nested array keys
+    // Summary and nested data
     const { summaryData, nestedArrayKeys } = useMemo(() => {
         if (!currentDocumentData) return { summaryData: [], nestedArrayKeys: [] };
 
@@ -161,14 +169,12 @@ export default function LoanDocumentScreen({ files }) {
                 key !== 'borrowerName' && key !== 'categoryName') {
 
                 if (isArrayData(value)) {
-                    // Store array field keys for dynamic tabs
                     arrayKeys.push({
                         key: key,
                         label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                         data: value
                     });
                 } else {
-                    // Regular summary fields
                     const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                     details.push({
                         label,
@@ -181,7 +187,6 @@ export default function LoanDocumentScreen({ files }) {
         return { summaryData: details, nestedArrayKeys: arrayKeys };
     }, [currentDocumentData]);
 
-    // Generate inner tabs dynamically based on data
     const innerTabs = useMemo(() => {
         const tabs = [
             { key: 'summary', label: <span title="Summary">Summary</span> }
@@ -190,22 +195,15 @@ export default function LoanDocumentScreen({ files }) {
         nestedArrayKeys.forEach(item => {
             tabs.push({
                 key: item.key,
-                label: (
-                    <span title={item.label}>
-                        {item.label}
-                    </span>
-                )
+                label: <span title={item.label}>{item.label}</span>
             });
         });
 
         return tabs;
     }, [nestedArrayKeys]);
 
-
-    // Get data for active nested array tab
     const activeNestedData = useMemo(() => {
         if (activeInnerTab === 'summary') return null;
-
         const arrayItem = nestedArrayKeys.find(item => item.key === activeInnerTab);
         return arrayItem ? arrayItem.data : null;
     }, [activeInnerTab, nestedArrayKeys]);
@@ -214,11 +212,9 @@ export default function LoanDocumentScreen({ files }) {
         if (!activeNestedData || activeNestedData.length === 0) return [];
 
         return Object.keys(activeNestedData[0]).map((key) => ({
-            headerName: key
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, (l) => l.toUpperCase()),
+            headerName: key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
             field: key,
-            width: 200, // ← Set minimum width instead of flex
+            width: 200,
             valueGetter: (p) => {
                 const v = p.data?.[key];
                 return typeof v === "object" ? JSON.stringify(v) : v ?? "N/A";
@@ -226,15 +222,13 @@ export default function LoanDocumentScreen({ files }) {
         }));
     }, [activeNestedData]);
 
-    // Add this right before the return statement in LoanDocumentScreen
     const nestedDataWithIds = useMemo(() => {
         if (!activeNestedData) return [];
         return activeNestedData.map((item, index) => ({
             ...item,
-            id: `${activeInnerTab}-${index}` // Add unique ID
+            id: `${activeInnerTab}-${index}`
         }));
     }, [activeNestedData, activeInnerTab]);
-
 
     const toggleBorrower = (id) => {
         setExpandedBorrowers(prev =>
@@ -275,7 +269,6 @@ export default function LoanDocumentScreen({ files }) {
         };
     }, [selectedItems, borrowers]);
 
-    // borrower id list (for merge)
     const selectedBorrowerIds = useMemo(
         () => selectedItems.filter(id =>
             borrowers.some(b => b.id === id)
@@ -283,7 +276,6 @@ export default function LoanDocumentScreen({ files }) {
         [selectedItems, borrowers]
     );
 
-    // borrowers involved in selected document categories (for move)
     const selectedBorrowerNamesForMove = useMemo(() => {
         const names = [];
         borrowers.forEach(b => {
@@ -296,8 +288,120 @@ export default function LoanDocumentScreen({ files }) {
         return new Set(names);
     }, [selectedItems, borrowers]);
 
+    // Handle move operation
+    const onMoveConfirm = async (targetBorrower) => {
+        const result = await handleMove(
+            targetBorrower.name,
+            modifiedData,
+            selectedItems,
+            borrowers
+        );
 
+        if (result.success) {
+            setModifiedData(result.updatedData);
+            setHasModifications(true);
+            toast.success("Documents moved successfully");
+            setActiveModal(null);
+            setIsSelectionMode(false);
+            setSelectedItems([]);
 
+            if (selectedDocument && selectedItems.includes(selectedDocument.id)) {
+                setSelectedDocument(null);
+                setActiveDocumentTab(null);
+            }
+        }
+    };
+
+    const onMergeConfirm = async (targetBorrower) => {
+        const result = await handleMerge(
+            targetBorrower.name,
+            modifiedData,
+            selectedItems,
+            borrowers
+        );
+
+        if (result.success) {
+            setModifiedData(result.updatedData);
+            setHasModifications(true);
+            toast.success("Borrowers merged successfully");
+            setActiveModal(null);
+            setIsSelectionMode(false);
+            setSelectedItems([]);
+        }
+    };
+
+    const handleBorrowerSubmit = async (name) => {
+        if (borrowerModal.mode === "add") {
+            const result = await handleAddBorrower(name.trim(), modifiedData);
+
+            if (result.success) {
+                setModifiedData(result.updatedData);
+                setHasModifications(true);
+                toast.success("Borrower added successfully");
+            }
+        }
+
+        if (borrowerModal.mode === "edit") {
+            const result = await handleRenameBorrower(
+                borrowerModal.name,
+                name.trim(),
+                modifiedData
+            );
+
+            if (result.success) {
+                setModifiedData(result.updatedData);
+                setHasModifications(true);
+                toast.success("Borrower renamed successfully");
+            }
+        }
+
+        setBorrowerModal({ open: false, mode: "", borrowerId: null, name: "" });
+    };
+
+    const handleBackToOriginal = async () => {
+        debugger
+        const result = await handleViewOriginal();
+
+        if (result.success) {
+            setOriginalData(result.data);
+            setActiveTab("original");
+            setSelectedDocument(null);
+            setActiveDocumentTab(null);
+            toast.success("Viewing original data");
+        }
+    };
+
+    const handleBackToModified = () => {
+        setActiveTab("modified");
+        setSelectedDocument(null);
+        setActiveDocumentTab(null);
+        toast.info("Back to modified data");
+    };
+
+    const onRestoreOriginalConfirm = async () => {
+        debugger
+        const result = await handleRestoreOriginal();
+
+        if (result.success) {
+            setModifiedData(result.data);
+            setActiveTab("modified");
+            setHasModifications(false);
+
+            toast.success("Restored to original data");
+        }
+
+        setRestoreModal(false);
+    };
+
+    // const handleStartAnalysing = () => {
+    //     setCurrentStep(5)
+    // }
+
+    const handleStartAnalysing = () => {
+        if (onStartAnalysis) {
+            onStartAnalysis();
+        }
+    }
 
 
     return (
@@ -308,71 +412,69 @@ export default function LoanDocumentScreen({ files }) {
                         type="text"
                         icon={<ArrowLeftOutlined />}
                         className="text-Colors-Text-Primary-primary hover:text-teal-700 font-medium"
+                        onClick={() => {
+                            setCurrentStep(1)
+                        }}
                     >
                         Back
                     </Button>
                     <span className='border-l border-gray-300 h-6'></span>
                     <Breadcrumb
                         separator="›"
+                        className="text-sm"
                         items={[
                             {
                                 title: <HomeOutlined />,
                             },
                             {
-                                title: 'Loan ID: LN-20250915-001',
+                                title: 'Loan ID',
                             },
                             {
                                 title: 'Upload & Extract Files',
+                                className: ` ${currentStep === 4 ? 'text-gray-800 font-medium' : ''}`
                             },
                             {
-                                title: <span className="text-gray-800 font-medium">Analysis Results</span>,
-                            },
+                                title: 'Analysis Results',
+                            }
                         ]}
-                        className="text-sm"
                     />
                 </div>
-                <div className="flex gap-3">
-                    <div>
-                        <CustomButton
-                            variant={"outline"}
-                            type="button"
-                            className={`!w-[150px]`}
-                        >
-                            <img
-                                src={Icons.loanDocument.eye}
-                                alt=""
-                                className="w-4 h-4"
-                            />
-                            View Results
-                        </CustomButton>
-                    </div>
-                    <div>
-                        <CustomButton
-                            variant={"primary"}
-                            type="button"
-                        >
-                            <img
-                                src={Icons.loanDocument.text_search}
-                                alt=""
-                                className="w-4 h-4"
-                            />
-                            Start Analysing
-                        </CustomButton>
-                    </div>
+                <div className="flex gap-3 w-[300px]">
+                    <CustomButton
+                        variant="outline"
+                        type="button"
+                        disabled={!analyzedData || Object.keys(analyzedData).length === 0}
+                        className={`${!analyzedData || Object.keys(analyzedData).length === 0
+                                ? "cursor-not-allowed opacity-50"
+                                : "cursor-pointer"
+                            }`}
+                        onClick={() => {
+                            if (!files?.cleaned_data || Object.keys(files.cleaned_data).length === 0) {
+                                toast.warning("No analysis results available");
+                                return;
+                            }
+                            setCurrentStep(5);
+                        }}
+                    >
+                        <img src={Icons.loanDocument.eye} alt="" className="w-4 h-4" />
+                        View Results
+                    </CustomButton>
+
+                    <CustomButton onClick={handleStartAnalysing} variant={"primary"} type="button">
+                        <img src={Icons.loanDocument.text_search} alt="" className="w-4 h-4" />
+                        Start Analysing
+                    </CustomButton>
                 </div>
             </div>
 
             <div className="h-screen flex flex-col">
-                {/* Main Layout */}
                 <Layout className="flex-1 gap-2 bg-[#F7F7F7]">
-                    {/* Left Sidebar */}
                     <Sider
                         width={330}
                         className="bg-[#F7F7F7] border-r border-gray-200 mt-2 rounded-2xl border"
                         style={{ height: 'calc(90dvh - 60px)', overflow: 'hidden', background: "#F5F7FB" }}
                     >
                         <div className="h-full flex flex-col">
-                            {/* Sidebar Header */}
                             <div className="p-4 border-b border-gray-200 bg-white">
                                 <div className="flex items-center justify-between">
                                     {isSelectionMode ? (
@@ -381,21 +483,20 @@ export default function LoanDocumentScreen({ files }) {
                                                 {selectedItems.length} Selected
                                             </span>
                                             <div className="flex items-center gap-2">
-
                                                 <Tooltip title="Move selected documents">
                                                     <button
-                                                        disabled={!selectionInfo.hasDocument}
-                                                        className={`p-1.5 rounded hover:bg-gray-100 ${!selectionInfo.hasDocument ? "opacity-40 cursor-not-allowed" : ""}`}
+                                                        disabled={!selectionInfo.hasDocument || isProcessing}
+                                                        className={`p-1.5 rounded hover:bg-gray-100 ${!selectionInfo.hasDocument || isProcessing ? "opacity-40 cursor-not-allowed" : ""}`}
                                                         onClick={() => setActiveModal("move")}
                                                     >
-                                                        <img src={Icons.loanDocument.move} alt="" />
+                                                        <img src={(!selectionInfo.hasDocument || isProcessing) ? Icons.loanDocument.move : Icons.loanDocument.move_active_income} alt="" />
                                                     </button>
                                                 </Tooltip>
 
                                                 <Tooltip title="Merge selected borrowers">
                                                     <button
-                                                        disabled={!selectionInfo.hasBorrower}
-                                                        className={`p-1.5 rounded hover:bg-gray-100 ${!selectionInfo.hasBorrower ? "opacity-40 cursor-not-allowed" : ""}`}
+                                                        disabled={!selectionInfo.hasBorrower || isProcessing}
+                                                        className={`p-1.5 rounded hover:bg-gray-100 ${!selectionInfo.hasBorrower || isProcessing ? "opacity-40 cursor-not-allowed" : ""}`}
                                                         onClick={() => setActiveModal("merge")}
                                                     >
                                                         <img src={Icons.loanDocument.merge} alt="" />
@@ -404,73 +505,142 @@ export default function LoanDocumentScreen({ files }) {
 
                                                 <Tooltip title="Clear selection">
                                                     <button
-                                                        onClick={() => {
-                                                            exitSelectionMode();
-                                                            setSelectionType(null);
-                                                        }}
+                                                        onClick={exitSelectionMode}
                                                         className="p-1.5 hover:bg-gray-100 rounded"
+                                                        disabled={isProcessing}
                                                     >
                                                         <img src={Icons.loanDocument.x_close} alt="" />
                                                     </button>
                                                 </Tooltip>
-
                                             </div>
-
                                         </>
                                     ) : (
                                         <>
                                             <h2 className="text-base font-medium text-gray-900 custom-font-jura">
-                                                Loan Package
+                                                {activeTab === "original" ? "Original Package" : "Loan Package"}
                                             </h2>
-                                            <button
-                                                onClick={() => setIsSelectionMode(true)}
-                                                className="text-sm text-Colors-Text-Primary-primary hover:[#24A1DD] font-medium"
-                                            >
-                                                Select
-                                            </button>
+                                            <div className='flex gap-3 items-center'>
+                                                {activeTab === "modified" && hasModifications && (
+                                                    <Tooltip title="View original data">
+                                                        <img
+                                                            onClick={handleBackToOriginal}
+                                                            src={Icons.loanDocument.database_backup}
+                                                            alt="View original"
+                                                            className='cursor-pointer w-5 h-5'
+                                                        />
+                                                    </Tooltip>
+                                                )}
+                                                {activeTab === "original" && (
+                                                    <div className="flex items-center gap-2">
+                                                        {/* Back to Modified */}
+                                                        <Tooltip title="Restore original data">
+                                                            <img
+                                                                src={Icons.loanDocument.database_backup_active}
+                                                                onClick={() => {
+                                                                    setRestoreModal(true)
+                                                                }}
+                                                                className="w-5 h-5 cursor-pointer hover:opacity-80"
+                                                                alt="Back to Modified"
+                                                            />
+                                                        </Tooltip>
+
+                                                        {/* Close Original View */}
+                                                        <Tooltip title="Close">
+                                                            <img
+                                                                src={Icons.loanDocument.x_close}
+                                                                onClick={handleBackToModified}
+                                                                className="w-4 h-4 cursor-pointer hover:opacity-80"
+                                                                alt="Close"
+                                                            />
+                                                        </Tooltip>
+                                                    </div>
+
+                                                )}
+                                                {activeTab === "modified" && (
+                                                    <button
+                                                        onClick={() => setIsSelectionMode(true)}
+                                                        className="text-sm text-Colors-Text-Primary-primary hover:text-[#24A1DD] font-medium cursor-pointer"
+                                                    >
+                                                        Select
+                                                    </button>
+                                                )}
+                                            </div>
                                         </>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Borrowers List */}
                             <div className="flex-1 overflow-y-auto">
-                                <div className="">
-                                    {borrowers.length === 0 ? (
-                                        <div className="p-4 text-center text-gray-500">
-                                            No borrower data available
-                                        </div>
-                                    ) : (
-                                        borrowers.map((borrower) => {
-                                            const isExpanded = expandedBorrowers.includes(borrower.id);
-                                            const hasDocuments = borrower.documents.length > 0;
+                                {borrowers.length === 0 ? (
+                                    <div className="p-4 text-center text-gray-500">
+                                        No borrower data available
+                                    </div>
+                                ) : (
+                                    borrowers.map((borrower) => {
+                                        const isExpanded = expandedBorrowers.includes(borrower.id);
+                                        const hasDocuments = borrower.documents.length > 0;
+                                        const isReadOnly = activeTab === "original";
 
-                                            return (
-                                                <div key={borrower.id} className="border-b border-gray-200 ">
-                                                    {/* Borrower Row */}
-                                                    <button
+                                        return (
+                                            <div key={borrower.id} className="border-b border-gray-200">
+                                                <div className="w-full flex items-center justify-between p-3 bg-white transition-colors group">
+                                                    <div
                                                         onClick={() => hasDocuments && toggleBorrower(borrower.id)}
-                                                        className="w-full flex items-center justify-between p-3 bg-white   transition-colors"
+                                                        className="flex items-center gap-3 flex-1 cursor-pointer"
                                                     >
-                                                        <div className="flex items-center gap-3">
-                                                            {isSelectionMode && (
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={selectedItems.includes(borrower.id)}
-                                                                    onChange={(e) => {
+                                                        {isSelectionMode && !isReadOnly && (
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedItems.includes(borrower.id)}
+                                                                onChange={(e) => {
+                                                                    e.stopPropagation();
+                                                                    toggleItemSelection(borrower.id);
+                                                                }}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                                className="w-4 h-4 rounded border-gray-300 checkbox-primary"
+                                                            />
+                                                        )}
+                                                        <User className="w-4 h-4 text-[#4D4D4D]" />
+                                                        <span className="text-sm font-medium text-Colors-Text-Primary-primary">
+                                                            {borrower.name}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2">
+                                                        {!isReadOnly && (
+                                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <button
+                                                                    onClick={(e) => {
                                                                         e.stopPropagation();
-                                                                        setSelectionType("borrower");
-                                                                        toggleItemSelection(borrower.id);
+                                                                        setBorrowerModal({
+                                                                            open: true,
+                                                                            mode: "edit",
+                                                                            borrowerId: borrower.id,
+                                                                            name: borrower.name
+                                                                        });
                                                                     }}
-                                                                    onClick={(e) => e.stopPropagation()}
-                                                                    className="w-4 h-4 rounded border-gray-300 checkbox-primary"
-                                                                />
-                                                            )}
-                                                            <User className="w-4 h-4 text-[#4D4D4D]" />
-                                                            <span className="text-sm font-medium text-Colors-Text-Primary-primary">
-                                                                {borrower.name}
-                                                            </span>
-                                                        </div>
+                                                                    className="p-1 hover:bg-gray-100 rounded"
+                                                                    title="Edit"
+                                                                >
+                                                                    <Edit className="w-4 h-4 text-gray-600" />
+                                                                </button>
+
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setDeleteModal({
+                                                                            open: true,
+                                                                            name: borrower.name
+                                                                        });
+                                                                    }}
+                                                                    className="p-1 hover:bg-gray-100 rounded"
+                                                                    title="Delete"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4 text-red-600" />
+                                                                </button>
+                                                            </div>
+                                                        )}
+
                                                         {hasDocuments && (
                                                             isExpanded ? (
                                                                 <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -478,107 +648,76 @@ export default function LoanDocumentScreen({ files }) {
                                                                 <ChevronDown className="w-4 h-4 text-gray-400" />
                                                             )
                                                         )}
-                                                    </button>
-
-                                                    {/* Documents */}
-                                                    {isExpanded && hasDocuments && (
-                                                        <div className="pb-2 space-y-1">
-                                                            {borrower.documents.map((doc) => (
-                                                                <div
-                                                                    key={doc.id}
-                                                                    onClick={() => handleDocumentClick(doc)}
-                                                                    className={`pl-4 flex items-center justify-between p-2.5 hover:bg-[#E2EFF5] cursor-pointer group ${selectedDocument?.id === doc.id ? 'bg-[#E2EFF5]' : ''
-                                                                        }`}
-                                                                >
-                                                                    <div className="flex items-center gap-2.5">
-                                                                        {isSelectionMode && (
-                                                                            <input
-                                                                                type="checkbox"
-                                                                                checked={selectedFiles.some(
-                                                                                    f =>
-                                                                                        f.borrower === borrower.name &&
-                                                                                        f.category === doc.name
-                                                                                )}
-                                                                                onChange={(e) => {
-                                                                                    e.stopPropagation();
-
-                                                                                    if (e.target.checked) {
-                                                                                        // ADD FILE SELECTION
-                                                                                        setSelectedFiles(prev => [
-                                                                                            ...prev,
-                                                                                            {
-                                                                                                borrower: borrower.name,
-                                                                                                category: doc.name,
-                                                                                                docs: doc.data,
-                                                                                            },
-                                                                                        ]);
-                                                                                    } else {
-                                                                                        // REMOVE FILE SELECTION
-                                                                                        setSelectedFiles(prev =>
-                                                                                            prev.filter(
-                                                                                                f =>
-                                                                                                    !(
-                                                                                                        f.borrower === borrower.name &&
-                                                                                                        f.category === doc.name
-                                                                                                    )
-                                                                                            )
-                                                                                        );
-                                                                                    }
-
-                                                                                    // still keep your generic selection status
-                                                                                    setSelectionType("document");
-                                                                                    toggleItemSelection(doc.id);
-                                                                                }}
-                                                                                onClick={(e) => e.stopPropagation()}
-                                                                                className="w-4 h-4 rounded border-gray-300 checkbox-primary"
-                                                                            />
-                                                                        )}
-
-                                                                        {doc.type === 'folder' ? (
-                                                                            <Folder className="w-4 h-4 text-[#4D4D4D]" />
-                                                                        ) : (
-                                                                            <FileText className="w-4 h-4 text-[#4D4D4D]" />
-                                                                        )}
-                                                                        <span className="text-sm text-gray-700">{doc.name}</span>
-                                                                        <span className="px-2 py-0.5 bg-[#E0E0E0] text-gray-600 text-xs rounded-2xl">
-                                                                            {doc.count}
-                                                                        </span>
-                                                                    </div>
-                                                                    {(
-                                                                        <span className=" opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                            <img src={Icons.loanDocument.arrow_right} alt="" />
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
+                                                    </div>
                                                 </div>
-                                            );
-                                        })
-                                    )}
-                                </div>
+
+                                                {isExpanded && hasDocuments && (
+                                                    <div className="pb-2 space-y-1">
+                                                        {borrower.documents.map((doc) => (
+                                                            <div
+                                                                key={doc.id}
+                                                                onClick={() => handleDocumentClick(doc)}
+                                                                className={`pl-4 flex items-center justify-between p-2.5 hover:bg-[#E2EFF5] cursor-pointer group ${selectedDocument?.id === doc.id ? 'bg-[#E2EFF5]' : ''}`}
+                                                            >
+                                                                <div className="flex items-center gap-2.5">
+                                                                    {isSelectionMode && !isReadOnly && (
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={selectedItems.includes(doc.id)}
+                                                                            onChange={(e) => {
+                                                                                e.stopPropagation();
+                                                                                toggleItemSelection(doc.id);
+                                                                            }}
+                                                                            onClick={(e) => e.stopPropagation()}
+                                                                            className="w-4 h-4 rounded border-gray-300 checkbox-primary"
+                                                                        />
+                                                                    )}
+                                                                    {doc.type === 'folder' ? (
+                                                                        <Folder className="w-4 h-4 text-[#4D4D4D]" />
+                                                                    ) : (
+                                                                        <FileText className="w-4 h-4 text-[#4D4D4D]" />
+                                                                    )}
+                                                                    <span className="text-sm text-gray-700">{doc.name}</span>
+                                                                    <span className="px-2 py-0.5 bg-[#E0E0E0] text-gray-600 text-xs rounded-2xl">
+                                                                        {doc.count}
+                                                                    </span>
+                                                                </div>
+                                                                <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <img src={Icons.loanDocument.arrow_right} alt="" />
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
 
-                            {/* Add Borrower Button */}
-                            <div className="p-4 border-t border-gray-200 bg-white">
-                                <CustomButton
-                                    variant={"outline"}
-                                    type="button"
-                                >
-                                    <img
-                                        src={Icons.loanDocument.user_plus}
-                                        alt=""
-                                        className="w-4 h-4"
-                                    />
-                                    Add Borrower
-                                </CustomButton>
-                            </div>
+                            {activeTab === "modified" && (
+                                <div className="p-4 border-t border-gray-200 bg-white">
+                                    <CustomButton
+                                        variant="outline"
+                                        type="button"
+                                        onClick={() =>
+                                            setBorrowerModal({
+                                                open: true,
+                                                mode: "add",
+                                                borrowerId: null,
+                                                name: ""
+                                            })
+                                        }
+                                    >
+                                        <img src={Icons.loanDocument.user_plus} className="w-4 h-4" />
+                                        Add Borrower
+                                    </CustomButton>
+                                </div>
+                            )}
                         </div>
                     </Sider>
 
-                    {/* Main Content Area */}
-                    <Content className="bg-white rounded-lg mt-2 p-5" >
+                    <Content className="bg-white rounded-lg mt-2 p-5">
                         <div className="bg-white rounded-lg border border-gray-200 overflow-auto" style={{ height: 'calc(100vh - 120px)' }}>
                             {!selectedDocument ? (
                                 <div className="h-full flex items-center justify-center text-gray-500">
@@ -605,14 +744,12 @@ export default function LoanDocumentScreen({ files }) {
                                                 className="inner-tabs"
                                                 style={{ marginBottom: 0 }}
                                                 type="line"
-
                                             />
                                         </div>
                                     </div>
 
                                     <div className='p-3 mt-1' style={{ maxHeight: 'calc(100vh - 250px)', overflowY: 'auto' }}>
                                         {activeInnerTab === 'summary' ? (
-                                            // Summary Tab - Show only non-array fields
                                             <div className="px-6 py-6 bg-gray-50 border-t border-gray-200">
                                                 <div className="grid grid-cols-2 gap-x-12 gap-y-3">
                                                     {summaryData.map((item, idx) => (
@@ -624,7 +761,6 @@ export default function LoanDocumentScreen({ files }) {
                                                 </div>
                                             </div>
                                         ) : (
-                                            // Nested Array Tabs - Show table for the selected array
                                             <div className="mt-2">
                                                 {nestedDataWithIds && nestedDataWithIds.length > 0 ? (
                                                     <ReusableDataTable
@@ -643,11 +779,8 @@ export default function LoanDocumentScreen({ files }) {
                                                     </div>
                                                 )}
                                             </div>
-
                                         )}
 
-                                        {/* Summary section at the bottom ONLY for non-nested tabs */}
-                                        {/* hides automatically when nested table exists */}
                                         {activeInnerTab !== 'summary' &&
                                             (!activeNestedData || activeNestedData.length === 0) &&
                                             summaryData.length > 0 && (
@@ -663,7 +796,6 @@ export default function LoanDocumentScreen({ files }) {
                                                 </div>
                                             )}
                                     </div>
-
                                 </>
                             )}
                         </div>
@@ -674,28 +806,51 @@ export default function LoanDocumentScreen({ files }) {
             <MergeModal
                 open={activeModal === "merge"}
                 onCancel={() => setActiveModal(null)}
-                items={borrowers.filter(
-                    b => !selectedBorrowerIds.includes(b.id)
-                )}
-                onMerge={(target) => {
-                    console.log("merge into", target);
-                    handleMerge(target);
-                    setActiveModal(null);
-                }}
+                items={borrowers.filter(b => !selectedBorrowerIds.includes(b.id))}
+                fromName={selectedBorrowerIds}
+                onMerge={onMergeConfirm}
             />
 
             <MoveModal
                 open={activeModal === "move"}
                 onCancel={() => setActiveModal(null)}
-                items={borrowers.filter(
-                    b => !selectedBorrowerNamesForMove.has(b.name)
-                )}
-                onMove={async (target) => {
-                    await handleMove(target.name);   // ← REAL MOVE ACTION
-                    setActiveModal(null);
-                    setIsSelectionMode(false);
-                    setSelectedItems([]);
+                items={borrowers.filter(b => !selectedBorrowerNamesForMove.has(b.name))}
+                onMove={onMoveConfirm}
+                loading={isProcessing}
+            />
+
+            <BorrowerModal
+                open={borrowerModal.open}
+                mode={borrowerModal.mode}
+                initialName={borrowerModal.name}
+                onCancel={() => setBorrowerModal({ ...borrowerModal, open: false })}
+                onSubmit={handleBorrowerSubmit}
+            />
+
+            <DeleteBorrowerModal
+                open={deleteModal.open}
+                borrowerName={deleteModal.name}
+                onCancel={() => setDeleteModal({ open: false, name: "" })}
+                onConfirm={async () => {
+                    const result = await handleDeleteBorrower(
+                        deleteModal.name,
+                        modifiedData
+                    );
+
+                    if (result.success) {
+                        setModifiedData(result.updatedData);
+                        setHasModifications(true);
+                    }
+
+                    setDeleteModal({ open: false, name: "" });
                 }}
+            />
+
+            <RestoreOriginalConfirmModal
+                open={restoreModal}
+                loading={isProcessing}
+                onCancel={() => setRestoreModal(false)}
+                onConfirm={onRestoreOriginalConfirm}
             />
 
         </>

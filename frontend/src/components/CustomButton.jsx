@@ -14,13 +14,13 @@ export default function CustomButton({
     inline-flex items-center justify-center
     rounded-lg
     !font-creato custom-font-creato text-base leading-4
-    transition-all duration-150 cursor-pointer
+    transition-all duration-150 
   `;
 
     const variantClasses = {
         primary: `
       bg-Colors-Surface-Action-action
-      text-Colors-Text-Static-white
+      text-Colors-Text-Static-white cursor-pointer
     `,
         disabled: `
       bg-Colors-Surface-Action-action-disabled
@@ -30,7 +30,7 @@ export default function CustomButton({
         outline: `
       bg-transparent
       outline outline-1 outline-Colors-Border-Action-action
-      text-Colors-Text-Base-base
+      text-Colors-Text-Base-base cursor-pointer
     `,
         link: `
       bg-transparent

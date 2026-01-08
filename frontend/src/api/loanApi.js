@@ -16,6 +16,15 @@ const loanApi = {
 
     // ========== BORROWER OPERATIONS ==========
 
+    restoreOriginalData: async () => {
+        return await axiosClient.post("/restore-original-cleaned-data", {
+            email: sessionStorage.getItem("user_email") || "",
+            loanID: sessionStorage.getItem("loanId") || "",
+            username: sessionStorage.getItem("user_name") || ""
+        });
+    },
+
+
     /**
      * Add a new borrower
      * @param {Object} params
@@ -24,9 +33,9 @@ const loanApi = {
      */
     addBorrower: ({ raw_json, borrowerName }) =>
         axiosClient.post("/update-cleaned-data", {
-            email: sessionStorage.getItem("email") || "",
+            email: sessionStorage.getItem("user_email") || "",
             loanID: sessionStorage.getItem("loanId") || "",
-            username: sessionStorage.getItem("username") || "",
+            username: sessionStorage.getItem("user_name") || "",
             action: "add_borrower",
             borrowerName,
             raw_json,
@@ -42,9 +51,9 @@ const loanApi = {
      */
     renameBorrower: ({ raw_json, oldName, newName }) =>
         axiosClient.post("/update-cleaned-data", {
-            email: sessionStorage.getItem("email") || "",
+            email: sessionStorage.getItem("user_email") || "",
             loanID: sessionStorage.getItem("loanId") || "",
-            username: sessionStorage.getItem("username") || "",
+            username: sessionStorage.getItem("user_name") || "",
             action: "rename_borrower",
             oldName,
             newName,
@@ -60,9 +69,9 @@ const loanApi = {
      */
     deleteBorrower: ({ raw_json, borrowerName }) =>
         axiosClient.post("/update-cleaned-data", {
-            email: sessionStorage.getItem("email") || "",
+            email: sessionStorage.getItem("user_email") || "",
             loanID: sessionStorage.getItem("loanId") || "",
-            username: sessionStorage.getItem("username") || "",
+            username: sessionStorage.getItem("user_name") || "",
             action: "delete_borrower",
             borrowerName,
             raw_json,
@@ -80,9 +89,9 @@ const loanApi = {
      */
     mergeBorrowers: ({ raw_json, sourceBorrowers, targetBorrower }) =>
         axiosClient.post("/update-cleaned-data", {
-            email: sessionStorage.getItem("email") || "",
+            email: sessionStorage.getItem("user_email") || "",
             loanID: sessionStorage.getItem("loanId") || "",
-            username: sessionStorage.getItem("username") || "",
+            username: sessionStorage.getItem("user_name") || "",
             action: "folder_merge",
             sourceBorrowers,
             targetBorrower,
@@ -104,9 +113,9 @@ const loanApi = {
      */
     moveDocuments: ({ raw_json, toBorrower, selectedFiles }) =>
         axiosClient.post("/update-cleaned-data", {
-            email: sessionStorage.getItem("email") || "",
+            email: sessionStorage.getItem("user_email") || "",
             loanID: sessionStorage.getItem("loanId") || "",
-            username: sessionStorage.getItem("username") || "",
+            username: sessionStorage.getItem("user_name") || "",
             action: "file_merge",
             toBorrower,
             selectedFiles,

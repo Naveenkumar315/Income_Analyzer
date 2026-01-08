@@ -1,349 +1,397 @@
-import { useState, useEffect, useCallback } from "react";
-import { useUpload } from "../../context/UploadContext";
-import loanApi from "../../api/loanApi";
-import { toast } from "react-toastify";
+// useLoanDataManagement.js
+import { useCallback, useState } from 'react';
+import loanApi from '../api/loanApi';
+import { toast } from 'react-toastify';
 
-export const useLoanDataManagement = () => {
-    const {
-        normalized_json,
-        set_normalized_json,
-        setBorrowerList,
-        set_filter_borrower,
-        hasModifications,
-        setHasModifications,
-    } = useUpload();
+export const useLoanActions = () => {
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    const [originalData, setOriginalData] = useState({});
-    const [modifiedData, setModifiedData] = useState({});
-    const [activeTab, setActiveTab] = useState("modified");
-
-    const [selectedBorrower, setSelectedBorrower] = useState(null);
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [openBorrowers, setOpenBorrowers] = useState({});
-
-    const [selectMode, setSelectMode] = useState(false);
-    const [selectedBorrowers, setSelectedBorrowers] = useState([]);
-    const [selectedFiles, setSelectedFiles] = useState([]);
-
-    const [editingBorrower, setEditingBorrower] = useState(null);
-    const [editingName, setEditingName] = useState("");
-
-    // ---------------- INIT ON JSON CHANGE ----------------
-    useEffect(() => {
-        if (normalized_json) {
-            const snapshot = JSON.parse(JSON.stringify(normalized_json));
-            setOriginalData(snapshot);
-            setModifiedData(snapshot);
-        }
-    }, [normalized_json]);
-
-    const currentData = activeTab === "original" ? originalData : modifiedData;
-    const borrowers = currentData ? Object.keys(currentData) : [];
-
-    // ---------------- UPDATE CONTEXT LIST ----------------
-    useEffect(() => {
-        if (activeTab === "modified") {
-            const list = Object.keys(modifiedData || {});
-            setBorrowerList(list);
-
-            if (!selectedBorrower && list.length > 0) {
-                set_filter_borrower(list[0]);
+    /**
+     * Handles moving document categories from selected borrowers to target borrower
+     * @param {string} toBorrower - Target borrower name
+     * @param {Object} currentData - Current modified JSON data
+     * @param {Array} selectedItems - Array of selected document IDs
+     * @param {Array} borrowers - Array of all borrowers with their documents
+     * @returns {Object} { success: boolean, updatedData: Object }
+     */
+    const handleMove = useCallback(
+        async (toBorrower, currentData, selectedItems, borrowers) => {
+            if (!toBorrower || selectedItems.length === 0) {
+                toast.error("Please select items to move");
+                return { success: false, updatedData: null };
             }
-        }
-    }, [activeTab, modifiedData, selectedBorrower, setBorrowerList, set_filter_borrower]);
 
-    // ---------------- CORE PERSIST HELPER ----------------
-    const persistAndSetModified = useCallback(async (updatedJson, actionTag, successMsg) => {
-        try {
-            const res = await loanApi.updateCleanedData({
-                email: sessionStorage.getItem("email") || "",
-                loanID: sessionStorage.getItem("loanId") || "",
-                username: sessionStorage.getItem("username") || "",
-                action: actionTag,
-                raw_json: updatedJson,
-                hasModifications: true,
-            });
+            setIsProcessing(true);
 
-            const cleanedJson = res?.data?.cleaned_json || updatedJson;
+            try {
+                // Deep clone the current data to avoid mutations
+                const movedData = JSON.parse(JSON.stringify(currentData));
 
-            setModifiedData(cleanedJson);
-            set_normalized_json(cleanedJson);
-            setHasModifications(true);
-            setActiveTab("modified");
+                // Build selectedFiles array from selectedItems
+                const selectedFiles = [];
 
-            if (successMsg) toast.success(successMsg);
+                borrowers.forEach(borrower => {
+                    borrower.documents.forEach(doc => {
+                        if (selectedItems.includes(doc.id)) {
+                            selectedFiles.push({
+                                borrower: doc.borrowerName,
+                                category: doc.categoryKey,
+                                docs: doc.data
+                            });
+                        }
+                    });
+                });
 
-            return { success: true, data: cleanedJson };
-        } catch (err) {
-            console.error("Persist error:", err);
-            toast.error(err?.response?.data?.message || "Operation failed. Please try again.");
-            return { success: false, error: err };
-        }
-    }, [set_normalized_json, setHasModifications]);
-
-    // ---------------- ADD BORROWER ----------------
-    const handleAddBorrower = useCallback(async (name) => {
-        if (!name?.trim()) {
-            toast.warn("Borrower name cannot be empty");
-            return { success: false };
-        }
-
-        const trimmedName = name.trim();
-        const list = Object.keys(modifiedData || {});
-
-        if (list.some(b => b.toLowerCase() === trimmedName.toLowerCase())) {
-            toast.warn(`Borrower "${trimmedName}" already exists.`);
-            return { success: false };
-        }
-
-        const updated = { ...modifiedData, [trimmedName]: {} };
-
-        const result = await persistAndSetModified(
-            updated,
-            "add_borrower",
-            `Borrower "${trimmedName}" added successfully`
-        );
-
-        return result;
-    }, [modifiedData, persistAndSetModified]);
-
-    // ---------------- DELETE BORROWER ----------------
-    const handleDeleteBorrower = useCallback(async (name) => {
-        if (!name) {
-            toast.warn("No borrower selected to delete");
-            return { success: false };
-        }
-
-        const updated = { ...modifiedData };
-        delete updated[name];
-
-        const result = await persistAndSetModified(
-            updated,
-            "delete_borrower",
-            `Borrower "${name}" deleted successfully`
-        );
-
-        if (result.success && selectedBorrower === name) {
-            setSelectedBorrower(null);
-            setSelectedCategory(null);
-        }
-
-        return result;
-    }, [modifiedData, selectedBorrower, persistAndSetModified]);
-
-    // ---------------- RENAME BORROWER ----------------
-    const handleRenameBorrower = useCallback(async (oldName, newName) => {
-        if (!newName?.trim() || newName === oldName) {
-            setEditingBorrower(null);
-            return { success: false };
-        }
-
-        const trimmedNewName = newName.trim();
-        const list = Object.keys(modifiedData || {});
-
-        if (list.some(b => b.toLowerCase() === trimmedNewName.toLowerCase() && b !== oldName)) {
-            toast.warn(`Borrower "${trimmedNewName}" already exists.`);
-            return { success: false };
-        }
-
-        const updated = { ...modifiedData };
-        updated[trimmedNewName] = updated[oldName];
-        delete updated[oldName];
-
-        const result = await persistAndSetModified(
-            updated,
-            "rename_borrower",
-            `Renamed "${oldName}" to "${trimmedNewName}" successfully`
-        );
-
-        if (result.success) {
-            if (selectedBorrower === oldName) {
-                setSelectedBorrower(trimmedNewName);
-            }
-            setEditingBorrower(null);
-        }
-
-        return result;
-    }, [modifiedData, persistAndSetModified, selectedBorrower]);
-
-    // ---------------- MERGE BORROWERS ----------------
-    const handleMerge = useCallback(async (targetBorrower, sourceBorrowers = null) => {
-        if (!targetBorrower) {
-            toast.warn("Please select a target borrower");
-            return { success: false };
-        }
-
-        const toMerge = sourceBorrowers || selectedBorrowers.filter(b => b !== targetBorrower);
-
-        if (toMerge.length === 0) {
-            toast.warn("No borrowers selected to merge");
-            return { success: false };
-        }
-
-        const cloned = JSON.parse(JSON.stringify(modifiedData));
-        let target = cloned[targetBorrower] || {};
-
-        toMerge.forEach(src => {
-            const cats = cloned[src] || {};
-            Object.keys(cats).forEach(cat => {
-                if (!Array.isArray(target[cat])) target[cat] = [];
-                target[cat].push(...cats[cat]);
-            });
-            delete cloned[src];
-        });
-
-        cloned[targetBorrower] = target;
-
-        const result = await persistAndSetModified(
-            cloned,
-            "folder_merge",
-            `Successfully merged ${toMerge.length} borrower(s) into "${targetBorrower}"`
-        );
-
-        if (result.success) {
-            setSelectMode(false);
-            setSelectedBorrowers([]);
-        }
-
-        return result;
-    }, [modifiedData, selectedBorrowers, persistAndSetModified]);
-
-    // ---------------- MOVE DOCUMENTS ----------------
-    const handleMove = useCallback(async (toBorrower, filesToMove = null) => {
-        if (!toBorrower) {
-            toast.warn("Please select a target borrower");
-            return { success: false };
-        }
-
-        const files = filesToMove || selectedFiles;
-
-        if (files.length === 0) {
-            toast.warn("No documents selected to move");
-            return { success: false };
-        }
-
-        const cloned = JSON.parse(JSON.stringify(modifiedData));
-
-        files.forEach(({ borrower, category, docs }) => {
-            // Create target borrower if doesn't exist
-            if (!cloned[toBorrower]) cloned[toBorrower] = {};
-            if (!cloned[toBorrower][category]) cloned[toBorrower][category] = [];
-
-            // Add documents to target
-            cloned[toBorrower][category].push(...docs);
-
-            // Remove from source
-            if (cloned[borrower]?.[category]) {
-                delete cloned[borrower][category];
-
-                // Remove borrower if empty
-                if (Object.keys(cloned[borrower]).length === 0) {
-                    delete cloned[borrower];
+                if (selectedFiles.length === 0) {
+                    toast.error("No valid documents selected");
+                    return { success: false, updatedData: null };
                 }
+
+                // Perform the move operation on the cloned data
+                selectedFiles.forEach(({ borrower, category, docs }) => {
+                    // Initialize target borrower if doesn't exist
+                    if (!movedData[toBorrower]) {
+                        movedData[toBorrower] = {};
+                    }
+
+                    // Initialize target category if doesn't exist
+                    if (!movedData[toBorrower][category]) {
+                        movedData[toBorrower][category] = [];
+                    }
+
+                    // Add docs to target borrower's category
+                    movedData[toBorrower][category].push(...docs);
+
+                    // Remove category from source borrower
+                    if (movedData[borrower] && movedData[borrower][category]) {
+                        delete movedData[borrower][category];
+
+                        // If source borrower has no categories left, remove the borrower
+                        if (Object.keys(movedData[borrower]).length === 0) {
+                            delete movedData[borrower];
+                        }
+                    }
+                });
+
+                // Persist changes to backend
+                const response = await loanApi.moveDocuments({
+                    raw_json: movedData,
+                    toBorrower: toBorrower,
+                    selectedFiles: selectedFiles
+                });
+
+                const cleanedJson = response?.data?.cleaned_json || movedData;
+
+                toast.success(
+                    `Moved ${selectedFiles.length} category(ies) to ${toBorrower}`
+                );
+
+                return {
+                    success: true,
+                    updatedData: cleanedJson
+                };
+
+            } catch (error) {
+                console.error("Move operation error:", error);
+                toast.error(
+                    error?.response?.data?.message ||
+                    "Failed to move documents. Please try again."
+                );
+                return { success: false, updatedData: null };
+            } finally {
+                setIsProcessing(false);
             }
-        });
-
-        const result = await persistAndSetModified(
-            cloned,
-            "file_merge",
-            `Successfully moved ${files.length} document set(s) to "${toBorrower}"`
-        );
-
-        if (result.success) {
-            setSelectMode(false);
-            setSelectedFiles([]);
-        }
-
-        return result;
-    }, [modifiedData, selectedFiles, persistAndSetModified]);
-
-    // ---------------- VIEW ORIGINAL ----------------
-    const handleViewOriginal = useCallback(async () => {
-        try {
-            const res = await loanApi.getOriginalData({
-                email: sessionStorage.getItem("email") || "",
-                loanId: sessionStorage.getItem("loanId") || "",
-            });
-
-            setOriginalData(res?.data?.cleaned_data || {});
-            setActiveTab("original");
-            setSelectedBorrower(null);
-            setSelectedCategory(null);
-
-            toast.success("Original data loaded");
-            return { success: true };
-        } catch (err) {
-            console.error(err);
-            toast.error("Failed to fetch original data");
-            return { success: false, error: err };
-        }
-    }, []);
-
-    // ---------------- EXIT ORIGINAL VIEW ----------------
-    const handleExitOriginalView = useCallback(() => {
-        setActiveTab("modified");
-        setSelectedBorrower(null);
-        setSelectedCategory(null);
-    }, []);
-
-    // ---------------- UI HELPERS ----------------
-    const toggleBorrower = useCallback(
-        name => setOpenBorrowers(prev => ({ ...prev, [name]: !prev[name] })),
+        },
         []
     );
 
-    const isCategorySelected = useCallback(
-        (borrower, category) =>
-            selectedFiles.some(f => f.borrower === borrower && f.category === category),
-        [selectedFiles]
+    // inside useLoanActions.js
+    const handleMerge = useCallback(
+        async (targetBorrowerName, currentData, selectedItems, borrowers) => {
+            debugger
+            if (!targetBorrowerName) {
+                toast.error("Select a target borrower");
+                return { success: false, updatedData: null };
+            }
+
+            // Get borrower-level ids only
+            const borrowerIds = new Set(borrowers.map(b => b.id));
+
+            // Which borrowers were actually selected
+            const selectedBorrowerNames = borrowers
+                .filter(b => selectedItems.includes(b.id))
+                .map(b => b.name)
+                .filter(name => name !== targetBorrowerName);
+
+            if (selectedBorrowerNames.length === 0) {
+                toast.error("Select at least one borrower to merge");
+                return { success: false, updatedData: null };
+            }
+
+            setIsProcessing(true);
+
+            try {
+                // deep clone
+                const mergedData = JSON.parse(JSON.stringify(currentData));
+
+                // ensure target exists
+                if (!mergedData[targetBorrowerName]) {
+                    mergedData[targetBorrowerName] = {};
+                }
+
+                // merge each selected borrower
+                selectedBorrowerNames.forEach(sourceName => {
+                    const sourceCategories = mergedData[sourceName] || {};
+
+                    Object.entries(sourceCategories).forEach(([categoryName, docs]) => {
+                        if (!Array.isArray(mergedData[targetBorrowerName][categoryName])) {
+                            mergedData[targetBorrowerName][categoryName] = [];
+                        }
+
+                        mergedData[targetBorrowerName][categoryName].push(...docs);
+                    });
+
+                    // remove merged borrower
+                    delete mergedData[sourceName];
+                });
+
+                //  API call (same style as handleMove)
+                const response = await loanApi.mergeBorrowers({
+                    raw_json: mergedData,
+                    sourceBorrowers: selectedBorrowerNames,
+                    targetBorrower: targetBorrowerName
+                });
+
+                const cleanedJson =
+                    response?.data?.cleaned_json || mergedData;
+
+                toast.success(
+                    `Merged ${selectedBorrowerNames.length} borrower(s) into ${targetBorrowerName}`
+                );
+
+                return {
+                    success: true,
+                    updatedData: cleanedJson
+                };
+            } catch (err) {
+                console.error("Merge operation error:", err);
+                toast.error("Failed to merge borrowers. Please try again.");
+                return { success: false, updatedData: null };
+            } finally {
+                setIsProcessing(false);
+            }
+        },
+        []
     );
 
-    const handleCategoryClick = useCallback((borrower, category) => {
-        setSelectedBorrower(borrower);
-        setSelectedCategory(category);
-    }, []);
+    const handleAddBorrower = useCallback(
+        async (borrowerName, currentData) => {
+            if (!borrowerName?.trim()) {
+                toast.error("Borrower name cannot be empty");
+                return { success: false, updatedData: null };
+            }
+
+            setIsProcessing(true);
+
+            try {
+                // clone JSON
+                const updated = JSON.parse(JSON.stringify(currentData));
+
+                // prevent duplicate name
+                if (updated[borrowerName]) {
+                    toast.error("Borrower name already exists");
+                    return { success: false, updatedData: null };
+                }
+
+                // add borrower
+                updated[borrowerName] = {};
+
+                // API persist
+                const response = await loanApi.addBorrower({
+                    raw_json: updated,
+                    borrowerName,
+                });
+
+                const cleanedJson = response?.data?.cleaned_json || updated;
+
+                toast.success("Borrower added successfully");
+
+                return {
+                    success: true,
+                    updatedData: cleanedJson,
+                };
+            } catch (err) {
+                console.error("Add borrower error:", err);
+                toast.error("Failed to add borrower");
+                return { success: false, updatedData: null };
+            } finally {
+                setIsProcessing(false);
+            }
+        },
+        []
+    );
+
+    const handleRenameBorrower = useCallback(
+        async (oldName, newName, currentData) => {
+            if (!newName?.trim()) {
+                toast.error("Borrower name cannot be empty");
+                return { success: false, updatedData: null };
+            }
+
+            if (oldName === newName.trim()) {
+                toast.info("No changes made");
+                return { success: true, updatedData: currentData };
+            }
+
+            setIsProcessing(true);
+
+            try {
+                // clone JSON
+                const updated = JSON.parse(JSON.stringify(currentData));
+
+                if (!updated[oldName]) {
+                    toast.error("Borrower does not exist");
+                    return { success: false, updatedData: null };
+                }
+
+                // prevent duplicate
+                if (updated[newName]) {
+                    toast.error("Borrower name already exists");
+                    return { success: false, updatedData: null };
+                }
+
+                // rename key
+                updated[newName] = updated[oldName];
+                delete updated[oldName];
+
+                // API persist
+                const response = await loanApi.renameBorrower({
+                    raw_json: updated,
+                    oldName,
+                    newName
+                });
+
+                const cleanedJson = response?.data?.cleaned_json || updated;
+
+                toast.success("Borrower renamed successfully");
+
+                return { success: true, updatedData: cleanedJson };
+            } catch (err) {
+                console.error("Rename borrower error:", err);
+                toast.error("Failed to rename borrower");
+                return { success: false, updatedData: null };
+            } finally {
+                setIsProcessing(false);
+            }
+        },
+        []
+    );
+
+    const handleDeleteBorrower = useCallback(
+        async (borrowerName, currentData) => {
+            if (!borrowerName) return;
+
+            setIsProcessing(true);
+
+            try {
+                const updated = JSON.parse(JSON.stringify(currentData));
+
+                if (!updated[borrowerName]) {
+                    toast.error("Borrower not found");
+                    return { success: false, updatedData: null };
+                }
+
+                delete updated[borrowerName];
+
+                const response = await loanApi.deleteBorrower({
+                    raw_json: updated,
+                    borrowerName
+                });
+
+                const cleanedJson = response?.data?.cleaned_json || updated;
+
+                toast.success("Borrower deleted successfully");
+
+                return { success: true, updatedData: cleanedJson };
+            } catch (err) {
+                console.error("Delete borrower error:", err);
+                toast.error("Failed to delete borrower");
+                return { success: false, updatedData: null };
+            } finally {
+                setIsProcessing(false);
+            }
+        },
+        []
+    );
+
+    const handleViewOriginal = useCallback(
+        async () => {
+            try {
+                debugger
+                setIsProcessing(true);
+
+                const res = await loanApi.getOriginalData({
+                    email: sessionStorage.getItem("user_email") || "",
+                    loanId: sessionStorage.getItem("loanId") || "",
+                    // username: sessionStorage.getItem("user_name") || "",
+                });
+
+                const cleanedData = res?.cleaned_data || {};
+
+                toast.success("Original loan package loaded");
+
+                return {
+                    success: true,
+                    data: cleanedData
+                };
+            } catch (err) {
+                console.error("Error fetching original data:", err);
+                toast.error("Failed to load original data");
+                return { success: false, data: null };
+            } finally {
+                setIsProcessing(false);
+            }
+        },
+        []
+    );
+
+    const handleRestoreOriginal = useCallback(
+        async () => {
+            debugger
+            try {
+                setIsProcessing(true);
+
+                const res = await loanApi.restoreOriginalData();
+
+                toast.success("Original loan package restored");
+
+                return {
+                    success: true,
+                    data: res?.cleaned_json || {},
+                };
+            } catch (err) {
+                console.error("Error restoring original data:", err);
+                toast.error("Failed to restore original data");
+                return { success: false, data: null };
+            } finally {
+                setIsProcessing(false);
+            }
+        },
+        []
+    );
+
+
+
+
 
     return {
-        // Data
-        currentData,
-        modifiedData,
-        originalData,
-        borrowers,
-        activeTab,
-        hasModifications,
-
-        // Selection state
-        openBorrowers,
-        selectedBorrower,
-        selectedCategory,
-        selectMode,
-        selectedBorrowers,
-        selectedFiles,
-
-        // Editing state
-        editingBorrower,
-        editingName,
-
-        // Setters
-        setSelectMode,
-        setSelectedBorrowers,
-        setSelectedFiles,
-        setEditingBorrower,
-        setEditingName,
-        setModifiedData,
-        setSelectedBorrower,
-        setSelectedCategory,
-
-        // Actions
-        toggleBorrower,
-        handleAddBorrower,
-        handleDeleteBorrower,
-        handleRenameBorrower,
-        handleMerge,
         handleMove,
+        handleMerge,
+        handleAddBorrower,
+        handleRenameBorrower,
+        handleDeleteBorrower,
         handleViewOriginal,
-        handleExitOriginalView,
-        isCategorySelected,
-        handleCategoryClick,
+        handleRestoreOriginal,
+        isProcessing
     };
 };

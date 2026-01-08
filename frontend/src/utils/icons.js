@@ -22,10 +22,21 @@ import text_search from "../assets/icons/text-search.svg";
 import arrow_right from "../assets/icons/arrow-right.svg";
 import x_close from "../assets/icons/x.svg";
 import move from "../assets/icons/move.svg";
+import move_active from "../assets/icons/move_active.svg";
+import move_active_income from "../assets/icons/move_active_income.svg";
 import merge from "../assets/icons/merge.svg";
 import user_plus from "../assets/icons/user-plus.svg";
 import fileActive from "../assets/icons/file-text-active.svg";
 import fileInactive from "../assets/icons/file-text.svg";
+import database_backup from "../assets/icons/database-backup.svg";
+import database_backup_active from "../assets/icons/database-backup_active.svg";
+import rotate_cw from "../assets/icons/rotate-cw.svg";
+import pencil_line from "../assets/icons/pencil-line.svg";
+import pencil_line_active from "../assets/icons/pencil-line-active.svg";
+import Frame from "../assets/icons/Frame 1166.svg";
+import circle_alert from "../assets/icons/circle-alert.svg";
+import octagon_alert from "../assets/icons/octagon-alert.svg";
+import circle_check_rule from "../assets/icons/circle-check-rule.svg";
 
 export const Icons = {
     dashboard: {
@@ -71,10 +82,26 @@ export const Icons = {
         arrow_right,
         x_close,
         move,
+        move_active,
+        move_active_income,
         merge,
         user_plus,
         fileActive,
-        fileInactive
+        fileInactive,
+        database_backup,
+        database_backup_active,
+        rotate_cw,
+        pencil_line,
+        pencil_line_active,
+    },
+
+    analyticResult: {
+        Frame,
+        circleCheck,
+        circleClose,
+        circle_alert,
+        octagon_alert,
+        circle_check_rule,
     }
 
 };

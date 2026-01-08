@@ -7,7 +7,7 @@ import { getAccessToken, getRefreshToken, updateAccessToken, clearTokens } from 
 // ----------------------------------
 const axiosClient = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",  // ⬅ your FastAPI base URL
-    timeout: 10000,                     // 10 seconds
+    timeout: 600000,                     // 10 seconds
     headers: {
         "Content-Type": "application/json",
     },

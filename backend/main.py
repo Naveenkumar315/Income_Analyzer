@@ -675,6 +675,52 @@ async def get_analyzed_data(req: GetAnalyzedDataRequest):
     }
 
 
+@app.post("/restore-original-cleaned-data")
+async def restore_original_cleaned_data(
+    email: str = Body(...),
+    loanID: str = Body(...),
+    username: str = Body(...)
+):
+    """Restore cleaned_data to original_cleaned_data and log into auditLogs."""
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
+
+    existing = await db["uploadedData"].find_one({"loanID": loanID})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    old_cleaned = existing.get("cleaned_data", {})
+    original_cleaned = existing.get("original_cleaned_data", {})
+
+    if not original_cleaned:
+        raise HTTPException(
+            status_code=400, detail="No original cleaned data to restore")
+
+    # Restore cleaned_data
+    await db["uploadedData"].update_one(
+        {"loanID": loanID},
+        {"$set": {"cleaned_data": original_cleaned, "filtered_data": original_cleaned,
+                  "hasModifications": False, "updated_at": timestamp}}
+    )
+
+    # Log audit entry
+    await log_action(
+        loanID=loanID,
+        email=email,
+        username=username,
+        action="restore_original",
+        old_cleaned_data=old_cleaned,
+        new_cleaned_data=original_cleaned,
+    )
+
+    # Return updated cleaned_json from DB
+    updated = await db["uploadedData"].find_one({"loanID": loanID})
+    return {
+        "message": "Cleaned data restored to original successfully",
+        "cleaned_json": updated.get("cleaned_data", {}),
+    }
+
+
 @app.get("/ValidateAzureAD")
 async def login():
     print("************************* Azure AD Login Triggered *************************")
