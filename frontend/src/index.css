@@ -227,6 +227,24 @@ body {
     margin-bottom: 0 !important;
 }
 
+.ant-menu-item-selected span,
+.ant-menu-item-active span {
+    color: black !important;
+}
+
+/* Active item bottom border */
+.ant-menu-light.ant-menu-horizontal>.ant-menu-item-selected::after {
+    border-bottom: 2px solid #24A1DD !important;
+}
+
+/* Hover bottom border */
+.ant-menu-light.ant-menu-horizontal>.ant-menu-item:hover::after {
+    border-bottom: 2px solid #24A1DD !important;
+}
+
+
+
+
 /* =======================================
    Figma Design Tokens (SAFE)
    Wrapped inside @layer utilities

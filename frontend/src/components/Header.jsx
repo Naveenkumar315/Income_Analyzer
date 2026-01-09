@@ -145,7 +145,11 @@ export default function Header() {
 
     // SELECTED KEY FROM URL 
     const selectedKeyFromPath =
-        menuItems.find((item) => item.route === location.pathname)?.key || "";
+        menuItems.find((item) =>
+            location.pathname === item.route ||
+            location.pathname.startsWith(item.route + "/")
+        )?.key || "";
+
 
     const [selectedKey, setSelectedKey] = useState(selectedKeyFromPath);
 
