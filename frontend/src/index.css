@@ -71,14 +71,20 @@ body {
     background-color: #0369a1 !important;
 }
 
+
 .ag-theme-alpine .ag-header-cell {
+    font-size: 14px !important;
+    font-weight: 500;
     background-color: #0369a1 !important;
     color: white !important;
-    font-weight: 500;
 }
 
 .ag-theme-alpine .ag-header-cell-text {
     color: white !important;
+}
+
+.ag-theme-alpine .ag-cell {
+    font-size: 13px !important;
 }
 
 .custom-company-user-modal .ant-modal-container {
