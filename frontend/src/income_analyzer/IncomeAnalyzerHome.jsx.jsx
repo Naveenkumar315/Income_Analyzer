@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import LoanIdPage from "./LoanID"
 import UploadDocumentsModal from "./UploadDocumentsModal"
 import authApi from "../api/authApi";
@@ -24,10 +25,67 @@ const IncomeAnalyzerHome = () => {
     const [loadingStep, setLoadingStep] = useState(0);
     const controllerRef = useRef(null);
 
+    const { loanId: routeLoanId } = useParams();
+    const navigate = useNavigate();
+
     useEffect(() => {
         console.log('analyzedData', analyzedData);
 
     }, [analyzedData])
+
+    //  SINGLE function to fetch loan data
+    const fetchLoanForView = useCallback(
+        async (targetLoanId) => {
+            try {
+                // setIsAnalyzing(true);
+
+                const response = await axiosClient.post("/view-loan", {
+                    email: sessionStorage.getItem("user_email") || "",
+                    loanId: targetLoanId,
+                });
+
+                const data = response;
+
+                if (!data || !Object.keys(data).length) {
+                    toast.error("Loan data not found");
+                    return false;
+                }
+
+                // Update state
+                setFiles({ cleaned_data: data.cleaned_data });
+                setAnalyzedData(data.analyzed_data || {});
+
+                const borrowers = Object.keys(data.cleaned_data || {});
+                setBorrowerList(borrowers);
+                setSelectedBorrower(borrowers[0] || null);
+
+                return true;
+            } catch (err) {
+                console.error("view-loan failed", err);
+                toast.error("Failed to load analysis results");
+                return false;
+            } finally {
+                // setIsAnalyzing(false);
+            }
+        },
+        []
+    );
+
+    //  SINGLE useEffect - loads to step 4 (LoanDocumentScreen)
+    useEffect(() => {
+        if (!routeLoanId) return;
+
+        const loadFromRoute = async () => {
+            const success = await fetchLoanForView(routeLoanId);
+            if (success) {
+                setLoanId(routeLoanId);
+                sessionStorage.setItem("loanId", routeLoanId);
+                setCurrentStep(4); // Always load to document screen first
+            }
+        };
+
+        loadFromRoute();
+    }, [routeLoanId, fetchLoanForView]);
 
     const uploadAndCleanJSON = async (file, loanId, username, email) => {
         const reader = new FileReader();
@@ -203,13 +261,11 @@ const IncomeAnalyzerHome = () => {
                     });
                     reo_summary = reo_res?.data?.reo_calc?.checks || [];
                 } catch (reoError) {
-                    // Handle 404 or other REO errors gracefully
                     if (reoError?.response?.status === 404) {
-                        console.warn(` REO endpoint not available for ${borrower}, skipping...`);
+                        console.warn(`REO endpoint not available for ${borrower}, skipping...`);
                     } else {
-                        console.error(` REO calculation error for ${borrower}:`, reoError);
+                        console.error(`REO calculation error for ${borrower}:`, reoError);
                     }
-                    // Continue with empty REO data
                     reo_summary = [];
                 }
                 updateProgress();
@@ -232,7 +288,6 @@ const IncomeAnalyzerHome = () => {
                 };
 
                 console.log('finalReport', finalReport);
-
 
                 // Update state immediately
                 setAnalyzedData((prev) => ({ ...prev, [borrower]: finalReport }));
@@ -324,7 +379,6 @@ const IncomeAnalyzerHome = () => {
         }
     }, [borrowerList, analyzeBorrower]);
 
-
     const handleCancelAnalysis = useCallback(() => {
         console.log("🛑 Canceling analysis...");
         controllerRef.current?.abort();
@@ -332,6 +386,35 @@ const IncomeAnalyzerHome = () => {
         setLoadingStep(0);
         setCurrentStep(4);
     }, []);
+
+    const fetchLoanForViewAnalyzed = async (targetLoanId) => {
+        try {
+            // setIsAnalyzing(true);
+
+            const response = await axiosClient.post("/get-analyzed-data", {
+                email: sessionStorage.getItem("user_email") || "",
+                loanId: targetLoanId,
+            });
+
+            const data = response;
+
+            if (!data || !Object.keys(data).length) {
+                toast.error("Loan data not found");
+                return false;
+            }
+            setAnalyzedData(data.analyzed_data || {});
+
+            setCurrentStep(5)
+
+            return true;
+        } catch (err) {
+            console.error("view-loan failed", err);
+            toast.error("Failed to load analysis results");
+            return false;
+        } finally {
+            // setIsAnalyzing(false);
+        }
+    }
 
     return (
         <>
@@ -348,13 +431,6 @@ const IncomeAnalyzerHome = () => {
                 }}
             />
 
-            {/* <ProcessingLoaderModal
-                open={isAnalyzing}
-                totalSteps={5}
-                currentStep={loadingStep}
-                onStop={handleCancelAnalysis}
-            /> */}
-
             {currentStep === 4 && (
                 <LoanDocumentScreen
                     files={files}
@@ -363,6 +439,16 @@ const IncomeAnalyzerHome = () => {
                     setCurrentStep={setCurrentStep}
                     currentStep={currentStep}
                     onStartAnalysis={handleStartAnalysis}
+                    onViewResults={async () => {
+                        const loanIdToView = sessionStorage.getItem("loanId");
+                        if (!loanIdToView) {
+                            toast.error("Loan ID not found");
+                            return false;
+                        }
+
+                        //  Fetch fresh data from API
+                        return await fetchLoanForViewAnalyzed(loanIdToView);
+                    }}
                 />
             )}
 
@@ -375,6 +461,7 @@ const IncomeAnalyzerHome = () => {
                     setSelectedBorrower={setSelectedBorrower}
                     analyzedData={analyzedData}
                     isLoading={isAnalyzing}
+                    onBackToDashboard={() => navigate("/dashboard")}
                 />
             )}
 
@@ -389,7 +476,6 @@ const IncomeAnalyzerHome = () => {
                     "Calculating Income",
                     "Generating Insights",
                     "Processing Self-Employment Data",
-                    // "Analyzing REO Data"
                 ]}
             />
         </>

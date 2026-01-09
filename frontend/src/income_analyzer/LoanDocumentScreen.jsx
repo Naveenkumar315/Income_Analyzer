@@ -20,7 +20,7 @@ import DeleteBorrowerModal from './DeleteBorrowerModal';
 import toast from "../utils/ToastService";
 import RestoreOriginalConfirmModal from './RestoreOriginalConfirmModal';
 
-export default function LoanDocumentScreen({ files, currentStep, setCurrentStep, onStartAnalysis, analyzedData }) {
+export default function LoanDocumentScreen({ files, currentStep, setCurrentStep, onStartAnalysis, analyzedData, onViewResults }) {
     const [activeDocumentTab, setActiveDocumentTab] = useState(null);
     const [activeInnerTab, setActiveInnerTab] = useState('summary');
     const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -393,9 +393,6 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
         setRestoreModal(false);
     };
 
-    // const handleStartAnalysing = () => {
-    //     setCurrentStep(5)
-    // }
 
     const handleStartAnalysing = () => {
         if (onStartAnalysis) {
@@ -443,17 +440,18 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
                     <CustomButton
                         variant="outline"
                         type="button"
-                        disabled={!analyzedData || Object.keys(analyzedData).length === 0}
-                        className={`${!analyzedData || Object.keys(analyzedData).length === 0
-                                ? "cursor-not-allowed opacity-50"
-                                : "cursor-pointer"
+                        disabled={!analyzedData}
+                        className={`${!analyzedData
+                            ? "cursor-not-allowed opacity-50"
+                            : "cursor-pointer"
                             }`}
-                        onClick={() => {
-                            if (!files?.cleaned_data || Object.keys(files.cleaned_data).length === 0) {
-                                toast.warning("No analysis results available");
-                                return;
+                        onClick={async () => {
+                            const success = await onViewResults();
+
+                            if (success) {
+                                //  Then navigate to results page
+                                setCurrentStep(5);
                             }
-                            setCurrentStep(5);
                         }}
                     >
                         <img src={Icons.loanDocument.eye} alt="" className="w-4 h-4" />

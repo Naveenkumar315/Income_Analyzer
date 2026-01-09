@@ -19,31 +19,36 @@ export default function ReusableDataTable({
     searchPlaceholder = "Search...",
     tableSearch = true,
     onSearch = null,
+    searchText: externalSearchText = "", // Accept external search text
     onFilter = null,
     showFilter = false,
     defaultPageSize = 10,
     pageSizeOptions = [10, 20, 50],
     onCellClicked = null,
-    tableHeader = true
+    tableHeader = true,
+    rowHeight = 48
 }) {
     const gridRef = useRef(null);
     const [gridApi, setGridApi] = useState(null);
-    const [searchText, setSearchText] = useState("");
+    const [internalSearchText, setInternalSearchText] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(defaultPageSize);
 
+    // Use external search text if provided, otherwise use internal
+    const activeSearchText = externalSearchText || internalSearchText;
+
     /* ---------- SEARCH ---------- */
     const filteredData = useMemo(() => {
-        if (onSearch) return onSearch(data, searchText);
-        if (!searchText) return data;
+        if (onSearch) return onSearch(data, activeSearchText);
+        if (!activeSearchText) return data;
 
-        const s = searchText.toLowerCase();
+        const s = activeSearchText.toLowerCase();
         return data.filter((row) =>
             Object.values(row).some((v) =>
                 String(v ?? "").toLowerCase().includes(s)
             )
         );
-    }, [data, searchText, onSearch]);
+    }, [data, activeSearchText, onSearch]);
 
     /* ---------- GRID READY ---------- */
     const onGridReady = (params) => {
@@ -61,6 +66,14 @@ export default function ReusableDataTable({
             gridApi.paginationGoToPage(targetPage - 1);
         }
     }, [filteredData, gridApi, pageSize]);
+
+    // Reset to page 1 when search changes
+    useEffect(() => {
+        if (gridApi) {
+            setCurrentPage(1);
+            gridApi.paginationGoToPage(0);
+        }
+    }, [activeSearchText, gridApi]);
 
     if (loading) {
         return (
@@ -86,8 +99,8 @@ export default function ReusableDataTable({
                         <div className="relative w-[360px]">
                             <SearchOutlined className="absolute left-[14px] top-1/2 -translate-y-1/2" />
                             <input
-                                value={searchText}
-                                onChange={(e) => setSearchText(e.target.value)}
+                                value={internalSearchText}
+                                onChange={(e) => setInternalSearchText(e.target.value)}
                                 placeholder={searchPlaceholder}
                                 className="w-full rounded-lg border border-[#E0E0E0] pt-[10px] pr-[14px] pb-[10px] pl-[42px]"
                             />
@@ -119,7 +132,7 @@ export default function ReusableDataTable({
                         height: `${Math.max(
                             1,
                             Math.min(pageSize, filteredData.length - (currentPage - 1) * pageSize)
-                        ) * 48 + 48}px`,
+                        ) * rowHeight + 48}px`,
                     }}
                 >
                     <AgGridReact
@@ -127,31 +140,32 @@ export default function ReusableDataTable({
                         columnDefs={columnDefs}
                         rowData={filteredData}
                         domLayout="normal"
-                        getRowId={(params) => params.data.id || `row-${params.node.rowIndex}`}
+                        getRowId={(params) => String(params.data.id)}
                         defaultColDef={{
                             sortable: true,
                             filter: false,
                             resizable: false,
                             suppressMenu: true,
-                            minWidth: 150,
-                            resizable: false,
                             cellStyle: {
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                             },
                         }}
-                        autoSizeStrategy={{
-                            type: 'fitCellContents'
-                        }}
                         pagination
                         suppressPaginationPanel
-                        rowHeight={48}
+                        rowHeight={rowHeight}
                         headerHeight={48}
                         suppressCellFocus
                         onCellClicked={onCellClicked}
                         onGridReady={onGridReady}
                         theme="legacy"
+                        getRowStyle={(params) => {
+                            if (params.node.rowIndex % 2 === 1) {
+                                return { backgroundColor: "#F7F7F7" };
+                            }
+                            return { backgroundColor: "#FFFFFF" };
+                        }}
                     />
                 </div>
 

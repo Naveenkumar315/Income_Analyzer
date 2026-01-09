@@ -37,6 +37,9 @@ import Frame from "../assets/icons/Frame 1166.svg";
 import circle_alert from "../assets/icons/circle-alert.svg";
 import octagon_alert from "../assets/icons/octagon-alert.svg";
 import circle_check_rule from "../assets/icons/circle-check-rule.svg";
+import chevron_down from "../assets/icons/chevron-down.svg";
+import plus from "../assets/icons/plus.svg";
+import search from "../assets/icons/search.svg";
 
 export const Icons = {
     dashboard: {
@@ -102,6 +105,11 @@ export const Icons = {
         circle_alert,
         octagon_alert,
         circle_check_rule,
+    },
+    processedLoans: {
+        chevron_down,
+        plus,
+        search,
     }
 
 };

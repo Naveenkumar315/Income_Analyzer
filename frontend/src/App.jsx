@@ -38,6 +38,7 @@ function App() {
           }>
             <Route path="/dashboard" element={<Home />} />
             <Route path="/income-analyzer" element={<IncomeAnalyzerHome />} />
+            <Route path="/income-analyzer/:loanId" element={<IncomeAnalyzerHome />} />
             <Route path="/rules" element={<Rule />} />
             <Route path="/users" element={<AdminTable />} />
           </Route>

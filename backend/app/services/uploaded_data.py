@@ -7,8 +7,9 @@ class UploadedDataOut(BaseModel):
     loanID: str
     file_name: str
     updated_at: Optional[datetime]
-    borrower: List[str]   # ✅ Always a list now
-    analyzed_data : bool
+    borrower: List[str]
+    analyzed_data: bool
+    username: Optional[str] = None
 
 
 async def get_uploaded_data_by_email(db, email: str):
@@ -23,7 +24,8 @@ async def get_uploaded_data_by_email(db, email: str):
         updated_at = record.get("updated_at")
         if isinstance(updated_at, str):
             try:
-                updated_at = datetime.strptime(updated_at, "%Y-%m-%d %I:%M:%S %p")
+                updated_at = datetime.strptime(
+                    updated_at, "%Y-%m-%d %I:%M:%S %p")
             except Exception:
                 updated_at = None
 
@@ -37,8 +39,8 @@ async def get_uploaded_data_by_email(db, email: str):
                 updated_at=updated_at,
                 borrower=borrowers,
                 analyzed_data=analyzed_flag,
+                username=record.get("username")
             )
         )
 
     return results
-

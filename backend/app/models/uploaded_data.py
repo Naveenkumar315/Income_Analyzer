@@ -13,3 +13,4 @@ class UploadedDataOut(BaseModel):
     updated_at: Optional[datetime]
     borrower:  List[str]
     analyzed_data: bool
+    username: Optional[str]

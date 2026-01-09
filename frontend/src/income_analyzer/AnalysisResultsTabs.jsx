@@ -11,7 +11,8 @@ export default function AnalysisResultsTabs({
     selectedBorrower,
     setSelectedBorrower,
     analyzedData = {},
-    isLoading = false
+    isLoading = false,
+    onBackToDashboard,
 }) {
     const [activeTab, setActiveTab] = useState("ruleResults");
 
@@ -96,7 +97,15 @@ export default function AnalysisResultsTabs({
                         type="text"
                         icon={<ArrowLeftOutlined />}
                         className="text-Colors-Text-Primary-primary hover:text-teal-700 font-medium"
-                        onClick={() => setCurrentStep(4)}
+                        onClick={() => {
+                            if (onBackToDashboard) {
+                                // Coming from dashboard - go back to dashboard
+                                onBackToDashboard();
+                            } else {
+                                // Normal flow - go back to step 4
+                                setCurrentStep(4);
+                            }
+                        }}
                     >
                         Back
                     </Button>
