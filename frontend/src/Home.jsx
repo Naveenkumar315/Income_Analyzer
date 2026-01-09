@@ -193,11 +193,6 @@ export default function Home() {
         const handleViewClick = () => {
             const rowData = params.data;
 
-            // Check if analysis is completed
-            if (rowData.status !== "Completed") {
-                toast.warning("Analysis is not completed yet for this loan");
-                return;
-            }
 
             navigate(`/income-analyzer/${rowData.loanId}`);
 
@@ -285,21 +280,19 @@ export default function Home() {
         <div className="min-h-screen bg-slate-50 p-6">
 
             {/* ===== TOP BAR ===== */}
-            <div className="px-4 py-3 mb-4">
+            <div className=" py-3 mb-4">
                 <div className="flex items-center justify-between gap-4">
 
                     <div className="flex items-center gap-4">
-                        <h1 className="text-[24px] font-semibold custom-font-jura">
-                            Processed Loans
-                        </h1>
+                        <span className="text-[26px] font-semibold custom-font-jura">Processed Loans</span>
 
-                        <div className="relative w-[220px]">
+                        <div className="relative w-[250px]">
                             <input
                                 type="text"
                                 placeholder="Search"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full h-9 pl-9 pr-3 text-sm border rounded-md"
+                                className="w-full h-9 pl-9 pr-3 text-sm border bg-white outline-none rounded-md"
                             />
                             <img
                                 src={Icons.processedLoans.search}
@@ -312,7 +305,7 @@ export default function Home() {
                             value={statusFilter}
                             options={STATUS_OPTIONS}
                             onChange={setStatusFilter}
-                            className="w-[130px]"
+                            className="w-[130px] !bg-transparent !h-9"
                         />
                     </div>
                     <div>

@@ -51,7 +51,7 @@ const IncomeAnalyzerHome = () => {
 
                 // Update state
                 setFiles({ cleaned_data: data.cleaned_data });
-                setAnalyzedData(data.analyzed_data || {});
+                setAnalyzedData(data.analyzed_data);
 
                 const borrowers = Object.keys(data.cleaned_data || {});
                 setBorrowerList(borrowers);
