@@ -110,6 +110,7 @@ export const Icons = {
         chevron_down,
         plus,
         search,
+        scrollText,
     }
 
 };
