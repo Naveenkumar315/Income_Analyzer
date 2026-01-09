@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Upload } from "antd";
 import { Icons } from "../utils/icons";
 import CustomButton from "../components/CustomButton";
+import toast from "../utils/ToastService"; 
 
 const UploadDocumentsModal = ({ open, onCancel, onUpload }) => {
     const [fileList, setFileList] = useState([]);
@@ -11,19 +12,28 @@ const UploadDocumentsModal = ({ open, onCancel, onUpload }) => {
     };
 
     const handleBeforeUpload = (file) => {
+        const isJson =
+            file.type === "application/json" ||
+            file.name.toLowerCase().endsWith(".json");
+
+        if (!isJson) {
+            toast.error("Only JSON files are supported.");
+            return Upload.LIST_IGNORE; 
+        }
+
         const normalizedFile = {
             uid: file.uid,
             name: file.name,
-            type: file?.type?.split("/")?.[1] || file.name.split(".").pop(),
+            type: "json",
             size: file.size,
             status: "pending",
             raw: file,
         };
 
-        setFileList((prev) => [...prev, normalizedFile]);
-
-        return false; // stop antd auto upload
+        setFileList([normalizedFile]);
+        return false; 
     };
+
 
     const formatFileSize = (bytes) => {
         if (!bytes && bytes !== 0) return "";
@@ -35,22 +45,22 @@ const UploadDocumentsModal = ({ open, onCancel, onUpload }) => {
 
     //  Upload button click
     const handleUploadClick = () => {
-        if (!fileList.length) return;
+        if (!fileList.length) {
+            toast.error("Please upload a JSON file before continuing.");
+            return;
+        }
 
-        //  send REAL File Blob, not wrapper object
-        const realFile = fileList[0]?.raw || fileList[0];
-
+        const realFile = fileList[0].raw;
         onUpload?.(realFile);
 
-        // update UI state to done (optional)
-        setFileList((prev) =>
-            prev.map((f) =>
-                f.uid === fileList[0].uid
-                    ? { ...f, status: "done" }
-                    : f
-            )
-        );
+        setFileList([]);
     };
+
+    useEffect(() => {
+        if (!open) {
+            setFileList([]);
+        }
+    }, [open]);
 
     return (
         <Modal
@@ -153,7 +163,6 @@ const UploadDocumentsModal = ({ open, onCancel, onUpload }) => {
                     <div className="w-[130px]">
                         <CustomButton
                             variant="primary"
-                            disabled={!fileList.length}
                             onClick={handleUploadClick}
                         >
                             Upload
