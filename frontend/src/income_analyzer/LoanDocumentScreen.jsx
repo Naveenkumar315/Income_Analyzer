@@ -584,8 +584,9 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
                                                 <div className="w-full flex items-center justify-between p-3 bg-white transition-colors group">
                                                     <div
                                                         onClick={() => hasDocuments && toggleBorrower(borrower.id)}
-                                                        className="flex items-center gap-3 flex-1 cursor-pointer"
+                                                        className="flex items-center gap-3 flex-1 cursor-pointer min-h-[32px]"
                                                     >
+
                                                         {isSelectionMode && !isReadOnly && (
                                                             <input
                                                                 type="checkbox"
@@ -599,9 +600,19 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
                                                             />
                                                         )}
                                                         <User className="w-4 h-4 text-[#4D4D4D]" />
-                                                        <span className="text-sm font-medium text-Colors-Text-Primary-primary">
-                                                            {borrower.name}
-                                                        </span>
+                                                        <Tooltip title={borrower.name} placement="top">
+                                                            <span
+                                                                className="
+                                                                text-sm font-medium text-Colors-Text-Primary-primary
+                                                                max-w-[180px]
+                                                                truncate
+                                                                block
+                                                            "
+                                                            >
+                                                                {borrower.name}
+                                                            </span>
+                                                        </Tooltip>
+
                                                     </div>
 
                                                     <div className="flex items-center gap-2">

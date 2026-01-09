@@ -130,6 +130,16 @@ export default function Header() {
     const userData = getUserData();
     const isAdmin = userData?.role === "Admin";
 
+    const username = userData?.username || "User";
+
+    const avatarText = username
+        .replace(/\./g, " ")
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+
     // ADMIN FILTER
     const menuItems = MENU_CONFIG.filter((item) => !item.admin || isAdmin);
 
@@ -226,7 +236,12 @@ export default function Header() {
                             )}
                         >
                             <div>
-                                <Avatar size={28} icon={<UserOutlined />} className="cursor-pointer" />
+                                <Avatar
+                                    size={30}
+                                    className="!bg-[#24A1DD] !text-white custom-font-jura font-semibold cursor-pointer"
+                                >
+                                    {avatarText}
+                                </Avatar>
                             </div>
                         </Dropdown>
                     </div>
