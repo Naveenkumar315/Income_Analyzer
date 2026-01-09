@@ -102,6 +102,7 @@ export const Icons = {
         circle_alert,
         octagon_alert,
         circle_check_rule,
+        scrollText,
     }
 
 };

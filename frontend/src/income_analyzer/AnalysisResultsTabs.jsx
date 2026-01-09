@@ -3,6 +3,7 @@ import RuleResults from "./Results/RuleResults";
 import { Icons } from "../utils/icons";
 import { ArrowLeftOutlined, HomeOutlined } from '@ant-design/icons';
 import { Button, Breadcrumb, Select, Spin } from 'antd';
+import UnderWritingRulesModal from "./UnderWritingRulesModal";
 
 export default function AnalysisResultsTabs({
     currentStep,
@@ -14,6 +15,7 @@ export default function AnalysisResultsTabs({
     isLoading = false
 }) {
     const [activeTab, setActiveTab] = useState("ruleResults");
+    const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
 
     // Get current borrower's data
     const currentBorrowerData = useMemo(() => {
@@ -317,7 +319,42 @@ export default function AnalysisResultsTabs({
                         </>
                     )}
                 </div>
+                
+                <div
+                    className="fixed bottom-7 right-6 z-50"
+                    onClick={() => setIsRulesModalOpen(true)}
+                    style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: "50%",
+                        backgroundColor: "#24A1DD",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer"
+                    }}
+                >
+                    <img
+                        src={Icons.analyticResult.scrollText}
+                        alt="View Rules"
+                        width={28}
+                        height={28}
+                        style={{
+                            pointerEvents: "none",
+                            filter: "brightness(0) invert(1)"
+                        }}
+                    />
+                </div>
+
+
+
+                <UnderWritingRulesModal
+                    isOpen={isRulesModalOpen}
+                    onClose={() => setIsRulesModalOpen(false)}
+                />
             </div>
+
+
         </>
     );
 }
