@@ -316,7 +316,9 @@ export default function Home() {
                         />
                     </div>
                     <div>
-                        <CustomButton variant="primary" className="h-9 px-4">
+                        <CustomButton variant="primary" className="h-9 px-4" onClick={() => {
+                            navigate('/income-analyzer')
+                        }}>
                             <PlusOutlined />
                             <span className="ml-1">Add Loan Package</span>
                         </CustomButton>

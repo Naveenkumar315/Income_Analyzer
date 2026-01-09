@@ -3,6 +3,8 @@ import RuleResults from "./Results/RuleResults";
 import { Icons } from "../utils/icons";
 import { ArrowLeftOutlined, HomeOutlined } from '@ant-design/icons';
 import { Button, Breadcrumb, Select, Spin } from 'antd';
+import WageEarner from "./Results/WageEarner";
+import BankStatement from "./Results/BankStatement";
 
 export default function AnalysisResultsTabs({
     currentStep,
@@ -293,16 +295,13 @@ export default function AnalysisResultsTabs({
 
                             {activeTab === "wageEarner" && (
                                 <div className="px-6 pb-4">
-                                    {/* Render wage earner details */}
-                                    <div className="text-sm text-gray-600">
-                                        {JSON.stringify(currentBorrowerData?.summary, null, 2)}
-                                    </div>
+                                    <WageEarner data={currentBorrowerData?.summary} />
                                 </div>
                             )}
 
                             {activeTab === "bankStatement" && (
                                 <div className="px-6 pb-4">
-                                    <div>{currentBorrowerData?.bankStatement || "No data"}</div>
+                                    <BankStatement data={currentBorrowerData?.bankStatement} />
                                 </div>
                             )}
 

@@ -21,6 +21,7 @@ const IncomeAnalyzerHome = () => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analyzedData, setAnalyzedData] = useState({});
     const [borrowerList, setBorrowerList] = useState([]);
+    const [bankStatement, setBankStatement] = useState(null);
     const [selectedBorrower, setSelectedBorrower] = useState(null);
     const [loadingStep, setLoadingStep] = useState(0);
     const controllerRef = useRef(null);
@@ -30,15 +31,12 @@ const IncomeAnalyzerHome = () => {
 
     useEffect(() => {
         console.log('analyzedData', analyzedData);
-
     }, [analyzedData])
 
     //  SINGLE function to fetch loan data
     const fetchLoanForView = useCallback(
         async (targetLoanId) => {
             try {
-                // setIsAnalyzing(true);
-
                 const response = await axiosClient.post("/view-loan", {
                     email: sessionStorage.getItem("user_email") || "",
                     loanId: targetLoanId,
@@ -64,8 +62,6 @@ const IncomeAnalyzerHome = () => {
                 console.error("view-loan failed", err);
                 toast.error("Failed to load analysis results");
                 return false;
-            } finally {
-                // setIsAnalyzing(false);
             }
         },
         []
@@ -200,9 +196,31 @@ const IncomeAnalyzerHome = () => {
         []
     );
 
+    const fetchBankStatement = useCallback(
+        async (email, loanId, signal) => {
+            try {
+                const res = await axiosClient.post(
+                    "/banksatement-insights",
+                    null,
+                    { params: { email, loanID: loanId }, signal }
+                );
+
+                const statement = res?.income_insights?.insight_commentry || [];
+
+                setBankStatement(statement);
+                return statement;
+            } catch (err) {
+                console.error(" Bank statement fetch failed", err);
+                setBankStatement([]);
+                return [];
+            }
+        },
+        []
+    );
+
     const analyzeBorrower = useCallback(
         async (borrower, email, loanId, signal, bank_Statement, isBackground = false) => {
-            console.log(`▶️ ${isBackground ? "Background" : "Starting"} analysis for: ${borrower}`);
+            console.log(`${isBackground ? " Background" : " Starting"} analysis for: ${borrower}`);
             let step = 0;
 
             const updateProgress = () => {
@@ -218,7 +236,7 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log('rulesRes', rulesRes);
+                console.log(' Rules verified for', borrower);
 
                 if (signal.aborted) throw new Error("Aborted");
                 updateProgress();
@@ -228,7 +246,7 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log('incomeRes', incomeRes);
+                console.log(' Income calculated for', borrower);
 
                 if (signal.aborted) throw new Error("Aborted");
                 updateProgress();
@@ -238,7 +256,7 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log('insightsRes', insightsRes);
+                console.log(' Insights generated for', borrower);
                 if (signal.aborted) throw new Error("Aborted");
                 updateProgress();
 
@@ -247,7 +265,7 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log('incomeself_emp', incomeself_emp);
+                console.log(' Self-employment data processed for', borrower);
                 if (signal.aborted) throw new Error("Aborted");
                 const self_employee_response = incomeself_emp?.income || {};
                 updateProgress();
@@ -260,11 +278,12 @@ const IncomeAnalyzerHome = () => {
                         signal,
                     });
                     reo_summary = reo_res?.data?.reo_calc?.checks || [];
+                    console.log(' REO calculated for', borrower);
                 } catch (reoError) {
                     if (reoError?.response?.status === 404) {
-                        console.warn(`REO endpoint not available for ${borrower}, skipping...`);
+                        console.warn(` REO endpoint not available for ${borrower}, skipping...`);
                     } else {
-                        console.error(`REO calculation error for ${borrower}:`, reoError);
+                        console.error(` REO calculation error for ${borrower}:`, reoError);
                     }
                     reo_summary = [];
                 }
@@ -282,17 +301,14 @@ const IncomeAnalyzerHome = () => {
                     summary: summaryData,
                     income_summary: incomeSummary,
                     insights: insightsComment,
-                    bankStatement: bank_Statement,
+                    bankStatement: bank_Statement, // Use the passed bank statement
                     self_employee: self_employee_response,
                     reo_summary: reo_summary,
                 };
 
-                console.log('finalReport', finalReport);
 
                 // Update state immediately
                 setAnalyzedData((prev) => ({ ...prev, [borrower]: finalReport }));
-
-                console.log(`✅ Finished analysis for: ${borrower}`);
 
                 // Save to DB
                 await updateAnalyzedDataIntoDB(
@@ -311,9 +327,9 @@ const IncomeAnalyzerHome = () => {
                 return finalReport;
             } catch (ex) {
                 if (ex.message === "Aborted") {
-                    console.warn(`🛑 Analysis aborted for ${borrower}`);
+                    console.warn(` Analysis aborted for ${borrower}`);
                 } else if (!signal.aborted) {
-                    console.error(`❌ Error analyzing borrower ${borrower}`, ex);
+                    console.error(` Error analyzing borrower ${borrower}`, ex);
                     toast.error(`Failed to analyze ${borrower}`);
                 }
                 return null;
@@ -339,48 +355,52 @@ const IncomeAnalyzerHome = () => {
         const loanId = sessionStorage.getItem("loanId") || "";
 
         try {
-            const bankStatementRes = await axiosClient.post("/banksatement-insights", null, {
-                params: { email, loanID: loanId },
-                signal,
-            });
+            //  FETCH BANK STATEMENT ONCE PER LOAN
+            const bank_Statement = await fetchBankStatement(email, loanId, signal);
 
-            const bank_Statement =
-                bankStatementRes?.data?.income_insights?.insight_commentry || [];
-
-            // ---- FIRST BORROWER (foreground + loader) ----
+            // ---- FIRST BORROWER (with progress UI) ----
             const firstBorrower = borrowerList[0];
+            await analyzeBorrower(
+                firstBorrower,
+                email,
+                loanId,
+                signal,
+                bank_Statement,
+                false
+            );
 
-            await analyzeBorrower(firstBorrower, email, loanId, signal, bank_Statement, false);
-
-            // instantly show in UI
             setSelectedBorrower(firstBorrower);
 
             // ---- REMAINING BORROWERS (background) ----
-            const remainingBorrowers = borrowerList.slice(1);
+            if (borrowerList.length > 1) {
+                console.log(`\n Processing ${borrowerList.length - 1} additional borrower(s) in background...`);
+            }
 
-            for (const borrower of remainingBorrowers) {
+            for (const borrower of borrowerList.slice(1)) {
+                console.log(`\n Analyzing borrower: ${borrower}`);
                 await analyzeBorrower(
                     borrower,
                     email,
                     loanId,
                     signal,
-                    bank_Statement,
+                    bank_Statement, // Reuse the same bank statement
                     true
                 );
             }
 
-            console.log("All borrowers processed");
+            console.log('\n All borrowers analyzed successfully!');
         } catch (err) {
             if (!signal.aborted) {
+                console.error(' Analysis failed:', err);
                 toast.error("Analysis failed");
             }
         } finally {
             setIsAnalyzing(false);
         }
-    }, [borrowerList, analyzeBorrower]);
+    }, [borrowerList, analyzeBorrower, fetchBankStatement]);
 
     const handleCancelAnalysis = useCallback(() => {
-        console.log("🛑 Canceling analysis...");
+        console.log(" Canceling analysis...");
         controllerRef.current?.abort();
         setIsAnalyzing(false);
         setLoadingStep(0);
@@ -389,8 +409,6 @@ const IncomeAnalyzerHome = () => {
 
     const fetchLoanForViewAnalyzed = async (targetLoanId) => {
         try {
-            // setIsAnalyzing(true);
-
             const response = await axiosClient.post("/get-analyzed-data", {
                 email: sessionStorage.getItem("user_email") || "",
                 loanId: targetLoanId,
@@ -403,16 +421,13 @@ const IncomeAnalyzerHome = () => {
                 return false;
             }
             setAnalyzedData(data.analyzed_data || {});
-
-            setCurrentStep(5)
+            setCurrentStep(5);
 
             return true;
         } catch (err) {
             console.error("view-loan failed", err);
             toast.error("Failed to load analysis results");
             return false;
-        } finally {
-            // setIsAnalyzing(false);
         }
     }
 
@@ -476,6 +491,7 @@ const IncomeAnalyzerHome = () => {
                     "Calculating Income",
                     "Generating Insights",
                     "Processing Self-Employment Data",
+                    "Calculating REO",
                 ]}
             />
         </>
