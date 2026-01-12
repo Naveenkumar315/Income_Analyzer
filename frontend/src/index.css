@@ -145,35 +145,62 @@ body {
 
 /* ===== Inner Section Tabs (Summary / Earnings / etc) ===== */
 
+/* ===== Inner Section Tabs (Summary / Earnings / etc) ===== */
+
+/* remove ant underline */
+.inner-tabs .ant-tabs-ink-bar {
+    display: none !important;
+}
+
+.inner-tabs .ant-tabs-nav::before {
+    border-bottom: none !important;
+}
+
+/* spacing container */
 .inner-tabs .ant-tabs-nav {
     margin-bottom: 0;
 }
 
+/* base tab */
 .inner-tabs .ant-tabs-tab {
-    padding: 12px 0;
-    margin-right: 32px;
+    padding: 6px 14px !important;
+    margin-right: 8px !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    transition: all 0.2s ease;
+    color: #1f2937;
+    font-weight: 400;
 }
 
-.inner-tabs .ant-tabs-tab-active {
-    color: #24A1DD;
+/* hover like your image */
+.inner-tabs .ant-tabs-tab:hover {
+    background-color: rgb(239, 238, 238) !important;
+    color: black !important;
 }
 
-.inner-tabs .ant-tabs-ink-bar {
-    background: #24A1DD;
+/* active tab */
+.inner-tabs .ant-tabs-tab.ant-tabs-tab-active {
+    background-color: #9AD4EF !important;
+    border-radius: 6px !important;
 }
 
-.pay-stub-tabs .ant-tabs-tab {
-    padding: 11px 10px !important;
-    background-color: transparent !important;
-    border: none !important;
-    border-right: 1px solid #E5E7EB !important;
-    border-radius: 0 !important;
-    color: #030303 !important;
-    /* font-size: 18px !important; */
-    margin: 0 !important;
-    /* font-weight: 400 !important; */
+/* active text */
+.inner-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #000 !important;
+    font-weight: 500;
 }
 
+/* text clamp stays as you already wrote */
+.inner-tabs .ant-tabs-tab-btn {
+    white-space: normal !important;
+    word-break: break-word;
+    text-align: center;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
 
 /* Innter Tabs scrollable width adjustment style started here */
 
@@ -242,7 +269,9 @@ body {
     border-bottom: 2px solid #24A1DD !important;
 }
 
-
+.ant-tabs-ink-bar {
+    background-color: #24A1DD !important;
+}
 
 
 /* =======================================

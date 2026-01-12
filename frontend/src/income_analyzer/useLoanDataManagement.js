@@ -68,7 +68,7 @@ export const useLoanActions = () => {
 
                         // If source borrower has no categories left, remove the borrower
                         if (Object.keys(movedData[borrower]).length === 0) {
-                            delete movedData[borrower];
+                            movedData[borrower] = {}; // empty object
                         }
                     }
                 });
