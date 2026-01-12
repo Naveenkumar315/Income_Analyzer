@@ -143,7 +143,7 @@ export default function AnalysisResultsTabs({
                         <button
                             type="button"
                             onClick={() => setActiveTab("ruleResults")}
-                            className={`h-9 px-5 text-sm transition-all ${activeTab === "ruleResults"
+                            className={`h-9 px-5 text-sm transition-all cursor-pointer ${activeTab === "ruleResults"
                                 ? "bg-[#9AD4EF] text-white"
                                 : "bg-white text-[#4D4D4D] hover:bg-gray-50"
                                 }`}
@@ -153,7 +153,7 @@ export default function AnalysisResultsTabs({
                         <button
                             type="button"
                             onClick={() => setActiveTab("wageEarner")}
-                            className={`h-9 px-5 text-sm border-l tab-Border transition-all ${activeTab === "wageEarner"
+                            className={`h-9 px-5 text-sm border-l tab-Border transition-all cursor-pointer ${activeTab === "wageEarner"
                                 ? "bg-[#9AD4EF] text-white"
                                 : "bg-white text-[#4D4D4D] hover:bg-gray-50"
                                 }`}
@@ -163,7 +163,7 @@ export default function AnalysisResultsTabs({
                         <button
                             type="button"
                             onClick={() => setActiveTab("bankStatement")}
-                            className={`h-9 px-5 text-sm border-l tab-Border transition-all ${activeTab === "bankStatement"
+                            className={`h-9 px-5 text-sm border-l tab-Border transition-all cursor-pointer ${activeTab === "bankStatement"
                                 ? "bg-[#9AD4EF] text-white"
                                 : "bg-white text-[#4D4D4D] hover:bg-gray-50"
                                 }`}
@@ -173,7 +173,7 @@ export default function AnalysisResultsTabs({
                         <button
                             type="button"
                             onClick={() => setActiveTab("selfEmployed")}
-                            className={`h-9 px-5 text-sm border-l tab-Border transition-all ${activeTab === "selfEmployed"
+                            className={`h-9 px-5 text-sm border-l tab-Border transition-all cursor-pointer ${activeTab === "selfEmployed"
                                 ? "bg-[#9AD4EF] text-white"
                                 : "bg-white text-[#4D4D4D] hover:bg-gray-50"
                                 }`}
@@ -183,7 +183,7 @@ export default function AnalysisResultsTabs({
                         <button
                             type="button"
                             onClick={() => setActiveTab("reo")}
-                            className={`h-9 px-5 text-sm border-l tab-Border transition-all ${activeTab === "reo"
+                            className={`h-9 px-5 text-sm border-l tab-Border transition-all cursor-pointer ${activeTab === "reo"
                                 ? "bg-[#9AD4EF] text-white"
                                 : "bg-white text-[#4D4D4D] hover:bg-gray-50"
                                 }`}
@@ -193,7 +193,7 @@ export default function AnalysisResultsTabs({
                         <button
                             type="button"
                             onClick={() => setActiveTab("insights")}
-                            className={`h-9 px-5 text-sm border-l tab-Border transition-all ${activeTab === "insights"
+                            className={`h-9 px-5 text-sm border-l tab-Border transition-all cursor-pointer ${activeTab === "insights"
                                 ? "bg-[#9AD4EF] text-white"
                                 : "bg-white text-[#4D4D4D] hover:bg-gray-50"
                                 }`}

@@ -53,6 +53,20 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
         return activeTab === "original" ? originalData : modifiedData;
     }, [activeTab, originalData, modifiedData]);
 
+    //Merge Borrower Click
+    const handleMergeClick = () => {
+        const selectedCount = selectedBorrowerIds.length;
+        const totalCount = borrowers.length;
+
+        // Must leave one borrower as target
+        if (selectedCount === totalCount) {
+            toast.error("Please leave one borrower unselected to merge into.");
+            return;
+        }
+
+        setActiveModal("merge");
+    };
+
     // Process the cleaned data into structured format
     const processedData = useMemo(() => {
         if (!displayData) return { borrowers: [], allDocuments: {} };
@@ -484,7 +498,7 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
                                                 <Tooltip title="Move selected documents">
                                                     <button
                                                         disabled={!selectionInfo.hasDocument || isProcessing}
-                                                        className={`p-1.5 rounded hover:bg-gray-100 ${!selectionInfo.hasDocument || isProcessing ? "opacity-40 cursor-not-allowed" : ""}`}
+                                                        className={`p-1.5 rounded hover:bg-gray-100 cursor-pointer ${!selectionInfo.hasDocument || isProcessing ? "opacity-40 cursor-not-allowed" : ""}`}
                                                         onClick={() => setActiveModal("move")}
                                                     >
                                                         <img src={(!selectionInfo.hasDocument || isProcessing) ? Icons.loanDocument.move : Icons.loanDocument.move_active_income} alt="" />
@@ -494,8 +508,8 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
                                                 <Tooltip title="Merge selected borrowers">
                                                     <button
                                                         disabled={!selectionInfo.hasBorrower || isProcessing}
-                                                        className={`p-1.5 rounded hover:bg-gray-100 ${!selectionInfo.hasBorrower || isProcessing ? "opacity-40 cursor-not-allowed" : ""}`}
-                                                        onClick={() => setActiveModal("merge")}
+                                                        className={`p-1.5 rounded hover:bg-gray-100 cursor-pointer ${!selectionInfo.hasBorrower || isProcessing ? "opacity-40 cursor-not-allowed" : ""}`}
+                                                        onClick={handleMergeClick}
                                                     >
                                                         <img src={Icons.loanDocument.merge} alt="" />
                                                     </button>
@@ -504,7 +518,7 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
                                                 <Tooltip title="Clear selection">
                                                     <button
                                                         onClick={exitSelectionMode}
-                                                        className="p-1.5 hover:bg-gray-100 rounded"
+                                                        className="p-1.5 hover:bg-gray-100 rounded cursor-pointer"
                                                         disabled={isProcessing}
                                                     >
                                                         <img src={Icons.loanDocument.x_close} alt="" />
@@ -631,7 +645,7 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
                                                                     className="p-1 hover:bg-gray-100 rounded"
                                                                     title="Edit"
                                                                 >
-                                                                    <Edit className="w-4 h-4 text-gray-600" />
+                                                                    <Edit className="w-4 h-4 text-gray-600 cursor-pointer" />
                                                                 </button>
 
                                                                 <button
@@ -645,18 +659,29 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
                                                                     className="p-1 hover:bg-gray-100 rounded"
                                                                     title="Delete"
                                                                 >
-                                                                    <Trash2 className="w-4 h-4 text-red-600" />
+                                                                    <Trash2 className="w-4 h-4 text-red-600 cursor-pointer" />
                                                                 </button>
                                                             </div>
                                                         )}
 
-                                                        {hasDocuments && (
-                                                            isExpanded ? (
-                                                                <ChevronUp className="w-4 h-4 text-gray-400" />
-                                                            ) : (
-                                                                <ChevronDown className="w-4 h-4 text-gray-400" />
-                                                            )
-                                                        )}
+                                                        <div className="flex items-center gap-2">
+                                                            {hasDocuments && (
+                                                                <span
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        toggleBorrower(borrower.id);
+                                                                    }}
+                                                                    className="cursor-pointer"
+                                                                >
+                                                                    {isExpanded ? (
+                                                                        <ChevronUp className="w-4 h-4 text-gray-400" />
+                                                                    ) : (
+                                                                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                                                                    )}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
                                                     </div>
                                                 </div>
 
