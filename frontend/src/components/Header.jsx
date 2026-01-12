@@ -141,12 +141,20 @@ export default function Header() {
     const location = useLocation();
 
     // const userData = getUserData();
-    const { user, setUser } = useApp();
+    // const { user, setUser } = useApp();
 
-    useEffect(() => {
-        const data = getUserData();
-        if (data) setUser(data);
-    }, []);
+    // useEffect(() => {
+    //     const data = getUserData();
+    //     if (!data) return;
+
+    //     setUser({
+    //         ...data,
+    //         role: data.role?.toLowerCase(),
+    //         type: data.type?.toLowerCase(),
+    //     });
+    // }, []);
+
+    const { user } = useApp();
 
     const userData = user;
     const isAdmin = userData?.role === "Admin";
