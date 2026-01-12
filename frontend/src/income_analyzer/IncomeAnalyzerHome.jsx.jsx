@@ -24,6 +24,10 @@ const IncomeAnalyzerHome = () => {
     const [bankStatement, setBankStatement] = useState(null);
     const [selectedBorrower, setSelectedBorrower] = useState(null);
     const [loadingStep, setLoadingStep] = useState(0);
+
+    // NEW: Track which borrowers are currently being processed
+    const [processingBorrowers, setProcessingBorrowers] = useState(new Set());
+
     const controllerRef = useRef(null);
 
     const { loanId: routeLoanId } = useParams();
@@ -83,6 +87,19 @@ const IncomeAnalyzerHome = () => {
         loadFromRoute();
     }, [routeLoanId, fetchLoanForView]);
 
+    // Update borrower list whenever files.cleaned_data changes
+    useEffect(() => {
+        if (files?.cleaned_data) {
+            const borrowers = Object.keys(files.cleaned_data);
+            setBorrowerList(borrowers);
+
+            // Update selected borrower if current one no longer exists
+            if (!selectedBorrower || !borrowers.includes(selectedBorrower)) {
+                setSelectedBorrower(borrowers[0] || null);
+            }
+        }
+    }, [files?.cleaned_data, selectedBorrower]);
+
     const uploadAndCleanJSON = async (file, loanId, username, email) => {
         const reader = new FileReader();
 
@@ -129,11 +146,7 @@ const IncomeAnalyzerHome = () => {
             )
 
             setFiles({ cleaned_data: cleaned })
-
-            // Extract borrower list
-            const borrowers = Object.keys(cleaned);
-            setBorrowerList(borrowers);
-            setSelectedBorrower(borrowers[0] || null);
+            // borrowerList will be updated by useEffect
 
             toast.success("File processed successfully");
             console.log("Normalized JSON:", cleaned);
@@ -210,7 +223,7 @@ const IncomeAnalyzerHome = () => {
                 setBankStatement(statement);
                 return statement;
             } catch (err) {
-                console.error(" Bank statement fetch failed", err);
+                console.error("❌ Bank statement fetch failed", err);
                 setBankStatement([]);
                 return [];
             }
@@ -220,7 +233,7 @@ const IncomeAnalyzerHome = () => {
 
     const analyzeBorrower = useCallback(
         async (borrower, email, loanId, signal, bank_Statement, isBackground = false) => {
-            console.log(`${isBackground ? " Background" : " Starting"} analysis for: ${borrower}`);
+            console.log(`${isBackground ? "🔄 Background" : "▶️ Starting"} analysis for: ${borrower}`);
             let step = 0;
 
             const updateProgress = () => {
@@ -236,7 +249,7 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log(' Rules verified for', borrower);
+                console.log('✅ Rules verified for', borrower);
 
                 if (signal.aborted) throw new Error("Aborted");
                 updateProgress();
@@ -246,7 +259,7 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log(' Income calculated for', borrower);
+                console.log('✅ Income calculated for', borrower);
 
                 if (signal.aborted) throw new Error("Aborted");
                 updateProgress();
@@ -256,7 +269,7 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log(' Insights generated for', borrower);
+                console.log('✅ Insights generated for', borrower);
                 if (signal.aborted) throw new Error("Aborted");
                 updateProgress();
 
@@ -265,7 +278,7 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log(' Self-employment data processed for', borrower);
+                console.log('✅ Self-employment data processed for', borrower);
                 if (signal.aborted) throw new Error("Aborted");
                 const self_employee_response = incomeself_emp?.income || {};
                 updateProgress();
@@ -278,12 +291,12 @@ const IncomeAnalyzerHome = () => {
                         signal,
                     });
                     reo_summary = reo_res?.data?.reo_calc?.checks || [];
-                    console.log(' REO calculated for', borrower);
+                    console.log('✅ REO calculated for', borrower);
                 } catch (reoError) {
                     if (reoError?.response?.status === 404) {
-                        console.warn(` REO endpoint not available for ${borrower}, skipping...`);
+                        console.warn(`⚠️ REO endpoint not available for ${borrower}, skipping...`);
                     } else {
-                        console.error(` REO calculation error for ${borrower}:`, reoError);
+                        console.error(`❌ REO calculation error for ${borrower}:`, reoError);
                     }
                     reo_summary = [];
                 }
@@ -301,14 +314,20 @@ const IncomeAnalyzerHome = () => {
                     summary: summaryData,
                     income_summary: incomeSummary,
                     insights: insightsComment,
-                    bankStatement: bank_Statement, // Use the passed bank statement
+                    bankStatement: bank_Statement,
                     self_employee: self_employee_response,
                     reo_summary: reo_summary,
                 };
 
-
                 // Update state immediately
                 setAnalyzedData((prev) => ({ ...prev, [borrower]: finalReport }));
+
+                // Mark borrower as completed
+                setProcessingBorrowers((prev) => {
+                    const next = new Set(prev);
+                    next.delete(borrower);
+                    return next;
+                });
 
                 // Save to DB
                 await updateAnalyzedDataIntoDB(
@@ -327,11 +346,19 @@ const IncomeAnalyzerHome = () => {
                 return finalReport;
             } catch (ex) {
                 if (ex.message === "Aborted") {
-                    console.warn(` Analysis aborted for ${borrower}`);
+                    console.warn(`⚠️ Analysis aborted for ${borrower}`);
                 } else if (!signal.aborted) {
-                    console.error(` Error analyzing borrower ${borrower}`, ex);
+                    console.error(`❌ Error analyzing borrower ${borrower}`, ex);
                     toast.error(`Failed to analyze ${borrower}`);
                 }
+
+                // Remove from processing on error
+                setProcessingBorrowers((prev) => {
+                    const next = new Set(prev);
+                    next.delete(borrower);
+                    return next;
+                });
+
                 return null;
             }
         },
@@ -346,7 +373,9 @@ const IncomeAnalyzerHome = () => {
 
         setIsAnalyzing(true);
         setLoadingStep(0);
-        setCurrentStep(5);
+
+        // Mark all borrowers as processing
+        setProcessingBorrowers(new Set(borrowerList));
 
         controllerRef.current = new AbortController();
         const signal = controllerRef.current.signal;
@@ -355,7 +384,7 @@ const IncomeAnalyzerHome = () => {
         const loanId = sessionStorage.getItem("loanId") || "";
 
         try {
-            //  FETCH BANK STATEMENT ONCE PER LOAN
+            // FETCH BANK STATEMENT ONCE PER LOAN
             const bank_Statement = await fetchBankStatement(email, loanId, signal);
 
             // ---- FIRST BORROWER (with progress UI) ----
@@ -371,40 +400,49 @@ const IncomeAnalyzerHome = () => {
 
             setSelectedBorrower(firstBorrower);
 
+            // Move to results screen after first borrower is done
+            setIsAnalyzing(false);
+            setCurrentStep(5);
+
             // ---- REMAINING BORROWERS (background) ----
             if (borrowerList.length > 1) {
-                console.log(`\n Processing ${borrowerList.length - 1} additional borrower(s) in background...`);
-            }
+                console.log(`\n🔄 Processing ${borrowerList.length - 1} additional borrower(s) in background...`);
 
-            for (const borrower of borrowerList.slice(1)) {
-                console.log(`\n Analyzing borrower: ${borrower}`);
-                await analyzeBorrower(
-                    borrower,
-                    email,
-                    loanId,
-                    signal,
-                    bank_Statement, // Reuse the same bank statement
-                    true
-                );
-            }
+                // Process remaining borrowers in background
+                (async () => {
+                    for (const borrower of borrowerList.slice(1)) {
+                        if (signal.aborted) break;
 
-            console.log('\n All borrowers analyzed successfully!');
+                        console.log(`\n🔄 Analyzing borrower: ${borrower}`);
+                        await analyzeBorrower(
+                            borrower,
+                            email,
+                            loanId,
+                            signal,
+                            bank_Statement,
+                            true
+                        );
+                    }
+
+                    console.log('\n✅ All borrowers analyzed successfully!');
+                })();
+            }
         } catch (err) {
             if (!signal.aborted) {
-                console.error(' Analysis failed:', err);
+                console.error('❌ Analysis failed:', err);
                 toast.error("Analysis failed");
             }
-        } finally {
             setIsAnalyzing(false);
         }
     }, [borrowerList, analyzeBorrower, fetchBankStatement]);
 
     const handleCancelAnalysis = useCallback(() => {
-        console.log(" Canceling analysis...");
+        console.log("🛑 Canceling analysis...");
         controllerRef.current?.abort();
         setIsAnalyzing(false);
         setLoadingStep(0);
         setCurrentStep(4);
+        setProcessingBorrowers(new Set());
     }, []);
 
     const fetchLoanForViewAnalyzed = async (targetLoanId) => {
@@ -431,6 +469,12 @@ const IncomeAnalyzerHome = () => {
         }
     }
 
+    // NEW: Handler to update borrower list when data changes in LoanDocumentScreen
+    const handleDataUpdate = useCallback((updatedData) => {
+        setFiles({ cleaned_data: updatedData });
+        // borrowerList will be updated by the useEffect that watches files.cleaned_data
+    }, []);
+
     return (
         <>
             {currentStep === 1 && (
@@ -451,6 +495,7 @@ const IncomeAnalyzerHome = () => {
                     files={files}
                     analyzedData={analyzedData}
                     setFiles={setFiles}
+                    onDataUpdate={handleDataUpdate}
                     setCurrentStep={setCurrentStep}
                     currentStep={currentStep}
                     onStartAnalysis={handleStartAnalysis}
@@ -461,7 +506,6 @@ const IncomeAnalyzerHome = () => {
                             return false;
                         }
 
-                        //  Fetch fresh data from API
                         return await fetchLoanForViewAnalyzed(loanIdToView);
                     }}
                 />
@@ -475,6 +519,7 @@ const IncomeAnalyzerHome = () => {
                     selectedBorrower={selectedBorrower}
                     setSelectedBorrower={setSelectedBorrower}
                     analyzedData={analyzedData}
+                    processingBorrowers={processingBorrowers}
                     isLoading={isAnalyzing}
                     onBackToDashboard={() => navigate("/dashboard")}
                 />

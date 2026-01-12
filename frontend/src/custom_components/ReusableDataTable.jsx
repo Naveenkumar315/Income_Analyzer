@@ -26,7 +26,8 @@ export default function ReusableDataTable({
     pageSizeOptions = [10, 20, 50],
     onCellClicked = null,
     tableHeader = true,
-    rowHeight = 48
+    rowHeight = 48,
+    shouldUseFlex = false,
 }) {
     const gridRef = useRef(null);
     const [gridApi, setGridApi] = useState(null);
@@ -57,6 +58,7 @@ export default function ReusableDataTable({
         params.api.addEventListener("paginationChanged", () => {
             setCurrentPage(params.api.paginationGetCurrentPage() + 1);
         });
+        params.api.sizeColumnsToFit();
     };
 
     useEffect(() => {
@@ -145,6 +147,7 @@ export default function ReusableDataTable({
                             sortable: true,
                             filter: false,
                             resizable: false,
+                            ...(shouldUseFlex ? { flex: 1 } : {}),
                             suppressMenu: true,
                             cellStyle: {
                                 whiteSpace: 'nowrap',

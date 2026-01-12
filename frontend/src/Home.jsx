@@ -40,38 +40,41 @@ export default function Home() {
 
     /* ================= TRANSFORM API DATA ================= */
     const transformUploadedData = (rows = []) =>
-        rows.map((item, index) => ({
-            id: index,
-            username: item.username,
-            loanId: item.loanID,
-            fileName: item.file_name,
+        rows.map((item, index) => {
+            const cleanBorrowers = Array.isArray(item.borrower)
+                ? item.borrower.filter(b => b && b.trim() !== "")
+                : typeof item.borrower === "string"
+                    ? item.borrower.split(",").map(b => b.trim()).filter(Boolean)
+                    : [];
 
-            borrowers: Array.isArray(item.borrower)
-                ? [
-                    ...(item.borrower.slice(0, 2)),
-                    item.borrower.length > 2
-                        ? `+${item.borrower.length - 2}`
-                        : null,
-                ].filter(Boolean)
-                : [],
+            return {
+                id: index,
+                username: item.username,
+                loanId: item.loanID,
+                fileName: item.file_name,
 
-            // Store all borrowers for search
-            allBorrowers: Array.isArray(item.borrower) ? item.borrower : [],
+                borrowers: [
+                    ...cleanBorrowers.slice(0, 2),
+                    cleanBorrowers.length > 2 ? `+${cleanBorrowers.length - 2}` : null
+                ].filter(Boolean),
 
-            status: item.analyzed_data ? "Completed" : "Pending",
+                allBorrowers: cleanBorrowers,
 
+                status: item.analyzed_data ? "Completed" : "Pending",
 
-            updatedAt: new Date(item.updated_at).toLocaleString("en-US", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-            }),
+                updatedAt: new Date(item.updated_at).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                }),
 
-            uploadedBy: "-", // backend not sending this yet
-        }));
+                uploadedBy: "-"
+            };
+        });
+
 
     /* ================= API CALL ================= */
     const handleCheckData = async () => {
@@ -133,24 +136,21 @@ export default function Home() {
         const borrowers = params.value;
         if (!Array.isArray(borrowers)) return null;
 
-        // Get all borrowers from row data
         const allBorrowers = params.data?.allBorrowers || [];
 
         return (
-            <div className="flex items-center gap-2 flex-wrap h-full">
+            <div className="flex items-center gap-2 h-full overflow-hidden">
                 {borrowers.map((name, idx) => {
-                    // Check if this is the "+N" indicator
-                    const isMoreIndicator = typeof name === 'string' && name.startsWith('+');
+                    const isMoreIndicator = typeof name === "string" && name.startsWith("+");
 
                     if (isMoreIndicator) {
-                        // Show tooltip with all borrowers on the +N tag
-                        const visibleBorrowers = borrowers.filter(b => !b.startsWith('+'));
+                        const visibleBorrowers = borrowers.filter(b => !b.startsWith("+"));
                         const hiddenBorrowers = allBorrowers.slice(2);
-                        const allNames = [...visibleBorrowers, ...hiddenBorrowers].join(', ');
+                        const allNames = [...visibleBorrowers, ...hiddenBorrowers].join(", ");
 
                         return (
                             <Tooltip key={idx} title={`All borrowers: ${allNames}`} placement="top">
-                                <span className="px-3 py-1 bg-[#4D4D4D] text-white text-xs rounded-full font-medium whitespace-nowrap cursor-help">
+                                <span className="px-2 py-1 bg-[#4D4D4D] text-white text-xs rounded-full font-medium whitespace-nowrap max-w-[50px] overflow-hidden text-ellipsis">
                                     {name}
                                 </span>
                             </Tooltip>
@@ -159,7 +159,7 @@ export default function Home() {
 
                     return (
                         <Tooltip key={idx} title={name} placement="top">
-                            <span className="px-3 py-1 bg-[#E6E6E6] text-[#4D4D4D] text-xs rounded-full font-medium whitespace-nowrap cursor-default">
+                            <span className="px-2 py-1 bg-[#E6E6E6] text-[#4D4D4D] text-xs rounded-full font-medium whitespace-nowrap max-w-[90px] overflow-hidden text-ellipsis">
                                 {name}
                             </span>
                         </Tooltip>
@@ -220,46 +220,49 @@ export default function Home() {
         {
             field: "loanId",
             headerName: "Loan ID",
-            width: 180,
-            flex: 0,
+            // width: 180,
+            flex: 1,
             cellStyle: { display: 'flex', alignItems: 'center' }
         },
         {
             field: "username",
             headerName: "User Name",
-            width: 160,
-            flex: 0,
+            // width: 160,
+            flex: 1,
             cellStyle: { display: 'flex', alignItems: 'center' }
         },
         {
             field: "fileName",
             headerName: "File Name",
-            width: 200,
-            flex: 0,
+            // width: 200,
+            flex: 1,
             cellStyle: { display: 'flex', alignItems: 'center' }
         },
         {
             field: "borrowers",
             headerName: "Borrower Name",
-            width: 320,
-            flex: 0,
+            // width: 320,
+            minWidth: 140,
+            flex: 2,
             cellRenderer: BorrowerNameCell,
             cellStyle: { display: 'flex', alignItems: 'center', padding: '8px 12px' }
         },
         {
             field: "status",
             headerName: "Status",
-            width: 140,
-            flex: 0,
+            // width: 140,
+            minWidth: 110,
+            flex: 1,
             sortable: false,
             cellRenderer: StatusCell,
-            cellStyle: { display: 'flex', alignItems: 'center' }
+            cellStyle: { display: 'flex', alignItems: 'center' },
+            suppressSizeToFit: true
         },
         {
             field: "updatedAt",
             headerName: "Last Updated",
-            width: 180,
-            flex: 0,
+            // width: 180,
+            flex: 1,
             cellStyle: { display: 'flex', alignItems: 'center' }
         },
 
@@ -269,6 +272,8 @@ export default function Home() {
             flex: 0,
             pinned: "right",
             lockPinned: true,
+            sortable: false,
+            filter: false,
             suppressMovable: true,
             cellRenderer: LoanActionCell,
             cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' }

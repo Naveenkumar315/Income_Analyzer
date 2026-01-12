@@ -14,6 +14,7 @@ export default function AnalysisResultsTabs({
     selectedBorrower,
     setSelectedBorrower,
     analyzedData = {},
+    processingBorrowers = new Set(),
     isLoading = false,
     onBackToDashboard,
 }) {
@@ -75,23 +76,28 @@ export default function AnalysisResultsTabs({
 
     // Check if current borrower has data
     const hasData = !!currentBorrowerData;
-    const isCurrentBorrowerLoading = selectedBorrower && !analyzedData[selectedBorrower];
+    const isCurrentBorrowerProcessing = processingBorrowers.has(selectedBorrower);
 
-    const rules = [
-        {
-            title: "Minimum Employment Duration",
-            status: "pass",
-            rule_text:
-                "Specifies documentation acceptable for wage earners: current paystubs (dated within 30 days), 1-2yrs W-2s, VOE forms, employer/third party verification.",
-            value_extracted: "Paystubs, W2s, VOE, 4506-C",
-            notes:
-                "Borrower must have at least 2 years of continuous employment in the same occupation or field. Gaps longer than 30 days require explanation.",
-            calculation_commentary:
-                "Specifies documentation acceptable for wage earners: current paystubs (dated within 30 days), 1-2yrs W-2s, VOE forms, employer/third party verification.",
-            documents: ["Form_1007.pdf", "Form_1007.pdf", "Form_1007.pdf"]
-        }
-    ];
+    // Create borrower options with disabled state
+    const borrowerOptions = useMemo(() => {
+        return borrowerList.map(borrower => {
+            const isProcessing = processingBorrowers.has(borrower);
+            const hasData = !!analyzedData[borrower];
 
+            return {
+                label: (
+                    <div className="flex items-center justify-between w-full">
+                        <span>{borrower}</span>
+                        {/* {isProcessing && (
+                            <Spin size="small" className="ml-2" />
+                        )} */}
+                    </div>
+                ),
+                value: borrower,
+                disabled: isProcessing || !hasData
+            };
+        });
+    }, [borrowerList, processingBorrowers, analyzedData]);
 
     return (
         <>
@@ -103,10 +109,8 @@ export default function AnalysisResultsTabs({
                         className="text-Colors-Text-Primary-primary hover:text-teal-700 font-medium"
                         onClick={() => {
                             if (onBackToDashboard) {
-                                // Coming from dashboard - go back to dashboard
                                 onBackToDashboard();
                             } else {
-                                // Normal flow - go back to step 4
                                 setCurrentStep(4);
                             }
                         }}
@@ -209,13 +213,14 @@ export default function AnalysisResultsTabs({
                             onChange={setSelectedBorrower}
                             placeholder="Select Borrower"
                             className="w-[200px]"
-                            options={borrowerList.map(borrower => ({
-                                label: borrower,
-                                value: borrower
-                            }))}
+                            options={borrowerOptions}
+                            // This adds the spinner to the right side of the dropdown box
+                            // loading={processingBorrowers.size > 0}
                         />
-                        {isCurrentBorrowerLoading && (
-                            <Spin size="small" />
+
+                        {/* Optional: Keep this if you want an EXTRA spinner outside the box */}
+                        {processingBorrowers.size > 0 && (
+                            <Spin size="small" className="ml-1" />
                         )}
                     </div>
                 </div>
@@ -280,7 +285,15 @@ export default function AnalysisResultsTabs({
 
                 {/* Scrollable Content */}
                 <div className="flex-1 overflow-auto min-h-0">
-                    {!hasData && !isCurrentBorrowerLoading ? (
+                    {!hasData && isCurrentBorrowerProcessing ? (
+                        <div className="px-6 pb-4 flex items-center justify-center h-full">
+                            <div className="text-center">
+                                <Spin size="large" />
+                                <p className="text-gray-500 mt-4">Processing {selectedBorrower}...</p>
+                                <p className="text-sm text-gray-400 mt-2">This may take a few moments</p>
+                            </div>
+                        </div>
+                    ) : !hasData ? (
                         <div className="px-6 pb-4 flex items-center justify-center h-full">
                             <div className="text-center text-gray-500">
                                 <p>No analysis data available for this borrower yet.</p>
@@ -354,15 +367,11 @@ export default function AnalysisResultsTabs({
                     />
                 </div>
 
-
-
                 <UnderWritingRulesModal
                     isOpen={isRulesModalOpen}
                     onClose={() => setIsRulesModalOpen(false)}
                 />
             </div>
-
-
         </>
     );
 }
