@@ -88,9 +88,9 @@ export default function AnalysisResultsTabs({
                 label: (
                     <div className="flex items-center justify-between w-full">
                         <span>{borrower}</span>
-                        {isProcessing && (
+                        {/* {isProcessing && (
                             <Spin size="small" className="ml-2" />
-                        )}
+                        )} */}
                     </div>
                 ),
                 value: borrower,
@@ -214,9 +214,13 @@ export default function AnalysisResultsTabs({
                             placeholder="Select Borrower"
                             className="w-[200px]"
                             options={borrowerOptions}
+                            // This adds the spinner to the right side of the dropdown box
+                            // loading={processingBorrowers.size > 0}
                         />
-                        {isCurrentBorrowerProcessing && (
-                            <Spin size="small" />
+
+                        {/* Optional: Keep this if you want an EXTRA spinner outside the box */}
+                        {processingBorrowers.size > 0 && (
+                            <Spin size="small" className="ml-1" />
                         )}
                     </div>
                 </div>
