@@ -290,7 +290,7 @@ export default function AdminTable() {
 
         showCustomConfirm({
             title: titleText,
-            content: `Are you sure you want to ${actionText} this user?`,
+            content: `Are you sure you want to ${actionText} this user`,
             icon: icon,
             okText: "Yes",
             okType: newStatus === "active" ? "primary" : "danger",

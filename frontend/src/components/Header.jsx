@@ -12,6 +12,7 @@ import { clearTokens, getUserData } from "../utils/authService";
 import { Icons } from "../utils/icons.js";
 import { useApp } from "../contexts/AppContext.jsx";
 
+
 //    CONFIGURABLE MENU – change only here
 const MENU_CONFIG = [
     {
@@ -61,21 +62,15 @@ const HelpButton = () => (
 
 //    PROFILE DROPDOWN
 const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
+    const { user } = useApp()
+    
     const username = userData?.username || "User";
-
-
-
-
-    const role = (() => {
-        const roleValue = userData?.role?.toLowerCase();
-        const typeValue = userData?.type?.toLowerCase();
-
-        if (typeValue === "global_admin") return "Master Admin";
-
-        if (roleValue === "admin") return "Admin";
-        return "User";
-    })();
-
+    let role = userData?.role || "User";
+    
+    if (user?.type === "global_admin") {
+        role = "Master Admin"
+    }
+    
     const formattedName = username.replace(/\./g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
     return (
