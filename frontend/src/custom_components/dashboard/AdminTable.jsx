@@ -8,6 +8,9 @@ import { Modal, Select } from "antd";
 import useRefreshUser from "../../hooks/useRefreshUser";
 import { Icons } from "../../utils/icons";
 import { formatPhoneNumber } from "../../utils/validation";
+import "../../index.css";
+
+
 
 export default function AdminTable() {
     const [users, setUsers] = useState([]);
@@ -25,14 +28,14 @@ export default function AdminTable() {
             if (!email) {
                 setLoading(false);
                 return;
-            }
+            }           
 
             //  Wait for user to be loaded first
             if (!user) {
                 await refreshUser(email);
             }
 
-            //  Now fetch users (user state will be available)
+            //  Now fetch users (user state will be available)                       
             fetchUsers();
         };
 
@@ -154,34 +157,46 @@ export default function AdminTable() {
         }
     };
 
-    const showCustomConfirm = ({ title, content, icon, onOk, okText = "Yes", cancelText = "No", okButtonProps = {} }) => {
+    const showCustomConfirm = ({ title, content, userName, icon, onOk, okText = "Yes", cancelText = "No", okButtonProps = {} }) => {
         Modal.confirm({
             className: "custom-confirm-modal",
             icon: null,
+            centered: true,
+            width: 420,
+            maskClosable: false,
             content: (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", textAlign: "center", width: "100%" }}>
-                    {icon && <img src={icon} alt="icon" style={{ width: "48px", height: "48px" }} />}
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <span style={{ fontSize: "16px", fontWeight: 600, color: "#18181B" }} className="font-creato">{title}</span>
-                        <span style={{ fontSize: "14px", fontWeight: 400, color: "#71717A" }} className="font-creato">{content}</span>
+                    {icon && <img src={icon} alt="icon" style={{ width: "25px", height: "25px" }} />}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <span style={{ fontSize: "18px", fontWeight: 600, color: "#18181B" }} className="font-creato">{title}</span>
+                        <span style={{ fontSize: "14px",  color: "#71717A" }} className="font-creato">{content} <b>{userName}</b>?</span>
                     </div>
                 </div>
             ),
             okText,
             cancelText,
-            centered: true,
-            width: 360,
-            okButtonProps,
-            cancelButtonProps: { style: { height: "32px", borderRadius: "6px", flex: 1, border: "1px solid #E0E0E0" } },
+            okButtonProps: {...okButtonProps,
+                style: {
+                     height: 44,
+                     borderRadius: 12,
+                     background: "#24A1DD ",
+                     borderColor: "#24A1DD ",
+                     color: "#ffffff",
+                     minWidth: 160,
+
+                },
+            },
+            cancelButtonProps: { style: { height: "44px", minWidth: 160, borderRadius: "12px",   background: "#ffffff",border: "2px solid #24A1DD",  }, },
             onOk,
         });
     };
 
-    const handleApprove = (userId) => {
-        if (!userId) return;
+    const handleApprove = (data) => {
+        if (!data?.id) return;
         showCustomConfirm({
             title: "Approve User",
-            content: "Are you sure you want to approve this user?",
+            content: "Are you sure you want to approve this user",
+            userName: data.name,
             icon: Icons.adminTable.circleCheck,
             okText: "Approve",
             onOk: async () => {
@@ -200,11 +215,12 @@ export default function AdminTable() {
         });
     };
 
-    const handleReject = (userId) => {
-        if (!userId) return;
+    const handleReject = (data) => {
+        if (!data?.id) return;
         showCustomConfirm({
             title: "Reject User",
-            content: "Are you sure you want to reject this user?",
+            content: "Are you sure you want to reject this user",
+            userName: data.name,
             icon: Icons.adminTable.circleClose,
             okText: "Reject",
             okButtonProps: { danger: true },
@@ -236,10 +252,11 @@ export default function AdminTable() {
 
         showCustomConfirm({
             title: "Delete User",
-            content: "Are you sure you want to permanently delete this user? This action cannot be undone.",
+            content: "Are you sure you want to delete the user",
+            userName: data?.name,
             icon: Icons.adminTable.deleteIcon,
-            okText: "Yes",
-            okButtonProps: { danger: true, style: { background: "#dc2626", borderColor: "#dc2626", color: "white" } },
+            // okText: "Yes",
+            // okButtonProps: { danger: true, style: { background: "#dc2626", borderColor: "#dc2626", color: "white" } },
             onOk: async () => {
                 setActionInProgress(true);
                 try {
@@ -301,19 +318,19 @@ export default function AdminTable() {
                 rawTarget.classList && rawTarget.classList.contains(className) ? rawTarget : null;
         };
 
-        const approveBtn = findButton("approve-btn");
-        if (approveBtn) {
-            event.event.preventDefault();
-            handleApprove(approveBtn.dataset.id);
-            return;
-        }
+        // const approveBtn = findButton("approve-btn");
+        // if (approveBtn) {
+        //     event.event.preventDefault();
+        //     handleApprove(event.data);
+        //     return;
+        // }
 
-        const rejectBtn = findButton("reject-btn");
-        if (rejectBtn) {
-            event.event.preventDefault();
-            handleReject(rejectBtn.dataset.id);
-            return;
-        }
+        // const rejectBtn = findButton("reject-btn");
+        // if (rejectBtn) {
+        //     event.event.preventDefault();
+        //     handleReject(event.data);
+        //     return;
+        // }
 
         const deleteBtn = findButton("delete-btn");
         if (deleteBtn) {
@@ -353,7 +370,7 @@ export default function AdminTable() {
                             fontSize: 13,
                             color: "#16a34a",
                         }}
-                        onClick={() => handleApprove(data.id)}
+                        onClick={() => handleApprove(data)}
                     >
                         <img src={Icons.adminTable.circleCheck} alt="Approve" width={14} />
                         <span>Approve</span>
@@ -371,7 +388,7 @@ export default function AdminTable() {
                             fontSize: 13,
                             color: "#dc2626",
                         }}
-                        onClick={() => handleReject(data.id)}
+                        onClick={() => handleReject(data)}
                     >
                         <img src={Icons.adminTable.circleClose} alt="Reject" width={14} />
                         <span>Reject</span>
@@ -482,6 +499,38 @@ export default function AdminTable() {
         );
     };
 
+    const StatusHeader = (props) => {
+        const toggleSort = () => {
+            const currentSort = props.column.getSort();
+
+            if (!currentSort) {
+                props.setSort("asc");
+            } else if (currentSort === "asc") {
+                props.setSort("desc");
+            } else {
+                props.setSort(null);
+            }
+        };
+
+        return (
+            <div
+                onClick={toggleSort}
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                    userSelect: "none",
+                }}
+            >
+                <span>Status</span>
+                <span style={{ fontSize: 14 }}>↑↓</span>
+    </div>
+            );
+    };
+
+
+
     // Added safety check for user
     const RoleCell = ({ data }) => {
         const handleChange = (newRole) => {
@@ -573,7 +622,8 @@ export default function AdminTable() {
             field: "status",
             headerName: "Status",
             width: 140,
-            sortable: false,
+            sortable: true,
+            headerComponent: StatusHeader,
             resizable: false,
             suppressSizeToFit: true,
             cellRenderer: StatusToggleCell,

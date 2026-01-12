@@ -311,3 +311,15 @@ body {
         border-color: #BBBBBB;
     }
 }
+
+
+.custom-confirm-modal .ant-modal-confirm-btns {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 28px;
+}
+
+.custom-confirm-modal .ant-modal-confirm-btns .ant-btn {
+  box-shadow: none;
+}

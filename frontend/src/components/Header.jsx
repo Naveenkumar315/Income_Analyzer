@@ -10,6 +10,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { clearTokens, getUserData } from "../utils/authService";
 import { Icons } from "../utils/icons.js";
+import { useApp } from "../contexts/AppContext.jsx";
 
 //    CONFIGURABLE MENU – change only here
 const MENU_CONFIG = [
@@ -61,7 +62,19 @@ const HelpButton = () => (
 //    PROFILE DROPDOWN
 const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
     const username = userData?.username || "User";
-    const role = userData?.role || "User";
+
+
+
+
+    const role = (() => {
+        const roleValue = userData?.role?.toLowerCase();
+        const typeValue = userData?.type?.toLowerCase();
+
+        if (typeValue === "global_admin") return "Master Admin";
+
+        if (roleValue === "admin") return "Admin";
+        return "User";
+    })();
 
     const formattedName = username.replace(/\./g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
@@ -111,10 +124,10 @@ const ProfileOverlay = ({ onLogout, onAdmin, isAdmin, userData }) => {
                     <button
                         type="button"
                         onClick={onLogout}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-[#ff4d4f] hover:bg-[#fff1f0] rounded-lg cursor-pointer"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-[#fff1f0] rounded-lg cursor-pointer"
                     >
-                        <LogoutOutlined className="text-lg" />
-                        <span className="text-sm font-medium">Logout</span>
+                        <LogoutOutlined style={{ color: "#ff4d4f", fontSize: "18px" }} />
+                        <span className="text-sm font-medium" style={{ color: "#ff4d4f" }} >Logout</span>
                     </button>
                 </div>
             </div>
@@ -127,8 +140,19 @@ export default function Header() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const userData = getUserData();
+    // const userData = getUserData();
+    const { user, setUser } = useApp();
+
+    useEffect(() => {
+        const data = getUserData();
+        if (data) setUser(data);
+    }, []);
+
+    const userData = user;
     const isAdmin = userData?.role === "Admin";
+
+
+
 
     // ADMIN FILTER
     const menuItems = MENU_CONFIG.filter((item) => !item.admin || isAdmin);
@@ -148,6 +172,11 @@ export default function Header() {
         clearTokens();
         navigate("/");
     };
+
+    useEffect(() => {
+        console.log({ user });
+
+    }, [user])
 
     //  ADMIN PAGE 
     const handleAdmin = () => navigate("/users");
