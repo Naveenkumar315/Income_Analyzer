@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Layout, Button, Tabs, Breadcrumb } from 'antd';
 import {
     ExpandAltOutlined,
@@ -20,7 +20,16 @@ import DeleteBorrowerModal from './DeleteBorrowerModal';
 import toast from "../utils/ToastService";
 import RestoreOriginalConfirmModal from './RestoreOriginalConfirmModal';
 
-export default function LoanDocumentScreen({ files, currentStep, setCurrentStep, onStartAnalysis, analyzedData, onViewResults }) {
+export default function LoanDocumentScreen({
+    files,
+    currentStep,
+    setCurrentStep,
+    onStartAnalysis,
+    analyzedData,
+    onViewResults,
+    setFiles,
+    onDataUpdate // NEW: callback to notify parent of data changes
+}) {
     const [activeDocumentTab, setActiveDocumentTab] = useState(null);
     const [activeInnerTab, setActiveInnerTab] = useState('summary');
     const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -46,12 +55,28 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
     // State to manage modified data
     const [modifiedData, setModifiedData] = useState(() => files?.cleaned_data || {});
 
+    // Sync modifiedData with files.cleaned_data when it changes from parent
+    useEffect(() => {
+        if (files?.cleaned_data) {
+            setModifiedData(files.cleaned_data);
+        }
+    }, [files?.cleaned_data]);
+
     const { handleMove, handleMerge, handleAddBorrower, handleDeleteBorrower, handleRenameBorrower, handleViewOriginal, handleRestoreOriginal, isProcessing } = useLoanActions();
 
     // Determine which data to display based on activeTab
     const displayData = useMemo(() => {
         return activeTab === "original" ? originalData : modifiedData;
     }, [activeTab, originalData, modifiedData]);
+
+    // NEW: Helper function to update data and notify parent
+    const updateDataAndNotifyParent = (updatedData) => {
+        setModifiedData(updatedData);
+        setFiles({ cleaned_data: updatedData });
+        if (onDataUpdate) {
+            onDataUpdate(updatedData);
+        }
+    };
 
     //Merge Borrower Click
     const handleMergeClick = () => {
@@ -312,7 +337,7 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
         );
 
         if (result.success) {
-            setModifiedData(result.updatedData);
+            updateDataAndNotifyParent(result.updatedData);
             setHasModifications(true);
             toast.success("Documents moved successfully");
             setActiveModal(null);
@@ -335,7 +360,7 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
         );
 
         if (result.success) {
-            setModifiedData(result.updatedData);
+            updateDataAndNotifyParent(result.updatedData);
             setHasModifications(true);
             toast.success("Borrowers merged successfully");
             setActiveModal(null);
@@ -349,7 +374,7 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
             const result = await handleAddBorrower(name.trim(), modifiedData);
 
             if (result.success) {
-                setModifiedData(result.updatedData);
+                updateDataAndNotifyParent(result.updatedData);
                 setHasModifications(true);
                 toast.success("Borrower added successfully");
             }
@@ -363,7 +388,7 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
             );
 
             if (result.success) {
-                setModifiedData(result.updatedData);
+                updateDataAndNotifyParent(result.updatedData);
                 setHasModifications(true);
                 toast.success("Borrower renamed successfully");
             }
@@ -373,7 +398,6 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
     };
 
     const handleBackToOriginal = async () => {
-        debugger
         const result = await handleViewOriginal();
 
         if (result.success) {
@@ -393,11 +417,10 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
     };
 
     const onRestoreOriginalConfirm = async () => {
-        debugger
         const result = await handleRestoreOriginal();
 
         if (result.success) {
-            setModifiedData(result.data);
+            updateDataAndNotifyParent(result.data);
             setActiveTab("modified");
             setHasModifications(false);
 
@@ -407,6 +430,19 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
         setRestoreModal(false);
     };
 
+    const handleDeleteBorrowerConfirm = async () => {
+        const result = await handleDeleteBorrower(
+            deleteModal.name,
+            modifiedData
+        );
+
+        if (result.success) {
+            updateDataAndNotifyParent(result.updatedData);
+            setHasModifications(true);
+        }
+
+        setDeleteModal({ open: false, name: "" });
+    };
 
     const handleStartAnalysing = () => {
         if (onStartAnalysis) {
@@ -874,19 +910,7 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
                 open={deleteModal.open}
                 borrowerName={deleteModal.name}
                 onCancel={() => setDeleteModal({ open: false, name: "" })}
-                onConfirm={async () => {
-                    const result = await handleDeleteBorrower(
-                        deleteModal.name,
-                        modifiedData
-                    );
-
-                    if (result.success) {
-                        setModifiedData(result.updatedData);
-                        setHasModifications(true);
-                    }
-
-                    setDeleteModal({ open: false, name: "" });
-                }}
+                onConfirm={handleDeleteBorrowerConfirm}
             />
 
             <RestoreOriginalConfirmModal
