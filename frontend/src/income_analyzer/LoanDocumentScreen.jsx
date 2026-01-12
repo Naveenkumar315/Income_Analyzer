@@ -760,15 +760,24 @@ export default function LoanDocumentScreen({ files, currentStep, setCurrentStep,
                                     <div className='p-3 mt-1' style={{ maxHeight: 'calc(100vh - 250px)', overflowY: 'auto' }}>
                                         {activeInnerTab === 'summary' ? (
                                             <div className="px-6 py-6 bg-gray-50 border-t border-gray-200">
-                                                <div className="grid grid-cols-2 gap-x-12 gap-y-3">
+                                                <div className="space-y-2">
                                                     {summaryData.map((item, idx) => (
-                                                        <div key={idx} className="flex text-sm">
-                                                            <span className="text-gray-500 min-w-[220px]">{item.label}:</span>
-                                                            <span className="text-gray-900 font-medium">{item.value}</span>
+                                                        <div
+                                                            key={idx}
+                                                            className="flex justify-between items-start bg-white border border-gray-200 rounded-md px-4 py-3"
+                                                        >
+                                                            <span className="text-sm text-gray-500">
+                                                                {item.label}
+                                                            </span>
+                                                            <span className="text-sm font-semibold text-gray-900 text-right">
+                                                                {item.value}
+                                                            </span>
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
+
+
                                         ) : (
                                             <div className="mt-2">
                                                 {nestedDataWithIds && nestedDataWithIds.length > 0 ? (

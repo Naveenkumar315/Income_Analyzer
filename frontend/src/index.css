@@ -151,11 +151,10 @@ body {
 
 .inner-tabs .ant-tabs-tab {
     padding: 12px 0;
-    margin-right: 32px;
 }
 
 .inner-tabs .ant-tabs-tab-active {
-    color: #24A1DD;
+    /* color: #24A1DD; */
 }
 
 .inner-tabs .ant-tabs-ink-bar {
@@ -241,6 +240,15 @@ body {
 .ant-menu-light.ant-menu-horizontal>.ant-menu-item:hover::after {
     border-bottom: 2px solid #24A1DD !important;
 }
+
+:where(.css-dev-only-do-not-override-3obk1w).ant-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #1A1A1A !important;
+}
+
+:where(.css-dev-only-do-not-override-3obk1w).ant-tabs .ant-tabs-ink-bar {
+    background: #24A1DD !important;
+}
+
 
 
 
