@@ -63,6 +63,12 @@ export default function LoanDocumentScreen({
         }
     }, [files?.cleaned_data]);
 
+    // Update the activeDocumentTab effect
+    useEffect(() => {
+        // Reset to summary tab when document tab changes
+        setActiveInnerTab('summary');
+    }, [activeDocumentTab]);
+
     const { handleMove, handleMerge, handleAddBorrower, handleDeleteBorrower, handleRenameBorrower, handleViewOriginal, handleRestoreOriginal, isProcessing } = useLoanActions();
 
     // Determine which data to display based on activeTab
@@ -524,13 +530,13 @@ export default function LoanDocumentScreen({
             </div>
 
             <div className="h-screen flex flex-col">
-                <Layout className={`bg-white rounded-lg mt-2 p-5 ${isFullScreen ? "h-screen m-0 rounded-none" : ""}`}>
+                <Layout className={`bg-white rounded-lg  ${isFullScreen ? "h-screen m-0 rounded-none" : ""}`}>
                     {
                         !isFullScreen && (
                             <Sider
                                 width={330}
                                 className="bg-[#F7F7F7] border-r border-gray-200 mt-2 rounded-2xl border"
-                                style={{ height: 'calc(100vh - 140px)', background: "#F5F7FB" }}
+                                style={{ height: 'calc(100vh - 120px)', background: "#F5F7FB" }}
                             >
                                 <div className="h-full flex flex-col  overflow-hidden">
                                     <div className="p-4 border-b border-gray-200 bg-white">
@@ -800,7 +806,7 @@ export default function LoanDocumentScreen({
                     }
 
 
-                    <Content className="bg-white rounded-lg mt-2 p-5">
+                    <Content className="bg-white rounded-lg mt-2 ">
                         <div className="bg-white rounded-lg border border-gray-200 overflow-auto" style={{ height: 'calc(100vh - 120px)' }}
                         >
                             {!selectedDocument ? (
@@ -840,7 +846,7 @@ export default function LoanDocumentScreen({
                                         </div>
                                     </div>
 
-                                    <div className='p-3 mt-1' style={{ maxHeight: 'calc(100vh - 250px)', overflowY: 'auto' }}>
+                                    <div className='p-3 mt-1' style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
                                         {activeInnerTab === 'summary' ? (
                                             <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
                                                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
