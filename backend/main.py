@@ -739,7 +739,7 @@ async def login():
     # http://localhost:4000/api/SSOReplyURI
     # http://localhost:4000/api/SSOReplyURI
 
-    application_base_url = "IncomeCalculator"
+    application_base_url = "LoanDNAPlatform"
     # application_base_url = "IncomeCalculator"
 
     xml = f"""<samlp:AuthnRequest

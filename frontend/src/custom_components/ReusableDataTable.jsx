@@ -177,7 +177,7 @@ export default function ReusableDataTable({
                     <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 rounded-b-lg bg-white">
                         {/* Left */}
                         <div className="flex items-center gap-3">
-                            <span className="text-sm">Items per page:</span>
+                            <span className="text-sm text-gray-600">Items per page:</span>
 
                             <select
                                 value={pageSize}
@@ -190,14 +190,14 @@ export default function ReusableDataTable({
                                         gridApi.paginationGoToPage(0);
                                     }
                                 }}
-                                className="border rounded-md px-2 py-1"
+                                className="border border-gray-300 rounded px-2 py-1 text-sm"
                             >
                                 {pageSizeOptions.map((s) => (
                                     <option key={s} value={s}>{s}</option>
                                 ))}
                             </select>
 
-                            <span className="text-sm text-gray-400">
+                            <span className="text-sm text-gray-500">
                                 {Math.min((currentPage - 1) * pageSize + 1, filteredData.length)}
                                 {" - "}
                                 {Math.min(currentPage * pageSize, filteredData.length)}
@@ -206,27 +206,109 @@ export default function ReusableDataTable({
                             </span>
                         </div>
 
-                        {/* Right */}
+                        {/* Right - Pagination */}
                         <div className="flex items-center gap-1">
-                            {Array.from(
-                                { length: Math.ceil(filteredData.length / pageSize) },
-                                (_, i) => i + 1
-                            ).map((p) => (
-                                <button
-                                    key={p}
-                                    onClick={() => {
-                                        setCurrentPage(p);
-                                        gridApi?.paginationGoToPage(p - 1);
-                                    }}
-                                    className={`min-w-9 h-9 rounded-md cursor-pointer
-                                        ${currentPage === p
-                                            ? "bg-[#24A1DD] text-white font-medium border-transparent !text-white"
-                                            : "bg-white text-gray-700 hover:bg-gray-100"
-                                        }`}
-                                >
-                                    {p}
-                                </button>
-                            ))}
+                            {(() => {
+                                const totalPages = Math.ceil(filteredData.length / pageSize);
+                                const pages = [];
+                                const maxVisible = 3; // Show max 3 page numbers
+
+                                if (totalPages <= maxVisible + 2) {
+                                    // Show all pages if total is small
+                                    for (let i = 1; i <= totalPages; i++) {
+                                        pages.push(i);
+                                    }
+                                } else {
+                                    // Always show first page
+                                    pages.push(1);
+
+                                    if (currentPage <= 2) {
+                                        // Near start: 1 2 3 ... last
+                                        pages.push(2);
+                                        pages.push(3);
+                                        pages.push('ellipsis');
+                                        pages.push(totalPages);
+                                    } else if (currentPage >= totalPages - 1) {
+                                        // Near end: 1 ... last-2 last-1 last
+                                        pages.push('ellipsis');
+                                        pages.push(totalPages - 2);
+                                        pages.push(totalPages - 1);
+                                        pages.push(totalPages);
+                                    } else {
+                                        // Middle: 1 ... current ... last
+                                        pages.push('ellipsis-start');
+                                        pages.push(currentPage);
+                                        pages.push('ellipsis-end');
+                                        pages.push(totalPages);
+                                    }
+                                }
+
+                                return (
+                                    <>
+                                        {pages.map((p, idx) => {
+                                            if (typeof p === 'string') {
+                                                // Render ellipsis
+                                                return (
+                                                    <span key={p} className="px-2 text-gray-400 text-sm">
+                                                        ...
+                                                    </span>
+                                                );
+                                            }
+
+                                            return (
+                                                <button
+                                                    key={p}
+                                                    onClick={() => {
+                                                        setCurrentPage(p);
+                                                        gridApi?.paginationGoToPage(p - 1);
+                                                    }}
+                                                    className={`min-w-[32px] h-8 rounded text-sm font-medium transition-colors ${currentPage === p
+                                                            ? "bg-[#00A8E8] text-white"
+                                                            : "bg-white text-gray-700 hover:bg-gray-50"
+                                                        }`}
+                                                >
+                                                    {p}
+                                                </button>
+                                            );
+                                        })}
+                                    </>
+                                );
+                            })()}
+
+                            {/* Previous Button */}
+                            <button
+                                onClick={() => {
+                                    if (currentPage > 1) {
+                                        setCurrentPage(currentPage - 1);
+                                        gridApi?.paginationGoToPage(currentPage - 2);
+                                    }
+                                }}
+                                disabled={currentPage === 1}
+                                className={`min-w-[32px] h-8 rounded text-sm transition-colors ${currentPage === 1
+                                        ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                        : "bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+                                    }`}
+                            >
+                                &lt;
+                            </button>
+
+                            {/* Next Button */}
+                            <button
+                                onClick={() => {
+                                    const totalPages = Math.ceil(filteredData.length / pageSize);
+                                    if (currentPage < totalPages) {
+                                        setCurrentPage(currentPage + 1);
+                                        gridApi?.paginationGoToPage(currentPage);
+                                    }
+                                }}
+                                disabled={currentPage === Math.ceil(filteredData.length / pageSize)}
+                                className={`min-w-[32px] h-8 rounded text-sm transition-colors ${currentPage === Math.ceil(filteredData.length / pageSize)
+                                        ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                        : "bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+                                    }`}
+                            >
+                                &gt;
+                            </button>
                         </div>
                     </div>
                 )}
