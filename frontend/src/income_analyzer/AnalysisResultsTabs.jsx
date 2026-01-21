@@ -65,12 +65,12 @@ export default function AnalysisResultsTabs({
 
         const income = currentBorrowerData.income_summary;
         return [
-            { label: "Qualifying Income", value: income.qualifying_income || "$0.00" },
-            { label: "Bonus", value: income.bonus || "$0.00" },
-            { label: "Commission", value: income.commission || "$0.00" },
-            { label: "Monthly Income", value: income.monthly_income || "$0.00" },
-            { label: "Over Time", value: income.overtime || "$0.00" },
-            { label: "Other Income", value: income.other_income || "$0.00" }
+            { label: "Qualifying Income", value: income["Qualifying income"] || "$0.00" },
+            { label: "Bonus", value: income["Bonus"] || "$0.00" },
+            { label: "Commission", value: income["Comission"] || "$0.00" },
+            { label: "Monthly Income", value: income["Monthly income"] || "$0.00" },
+            { label: "Over Time", value: income["Over time"] || "$0.00" },
+            { label: "Other Income", value: income["other income"] || "$0.00" }
         ];
     }, [currentBorrowerData]);
 
@@ -214,8 +214,8 @@ export default function AnalysisResultsTabs({
                             placeholder="Select Borrower"
                             className="w-[200px]"
                             options={borrowerOptions}
-                            // This adds the spinner to the right side of the dropdown box
-                            // loading={processingBorrowers.size > 0}
+                        // This adds the spinner to the right side of the dropdown box
+                        // loading={processingBorrowers.size > 0}
                         />
 
                         {/* Optional: Keep this if you want an EXTRA spinner outside the box */}
@@ -333,7 +333,7 @@ export default function AnalysisResultsTabs({
                             )}
 
                             {activeTab === "insights" && (
-                                <div className="px-6 pb-4">
+                                <div className="px-6 pb-4 whitespace-pre-line">
                                     <div>{currentBorrowerData?.insights || "No insights available"}</div>
                                 </div>
                             )}

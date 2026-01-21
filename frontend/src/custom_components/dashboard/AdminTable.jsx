@@ -28,7 +28,7 @@ export default function AdminTable() {
             if (!email) {
                 setLoading(false);
                 return;
-            }           
+            }
 
             //  Wait for user to be loaded first
             if (!user) {
@@ -169,30 +169,32 @@ export default function AdminTable() {
                     {icon && <img src={icon} alt="icon" style={{ width: "25px", height: "25px" }} />}
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                         <span style={{ fontSize: "18px", fontWeight: 600, color: "#18181B" }} className="font-creato">{title}</span>
-                        <span style={{ fontSize: "14px",  color: "#71717A" }} className="font-creato">{content} <b>{userName}</b>?</span>
+                        <span style={{ fontSize: "14px", color: "#71717A" }} className="font-creato">{content} <b>{userName}</b>?</span>
                     </div>
                 </div>
             ),
             okText,
             cancelText,
-            okButtonProps: {...okButtonProps,
+            okButtonProps: {
+                ...okButtonProps,
                 style: {
-                     height: 44,
-                     borderRadius: 12,
-                     background: "#24A1DD ",
-                     borderColor: "#24A1DD ",
-                     color: "#ffffff",
-                     minWidth: 160,
+                    height: 44,
+                    borderRadius: 12,
+                    background: "#24A1DD ",
+                    borderColor: "#24A1DD ",
+                    color: "#ffffff",
+                    minWidth: 160,
 
                 },
             },
-            cancelButtonProps: { style: { height: "44px", minWidth: 160, borderRadius: "12px",   background: "#ffffff",border: "2px solid #24A1DD",  }, },
+            cancelButtonProps: { style: { height: "44px", minWidth: 160, borderRadius: "12px", background: "#ffffff", border: "2px solid #24A1DD", }, },
             onOk,
         });
     };
 
     const handleApprove = (data) => {
         if (!data?.id) return;
+        let userId = data?.id
         showCustomConfirm({
             title: "Approve User",
             content: "Are you sure you want to approve this user",
@@ -217,6 +219,7 @@ export default function AdminTable() {
 
     const handleReject = (data) => {
         if (!data?.id) return;
+        let userId = data?.id
         showCustomConfirm({
             title: "Reject User",
             content: "Are you sure you want to reject this user",
@@ -525,8 +528,8 @@ export default function AdminTable() {
             >
                 <span>Status</span>
                 <span style={{ fontSize: 14 }}>↑↓</span>
-    </div>
-            );
+            </div>
+        );
     };
 
 
