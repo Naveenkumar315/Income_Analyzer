@@ -231,12 +231,37 @@ export default function Home() {
             flex: 1,
             cellStyle: { display: 'flex', alignItems: 'center' }
         },
+        // {
+        //     field: "fileName",
+        //     headerName: "File Name",
+        //     // width: 200,
+        //     flex: 1,
+        //     cellStyle: { display: 'flex', alignItems: 'center' }
+        // },
         {
             field: "fileName",
             headerName: "File Name",
-            // width: 200,
             flex: 1,
-            cellStyle: { display: 'flex', alignItems: 'center' }
+            cellRenderer: (params) => {
+                const value = params.value;
+
+                if (!value) return "-";
+
+                return (
+                    <Tooltip title={value} placement="topLeft">
+                        <span
+                            className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer"
+                        >
+                            {value}
+                        </span>
+                    </Tooltip>
+                );
+            },
+            cellStyle: {
+                display: 'flex',
+                alignItems: 'center',
+                overflow: 'hidden'
+            }
         },
         {
             field: "borrowers",

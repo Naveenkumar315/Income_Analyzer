@@ -263,7 +263,7 @@ export default function ReusableDataTable({
                                                         gridApi?.paginationGoToPage(p - 1);
                                                     }}
                                                     className={`min-w-[32px] h-8 rounded text-sm font-medium transition-colors ${currentPage === p
-                                                            ? "bg-[#00A8E8] text-white"
+                                                            ? "bg-[#00A8E8] !text-white"
                                                             : "bg-white text-gray-700 hover:bg-gray-50"
                                                         }`}
                                                 >
