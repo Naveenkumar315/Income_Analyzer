@@ -6,6 +6,8 @@ import { Button, Breadcrumb, Select, Spin } from 'antd';
 import WageEarner from "./Results/WageEarner";
 import BankStatement from "./Results/BankStatement";
 import UnderWritingRulesModal from "./UnderWritingRulesModal";
+import SelfEmployed from "./Results/SelfEmployed";
+import REO from "./Results/REO";
 
 export default function AnalysisResultsTabs({
     currentStep,
@@ -232,7 +234,7 @@ export default function AnalysisResultsTabs({
                         {activeTab === "wageEarner" && "Underwriting Summary"}
                         {activeTab === "bankStatement" && "Bank Statement Analysis"}
                         {activeTab === "selfEmployed" && "Self Employed Analysis"}
-                        {activeTab === "reo" && "Real Estate Owned (REO)"}
+                        {activeTab === "reo" && "REO"}
                         {activeTab === "insights" && "Insights"}
                     </h2>
                 </div>
@@ -322,13 +324,14 @@ export default function AnalysisResultsTabs({
 
                             {activeTab === "selfEmployed" && (
                                 <div className="px-6 pb-4">
-                                    <div>{JSON.stringify(currentBorrowerData?.self_employee, null, 2)}</div>
+                                    <SelfEmployed data={currentBorrowerData?.self_employee} />
                                 </div>
                             )}
 
+
                             {activeTab === "reo" && (
                                 <div className="px-6 pb-4">
-                                    <div>{JSON.stringify(currentBorrowerData?.reo_summary, null, 2)}</div>
+                                    <REO data={currentBorrowerData?.reo_summary || []} />
                                 </div>
                             )}
 

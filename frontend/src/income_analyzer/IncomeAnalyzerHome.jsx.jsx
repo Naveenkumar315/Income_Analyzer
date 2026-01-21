@@ -249,7 +249,6 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log('✅ Rules verified for', borrower);
 
                 if (signal.aborted) throw new Error("Aborted");
                 updateProgress();
@@ -259,7 +258,6 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log('✅ Income calculated for', borrower);
 
                 if (signal.aborted) throw new Error("Aborted");
                 updateProgress();
@@ -269,7 +267,6 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log('✅ Insights generated for', borrower);
                 if (signal.aborted) throw new Error("Aborted");
                 updateProgress();
 
@@ -278,7 +275,6 @@ const IncomeAnalyzerHome = () => {
                     params: { email, loanID: loanId, borrower },
                     signal,
                 });
-                console.log('✅ Self-employment data processed for', borrower);
                 if (signal.aborted) throw new Error("Aborted");
                 const self_employee_response = incomeself_emp?.income || {};
                 updateProgress();
@@ -290,13 +286,12 @@ const IncomeAnalyzerHome = () => {
                         params: { email, loanID: loanId, borrower },
                         signal,
                     });
-                    reo_summary = reo_res?.data?.reo_calc?.checks || [];
-                    console.log('✅ REO calculated for', borrower);
+                    reo_summary = reo_res?.reo_calc?.checks || [];
                 } catch (reoError) {
                     if (reoError?.response?.status === 404) {
-                        console.warn(`⚠️ REO endpoint not available for ${borrower}, skipping...`);
+                        console.warn(` REO endpoint not available for ${borrower}, skipping...`);
                     } else {
-                        console.error(`❌ REO calculation error for ${borrower}:`, reoError);
+                        console.error(` REO calculation error for ${borrower}:`, reoError);
                     }
                     reo_summary = [];
                 }

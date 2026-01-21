@@ -103,6 +103,7 @@ class IC_self_Field(BaseModel):
     commentary: str
     formulas_applied: str
     final_math_formula: str
+    value: str = "0.00"
 
 
 # Parsers
@@ -685,7 +686,6 @@ async def bank_statement_insights(content: str):
 
 @mcp.tool()
 async def IC_self_income(content):
-
     try:
         self_emp_prompt = self_employment_prompt(content)
         self_emp_prompt += f"\n\n{IC_self_parser.get_format_instructions()}"
@@ -700,13 +700,72 @@ async def IC_self_income(content):
 
         data = IC_self_parser.parse(output).dict()
 
-        data['value'] = math_tool(data['final_math_formula'])
+        # ✅ Calculate value using math_tool
+        if data.get('final_math_formula'):
+            calculated_value = math_tool.invoke(data['final_math_formula'])
+            data['value'] = str(calculated_value)
+        else:
+            data['value'] = "0.00"
 
         return data
 
     except Exception as e:
-        return f'Error: {e}'
+        # ✅ Return a proper error structure instead of string
+        return {
+            "borrower_type": "Self-Employed",
+            "status": "Fail",
+            "Documents_used": [],
+            "calculation_commentry": f"Error: {str(e)}",
+            "commentary": "Calculation failed due to error",
+            "formulas_applied": "",
+            "final_math_formula": "",
+            "value": "0.00"
+        }
 
+
+@mcp.tool()
+async def reo_calculation(content: str):
+    """
+    Calculate REO (Real Estate Owned) income.
+    """
+    try:
+        # Use the REO prompt from your original code
+        reo_prompt = f"""
+You are a financial underwriting assistant specialized in REO (Real Estate Owned) income analysis for mortgage underwriting.
+
+Content: {content}
+
+Calculate the following REO fields:
+1. Rents Received
+2. Total Expenses
+3. Insurance
+4. Mortgage Interest
+5. HOA Dues
+6. Fair Rental Days
+7. PITIA (Principal, Interest, Taxes, Insurance, Association fees)
+8. Qualifying Income
+
+Return results in the ICFields format with proper calculation and professional commentary for each field.
+"""
+
+        reo_prompt += f"\n\n{ic_parser.get_format_instructions()}"
+
+        prompt = {
+            "messages": [
+                {"role": "user", "content": reo_prompt}
+            ]
+        }
+
+        raw_output = await agent.ainvoke(prompt)
+        output = raw_output['messages'][-1].content
+
+        return ic_parser.parse(output).dict()
+
+    except Exception as e:
+        return {
+            "error": f"REO calculation failed: {str(e)}",
+            "checks": []
+        }
 
 # ======================================
 #  Entrypoint
