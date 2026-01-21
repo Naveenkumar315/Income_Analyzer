@@ -593,6 +593,60 @@ async def income_self_emp(
         return {"status": "success", "income": e}
 
 
+@app.post("/reo-calc")
+async def reo_calc(
+    email: str = Query(...),
+    loanID: str = Query(...),
+    borrower: str = Query("All")
+):
+    """Calculate REO (Real Estate Owned) income"""
+    content = await db["uploadedData"].find_one(
+        {"loanID": loanID, "email": email},
+        {"cleaned_data": 1, "_id": 0}
+    )
+
+    if not content or "cleaned_data" not in content:
+        return {"status": "error", "reo_calc": {}}
+
+    data = content["cleaned_data"]
+
+    if borrower != "All":
+        if borrower not in data:
+            return {"status": "error", "reo_calc": {}}
+        data = data[borrower]
+
+    if not data:
+        return {"status": "error", "reo_calc": {}}
+
+    try:
+        async with client_lock:
+            try:
+                response = await mcp_client.call_tool(
+                    "reo_calculation",
+                    {"content": json.dumps(data)},
+                )
+
+                if response.content and len(response.content) > 0 and response.content[0].text.strip():
+                    parsed_response = json.loads(response.content[0].text)
+                else:
+                    parsed_response = {
+                        "error": "Empty response from MCP client"}
+
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decode error in REO calculation: {e}")
+                parsed_response = {"error": "Invalid JSON response"}
+            except Exception as e:
+                logger.error(f"REO calculation error: {e}")
+                parsed_response = {"error": f"Calculation failed: {str(e)}"}
+
+        return {"status": "success", "reo_calc": parsed_response}
+
+    except Exception as e:
+        logger.error(f"REO calculation failed: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"REO calculation failed: {str(e)}")
+
+
 @app.post("/store-analyzed-data")
 async def store_analyzed_data(
     email: str = Body(...),
