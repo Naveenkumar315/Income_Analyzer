@@ -336,10 +336,17 @@ export default function AnalysisResultsTabs({
                             )}
 
                             {activeTab === "insights" && (
-                                <div className="px-6 pb-4 whitespace-pre-line">
-                                    <div>{currentBorrowerData?.insights || "No insights available"}</div>
-                                </div>
+                                currentBorrowerData?.insights ? (
+                                    <div className="px-6 pb-4 whitespace-pre-line">
+                                        {currentBorrowerData.insights}
+                                    </div>
+                                ) : (
+                                    <div className="p-6 text-gray-500 text-center">
+                                        No insights available
+                                    </div>
+                                )
                             )}
+
                         </>
                     )}
                 </div>
