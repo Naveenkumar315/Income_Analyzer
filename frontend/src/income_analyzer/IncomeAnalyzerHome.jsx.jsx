@@ -106,11 +106,27 @@ const IncomeAnalyzerHome = () => {
         return new Promise((resolve, reject) => {
             reader.onload = async (e) => {
                 try {
+                    const text = e.target.result.trim();
+
+                    // Empty file case
+                    if (!text) {
+                        return reject(new Error("EMPTY_JSON"));
+                    }
+
                     let rawJson;
                     try {
-                        rawJson = JSON.parse(e.target.result);
-                    } catch (err) {
-                        return reject(new Error("Invalid JSON file"));
+                        rawJson = JSON.parse(text);
+                    } catch {
+                        return reject(new Error("INVALID_JSON"));
+                    }
+
+                    // {} or [] case
+                    const isEmpty =
+                        (Array.isArray(rawJson) && rawJson.length === 0) ||
+                        (typeof rawJson === "object" && !Array.isArray(rawJson) && Object.keys(rawJson).length === 0);
+
+                    if (isEmpty) {
+                        return reject(new Error("EMPTY_JSON"));
                     }
 
                     const payload = {
@@ -125,14 +141,14 @@ const IncomeAnalyzerHome = () => {
                     };
 
                     const res = await authApi.cleanJson(payload);
-
                     resolve(res?.cleaned_json);
                 } catch (err) {
                     reject(err);
                 }
             };
 
-            reader.readAsText(file?.originFileObj || file);
+
+            reader.readAsText(file);
         });
     };
 
@@ -155,7 +171,16 @@ const IncomeAnalyzerHome = () => {
             setCurrentStep(4);
         } catch (err) {
             console.error(err);
-            toast.error("Upload failed");
+            if (err.message === "EMPTY_JSON") {
+                toast.error("Uploaded file is empty. Please upload a valid JSON file.");
+            }
+            else if (err.message === "INVALID_JSON") {
+                toast.error("Invalid JSON file. Please upload a valid .json file.");
+            }
+            else {
+                toast.error("Upload failed. Please try again.");
+            }
+            // toast.error("Upload failed");
             setShowModal({ upload: false, loader: false });
             setCurrentStep(2);
         }

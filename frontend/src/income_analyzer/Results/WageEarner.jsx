@@ -133,7 +133,7 @@ function IncomeItem({ item, index }) {
                 <div className="px-4 pb-4 text-sm text-gray-700 space-y-3">
                     <Row label="Value:">
                         <span className="font-medium text-gray-900">
-                            {formatValue(value)}
+                            {value}
                         </span>
                     </Row>
 
