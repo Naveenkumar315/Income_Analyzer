@@ -29,6 +29,8 @@ export default function LoanDocumentScreen({
     analyzedData,
     onViewResults,
     setFiles,
+    setHasModifications,
+    hasModifications,
     onDataUpdate // NEW: callback to notify parent of data changes
 }) {
     const [activeDocumentTab, setActiveDocumentTab] = useState(null);
@@ -38,7 +40,7 @@ export default function LoanDocumentScreen({
     const [expandedBorrowers, setExpandedBorrowers] = useState([]);
     const [selectedDocument, setSelectedDocument] = useState(null);
     const [activeModal, setActiveModal] = useState(null);
-    const [hasModifications, setHasModifications] = useState(false);
+    // const [hasModifications, setHasModifications] = useState(false);
     const [restoreModal, setRestoreModal] = useState(false);
     const [activeTab, setActiveTab] = useState("modified");
     const [originalData, setOriginalData] = useState(null);
@@ -98,6 +100,20 @@ export default function LoanDocumentScreen({
 
         setActiveModal("merge");
     };
+
+    const handleMoveClick = () => {
+        // Must have documents selected
+        if (!selectionInfo.hasDocument) return;
+
+        // If all selected documents belong to same borrower
+        if (selectedBorrowerNamesForMove.size === 1) {
+            toast.error("Please add another borrower to move documents into.");
+            return;
+        }
+
+        setActiveModal("move");
+    };
+
 
     // Process the cleaned data into structured format
     const processedData = useMemo(() => {
@@ -551,7 +567,7 @@ export default function LoanDocumentScreen({
                                                             <button
                                                                 disabled={!selectionInfo.hasDocument || isProcessing}
                                                                 className={`p-1.5 rounded hover:bg-gray-100 cursor-pointer ${!selectionInfo.hasDocument || isProcessing ? "opacity-40 cursor-not-allowed" : ""}`}
-                                                                onClick={() => setActiveModal("move")}
+                                                                onClick={handleMoveClick}
                                                             >
                                                                 <img src={(!selectionInfo.hasDocument || isProcessing) ? Icons.loanDocument.move : Icons.loanDocument.move_active_income} alt="" />
                                                             </button>

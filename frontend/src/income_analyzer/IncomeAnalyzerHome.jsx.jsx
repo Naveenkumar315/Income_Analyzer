@@ -24,6 +24,7 @@ const IncomeAnalyzerHome = () => {
     const [bankStatement, setBankStatement] = useState(null);
     const [selectedBorrower, setSelectedBorrower] = useState(null);
     const [loadingStep, setLoadingStep] = useState(0);
+    const [hasModifications, setHasModifications] = useState(false);
 
     // NEW: Track which borrowers are currently being processed
     const [processingBorrowers, setProcessingBorrowers] = useState(new Set());
@@ -56,6 +57,7 @@ const IncomeAnalyzerHome = () => {
                 // Update state
                 setFiles({ cleaned_data: data.cleaned_data });
                 setAnalyzedData(data.analyzed_data);
+                setHasModifications(data.hasModifications || false);
 
                 const borrowers = Object.keys(data.cleaned_data || {});
                 setBorrowerList(borrowers);
@@ -519,6 +521,8 @@ const IncomeAnalyzerHome = () => {
                     setCurrentStep={setCurrentStep}
                     currentStep={currentStep}
                     onStartAnalysis={handleStartAnalysis}
+                    setHasModifications={setHasModifications}
+                    hasModifications={hasModifications}
                     onViewResults={async () => {
                         const loanIdToView = sessionStorage.getItem("loanId");
                         if (!loanIdToView) {
