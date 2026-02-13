@@ -479,6 +479,13 @@ export default function LoanDocumentScreen({
         setIsFullScreen(prev => !prev);
     };
 
+    const handleBack = () => {
+        if (currentStep === 5) {
+            setCurrentStep(4)
+        } else if (currentStep === 4) {
+            setCurrentStep(1)
+        }
+    }
 
 
     return (
@@ -489,9 +496,7 @@ export default function LoanDocumentScreen({
                         type="text"
                         icon={<ArrowLeftOutlined />}
                         className="text-Colors-Text-Primary-primary hover:text-teal-700 font-medium"
-                        onClick={() => {
-                            setCurrentStep(1)
-                        }}
+                        onClick={handleBack}
                     >
                         Back
                     </Button>

@@ -101,6 +101,14 @@ export default function AnalysisResultsTabs({
         });
     }, [borrowerList, processingBorrowers, analyzedData]);
 
+    const handleBack = () => {
+        if (currentStep === 5) {
+            setCurrentStep(4)
+        } else if (currentStep === 4) {
+            setCurrentStep(1)
+        }
+    }
+
     return (
         <>
             <div className="px-2 py-1 flex items-center justify-between bg-[#F7F7F7]">
@@ -109,13 +117,7 @@ export default function AnalysisResultsTabs({
                         type="text"
                         icon={<ArrowLeftOutlined />}
                         className="text-Colors-Text-Primary-primary hover:text-teal-700 font-medium"
-                        onClick={() => {
-                            if (onBackToDashboard) {
-                                onBackToDashboard();
-                            } else {
-                                setCurrentStep(4);
-                            }
-                        }}
+                        onClick={handleBack}
                     >
                         Back
                     </Button>
