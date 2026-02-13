@@ -16,7 +16,7 @@ from bson import ObjectId
 from app.routes import auth, uploaded_data, admin
 from app.utils.borrower_cleanup_service import clean_borrower_documents_from_dict
 from app.db import db
-from app.services.audit_service import log_action  # <-- audit service
+from app.services.audit_service import log_action 
 from app.utils.MCP_Connector import MCPClient
 from app.utils.Data_formatter import BorrowerDocumentProcessor
 import logging
@@ -39,12 +39,42 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # -----------------------------
-# Config
+# Config - Document Types
 # -----------------------------
-allowed_sections = ["BorrowerName", "W2", "VOE", "Paystubs", "Paystub"]
-bs_allowed_sections = ["BorrowerName", "W2",
-                       "VOE", "Paystubs", "Paystub", 'Bank Statement']
-bank_statement = ['Bank Statement']
+# Extended list to include ALL income-related document types
+allowed_sections = [
+    "BorrowerName",
+    # Wage earner documents
+    "W2", "VOE", "Paystubs", "Paystub",
+    # Tax documents
+    "Tax Returns", "Tax Return", "1040",
+    "Schedule E", "Schedule C", "Schedule D", "Schedule F", "K-1",
+    # Other income documents
+    "Bank Statement", "Bank Statements",
+    "Lease Agreement", "Lease",
+    "Court Order",
+    "Benefit Letter", "Award Letter",
+    # Supporting documents
+    "Profit and Loss", "P&L", "Profit/Loss",
+    "IRS Transcript", "4506-C"
+]
+
+# For bank statement insights (includes everything)
+bs_allowed_sections = [
+    "BorrowerName",
+    "W2", "VOE", "Paystubs", "Paystub",
+    "Tax Returns", "Tax Return", "1040",
+    "Schedule E", "Schedule C", "Schedule D", "Schedule F", "K-1",
+    "Bank Statement", "Bank Statements",
+    "Lease Agreement", "Lease",
+    "Court Order",
+    "Benefit Letter", "Award Letter",
+    "Profit and Loss", "P&L", "Profit/Loss",
+    "IRS Transcript", "4506-C"
+]
+
+# For bank statement only analysis
+bank_statement = ['Bank Statement', 'Bank Statements']
 
 
 try:
@@ -133,11 +163,137 @@ def filter_documents_by_type(processed_data, document_types):
             if any(doc_type.lower() == filter_type.lower() for filter_type in document_types):
                 filtered_borrower_data[doc_type] = doc_list
 
-        # Only add borrower if they have at least one of the requested document types
-        if filtered_borrower_data:
-            filtered_data[borrower_name] = filtered_borrower_data
+        # ✅ UPDATED: Always include borrower, even with empty doc set
+        # This allows downstream logic to detect "missing docs" vs "missing borrower"
+        # and provides better audit trail and error messages
+        filtered_data[borrower_name] = filtered_borrower_data
 
     return filtered_data
+
+
+def get_available_document_types(data):
+    """
+    Extract all available document types from the borrower data.
+    
+    Args:
+        data (dict): Borrower data containing documents
+        
+    Returns:
+        set: Set of available document type names
+    """
+    available_docs = set()
+    
+    if isinstance(data, dict):
+        for key, value in data.items():
+            # Skip BorrowerName and only count non-empty document lists
+            if key == "BorrowerName":
+                continue
+            
+            # Check if value is a list with items, or a non-empty dict
+            if isinstance(value, list) and len(value) > 0:
+                doc_type = key.strip()
+                available_docs.add(doc_type)
+            elif isinstance(value, dict) and len(value) > 0:
+                # Handle case where value might be a nested dict
+                doc_type = key.strip()
+                available_docs.add(doc_type)
+    
+    return available_docs
+
+
+def check_rule_has_required_documents(rule_description, available_docs):
+    """
+    Check if a specific rule has the documents it requires.
+    
+    Args:
+        rule_description (str): The rule description text
+        available_docs (set): Set of available document types
+        
+    Returns:
+        tuple: (has_required_docs: bool, missing_docs: list)
+    """
+    # Normalize available docs to lowercase for comparison
+    available_docs_lower = {doc.lower() for doc in available_docs}
+    
+    rule_lower = rule_description.lower()
+    missing_docs = []
+    
+    # Define document requirements based on rule content
+    # Check for wage earner documents (W2, Paystub, VOE)
+    if any(keyword in rule_lower for keyword in ['paystub', 'w-2', 'w2', 'voe', 'wage earner', 'base pay', 'bonus', 'overtime', 'commission']):
+        wage_docs_needed = ['w2', 'paystub', 'paystubs', 'voe']
+        has_wage_doc = any(doc in available_docs_lower for doc in wage_docs_needed)
+        if not has_wage_doc:
+            missing_docs.extend(['W2 or Paystub or VOE'])
+    
+    # Check for rental income documents (Schedule E, Lease, Bank Statement)
+    if any(keyword in rule_lower for keyword in ['rental', 'schedule e', 'lease agreement']):
+        rental_docs_needed = {
+            'schedule e': False,
+            'lease': False,
+            'bank statement': False
+        }
+        
+        for doc in available_docs_lower:
+            if 'schedule e' in doc or 'schedule_e' in doc:
+                rental_docs_needed['schedule e'] = True
+            if 'lease' in doc:
+                rental_docs_needed['lease'] = True
+            if 'bank statement' in doc or 'bank_statement' in doc:
+                rental_docs_needed['bank statement'] = True
+        
+        if not any(rental_docs_needed.values()):
+            missing_docs.append('Schedule E or Lease Agreement or Bank Statement')
+    
+    # Check for self-employed documents (Tax Returns, Schedule C/D/F, P&L)
+    if any(keyword in rule_lower for keyword in ['self-employed', 'schedule c', 'schedule d', 'schedule f', 'k-1', 'profit/loss', 'business tax']):
+        self_emp_docs_needed = False
+        
+        for doc in available_docs_lower:
+            if any(term in doc for term in ['tax return', '1040', 'schedule c', 'schedule d', 'schedule f', 'k-1', 'profit', 'p&l']):
+                self_emp_docs_needed = True
+                break
+        
+        if not self_emp_docs_needed:
+            missing_docs.append('Tax Returns or Schedule C/D/F or Profit/Loss')
+    
+    # Check for alimony/child support documents (Court Order, Bank Statement)
+    if any(keyword in rule_lower for keyword in ['alimony', 'child support', 'court order']):
+        has_court_order = any('court' in doc or 'order' in doc for doc in available_docs_lower)
+        has_bank_stmt = any('bank statement' in doc or 'bank_statement' in doc for doc in available_docs_lower)
+        
+        if not (has_court_order or has_bank_stmt):
+            missing_docs.append('Court Order or Bank Statement')
+    
+    # Check for benefit income documents (Award Letter, Benefit Letter, Bank Statement)
+    if any(keyword in rule_lower for keyword in ['disability', 'va benefit', 'benefit award', 'award letter']):
+        has_benefit_letter = any(term in doc for doc in available_docs_lower for term in ['benefit', 'award'])
+        has_bank_stmt = any('bank statement' in doc or 'bank_statement' in doc for doc in available_docs_lower)
+        
+        if not (has_benefit_letter or has_bank_stmt):
+            missing_docs.append('Benefit/Award Letter or Bank Statement')
+    
+    # Check for tax transcript requirements
+    if any(keyword in rule_lower for keyword in ['4506-c', 'irs transcript', 'tax transcript']):
+        has_transcript = any('transcript' in doc or '4506' in doc for doc in available_docs_lower)
+        has_tax_return = any('tax return' in doc or '1040' in doc for doc in available_docs_lower)
+        
+        if not (has_transcript or has_tax_return):
+            missing_docs.append('IRS Transcript or Tax Returns')
+    
+    # If no specific document requirements detected, check for general income docs
+    if not missing_docs and 'income' in rule_lower and 'validation' in rule_lower:
+        # General income validation - needs at least some income document
+        has_any_income_doc = any(
+            term in doc for doc in available_docs_lower 
+            for term in ['w2', 'paystub', 'voe', 'tax return', '1040', 'schedule', 'bank statement']
+        )
+        if not has_any_income_doc:
+            missing_docs.append('Any income documentation (W2, Paystub, VOE, Tax Returns, or Bank Statements)')
+    
+    has_required = len(missing_docs) == 0
+    
+    return has_required, missing_docs
 
 
 @app.on_event("startup")
@@ -328,48 +484,133 @@ async def verify_rules(
     """Verify rules for previously uploaded borrower JSON"""
     content = await db["uploadedData"].find_one(
         {"loanID": loanID, "email": email},
-        {"filtered_data": 1, "_id": 0}
+        {"filtered_data_with_bs": 1, "_id": 0}
     )
 
-    if not content or "filtered_data" not in content:
+    if not content or "filtered_data_with_bs" not in content:
+        logger.error(f"No data found for loanID {loanID}, email {email}")
         return {"status": "error", "results": [], "rule_result": {}}
 
-    data = content["filtered_data"]
+    data = content["filtered_data_with_bs"]
+    
+    logger.info(f"Retrieved data for loanID {loanID}. Top-level keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
 
     # Handle borrower selection
     if borrower != "All":
+        available_borrowers = list(data.keys()) if isinstance(data, dict) else []
+        logger.info(f"Borrower filter: '{borrower}'. Available borrowers: {available_borrowers}")
+        
         if borrower not in data:
+            logger.warning(f"Borrower '{borrower}' not found in data. Available borrowers: {available_borrowers}")
             return {"status": "error", "results": [], "rule_result": {}}
+        
         data = data[borrower]
+        logger.info(f"Selected borrower '{borrower}'. Document types in borrower data: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
 
-    if not data:
-        return {"status": "error", "results": [], "rule_result": {}}
+    # Check what documents are available
+    available_docs = get_available_document_types(data)
+    
+    # Debug logging to see what's happening
+    logger.info(f"Available document types for loanID {loanID}, borrower {borrower}: {available_docs}")
+    logger.info(f"Number of available docs: {len(available_docs)}")
+    
+    # If absolutely NO documents exist, mark all rules as insufficient
+    if not available_docs:
+        logger.warning(f"No documents found for loanID {loanID}, borrower {borrower}. Data type: {type(data)}, Data empty: {not data}")
+        
+        rule_result = {
+            "Pass": 0,
+            "Fail": 0,
+            "Insufficient data": len(requirements["rules"]),
+            "Error": 0
+        }
+        
+        results = [
+            {
+                "rule": rule,
+                "result": {
+                    "status": "Insufficient data",
+                    "commentary": "No income documents found in uploaded data. Please upload W2, Paystubs, VOE, Tax Returns, or other relevant income documentation.",
+                    "missing_documents": ["All income documentation"]
+                }
+            }
+            for rule in requirements["rules"]
+        ]
+        
+        logger.info(f"No documents found for loanID {loanID}, borrower {borrower}. Marking all {len(requirements['rules'])} rules as insufficient.")
+        
+        return {
+            "status": "success",
+            "results": results,
+            "rule_result": rule_result
+        }
+        rule_result = {
+            "Pass": 0,
+            "Fail": 0,
+            "Insufficient data": len(requirements["rules"]),
+            "Error": 0
+        }
+        
+        results = [
+            {
+                "rule": rule,
+                "result": {
+                    "status": "Insufficient data",
+                    "commentary": "No income documents found in uploaded data. Please upload W2, Paystubs, VOE, Tax Returns, or other relevant income documentation.",
+                    "missing_documents": ["All income documentation"]
+                }
+            }
+            for rule in requirements["rules"]
+        ]
+        
+        logger.info(f"No documents found for loanID {loanID}, borrower {borrower}. Marking all {len(requirements['rules'])} rules as insufficient.")
+        
+        return {
+            "status": "success",
+            "results": results,
+            "rule_result": rule_result
+        }
 
+    # Evaluate each rule based on its specific document requirements
     try:
         results = []
-        rule_result = {"Pass": 0, "Fail": 0,
-                       "Insufficient data": 0, "Error": 0}
+        rule_result = {"Pass": 0, "Fail": 0, "Insufficient data": 0, "Error": 0}
 
         async with client_lock:
             for rule in requirements["rules"]:
                 try:
-                    response = await mcp_client.call_tool(
-                        "rule_verification",
-                        {"rules": rule, "content": json.dumps(data)}
-                    )
-
-                    if response.content and len(response.content) > 0 and response.content[0].text.strip():
-                        parsed_response = json.loads(response.content[0].text)
-                        if parsed_response["status"] == "Pass":
-                            rule_result["Pass"] += 1
-                        elif parsed_response["status"] == "Fail":
-                            rule_result["Fail"] += 1
-                        else:
-                            rule_result["Insufficient data"] += 1
-                    else:
-                        rule_result["Error"] += 1
+                    # Check if this rule has the documents it needs
+                    has_required, missing_docs = check_rule_has_required_documents(rule, available_docs)
+                    
+                    if not has_required:
+                        # Mark as insufficient without calling MCP
+                        rule_result["Insufficient data"] += 1
                         parsed_response = {
-                            "error": "Empty response from MCP client"}
+                            "status": "Insufficient data",
+                            "commentary": f"Required documents not found: {', '.join(missing_docs)}",
+                            "missing_documents": missing_docs
+                        }
+                    else:
+                        # Has required docs - call MCP to evaluate
+                        response = await mcp_client.call_tool(
+                            "rule_verification",
+                            {"rules": rule, "content": json.dumps(data)}
+                        )
+
+                        if response.content and len(response.content) > 0 and response.content[0].text.strip():
+                            parsed_response = json.loads(response.content[0].text)
+                            
+                            if parsed_response["status"] == "Pass":
+                                rule_result["Pass"] += 1
+                            elif parsed_response["status"] == "Fail":
+                                rule_result["Fail"] += 1
+                            else:
+                                rule_result["Insufficient data"] += 1
+                        else:
+                            rule_result["Error"] += 1
+                            parsed_response = {
+                                "error": "Empty response from MCP client"
+                            }
 
                 except json.JSONDecodeError as e:
                     rule_result["Error"] += 1
@@ -379,10 +620,13 @@ async def verify_rules(
                     rule_result["Error"] += 1
                     logger.error(f"Rule verification error for {rule}: {e}")
                     parsed_response = {
-                        "error": f"Verification failed: {str(e)}"}
+                        "error": f"Verification failed: {str(e)}"
+                    }
 
                 results.append({"rule": rule, "result": parsed_response})
 
+        logger.info(f"Rule verification completed for loanID {loanID}, borrower {borrower}. Results: {rule_result}")
+        
         return {"status": "success", "results": results, "rule_result": rule_result}
 
     except Exception as e:
@@ -397,23 +641,33 @@ async def income_calc(
     borrower: str = Query("All")
 ):
     """Calculate income for previously uploaded borrower JSON"""
+    # Use filtered_data_with_bs to have access to all income documents
     content = await db["uploadedData"].find_one(
         {"loanID": loanID, "email": email},
-        {"filtered_data": 1, "_id": 0}
+        {"filtered_data_with_bs": 1, "_id": 0}
     )
 
-    if not content or "filtered_data" not in content:
+    if not content or "filtered_data_with_bs" not in content:
         return {"status": "error", "income": []}
 
-    data = content["filtered_data"]
+    data = content["filtered_data_with_bs"]
 
     if borrower != "All":
         if borrower not in data:
             return {"status": "error", "income": []}
         data = data[borrower]
 
-    if not data:
-        return {"status": "error", "income": []}
+    # Check what documents are available
+    available_docs = get_available_document_types(data)
+    
+    if not data or not available_docs:
+        # When no income documents exist, return clear message
+        logger.info(f"No income documents found for loanID {loanID}, borrower {borrower} in income calculation.")
+        return {
+            "status": "insufficient_data",
+            "message": "No income documents found. Income calculation requires W2, Paystubs, VOE, Tax Returns, or other income documentation.",
+            "income": []
+        }
 
     try:
         final_response = []
@@ -472,8 +726,17 @@ async def income_insights(
             return {"status": "error", "income_insights": {}}
         data = data[borrower]
 
-    if not data:
-        return {"status": "error", "income_insights": {}}
+    # Check what documents are available
+    available_docs = get_available_document_types(data)
+    
+    if not data or not available_docs:
+        # When no income documents exist, return clear message
+        logger.info(f"No income documents found for loanID {loanID}, borrower {borrower} in income insights.")
+        return {
+            "status": "insufficient_data",
+            "message": "No income documents found. Income insights requires W2, Paystubs, VOE, Tax Returns, Bank Statements, or other income documentation.",
+            "income_insights": {}
+        }
 
     try:
         async with client_lock:

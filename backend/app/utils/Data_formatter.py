@@ -1,6 +1,27 @@
 import json
 import re
 from difflib import SequenceMatcher
+from app.utils.number_parser import parse_number
+
+def normalize_money_fields(obj):
+    """
+    Recursively normalize currency / numeric string fields.
+    """
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if isinstance(v, (dict, list)):
+                normalize_money_fields(v)
+            elif isinstance(v, str) and any(
+                x in k.lower() for x in ["amount", "sum", "balance", "deposit", "withdraw", "payment"]
+            ):
+                is_negative = "(" in v and ")" in v
+                cleaned = re.sub(r"[^\d.\-]", "", v)
+                num = parse_number(cleaned)
+                obj[k] = -num if is_negative else num
+
+    elif isinstance(obj, list):
+        for item in obj:
+            normalize_money_fields(item)
 
 
 class BorrowerDocumentProcessor:

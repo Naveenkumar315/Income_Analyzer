@@ -255,3 +255,22 @@ def clean_borrower_documents_from_dict(data: Dict[str, Any]) -> Dict[str, Any]:
                         dtype, []).append(cdoc)
 
     return {k: v for k, v in cleaned.items() if v}
+
+def cleanup_borrowers_adapter(data: dict) -> dict:
+    """
+    Adapter that safely handles:
+    - loan-level borrower dicts
+    - document-level Summary JSON
+    """
+    if not isinstance(data, dict):
+        return {}
+
+    # Case 1: Already loan-level borrower dict
+    if all(isinstance(v, dict) for v in data.values()):
+        return data
+
+    # Case 2: Form Recognizer style document JSON
+    try:
+        return clean_borrower_documents_from_dict(data)
+    except Exception:
+        return {}
