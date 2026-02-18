@@ -183,7 +183,7 @@ const IncomeAnalyzerHome = () => {
                 toast.error("Upload failed. Please try again.");
             }
             // toast.error("Upload failed");
-            setShowModal({ upload: false, loader: false });
+            setShowModal({ upload: true, loader: false });
             setCurrentStep(2);
         }
     };
